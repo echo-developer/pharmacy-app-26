@@ -12,6 +12,7 @@ import VitaminsHeader from '../../components/home/VitaminsHeader';
 import VitaminsProducts from '../../components/home/VitaminsProducts';
 import DealsHeader from '../../components/home/DealsHeader';
 import DealsProducts from '../../components/home/DealsProducts';
+import PetCareHeader from '../../components/home/PetCareHeader';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -48,6 +49,10 @@ const HomeScreen = ({ navigation }) => {
         <DealsProducts
           onAddPress={(item) => console.log('Add pressed for product:', item.title)}
           onQtyChange={(id, newQty) => console.log(`Quantity changed for product ID ${id}: ${newQty}`)}
+        />
+        <PetCareHeader
+          title="Pet Care Top Brands"
+          subtitle="Everyday care for a healthier you"
         />
       </ScrollView>
     </View>
