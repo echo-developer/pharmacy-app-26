@@ -33,14 +33,10 @@ const HealthConcernHeader = ({
   return (
     <View style={styles.container}>
       <View style={styles.textWrapper}>
-        {/* Title with Gradient */}
         <GradientText text={title} style={styles.title} />
-
-        {/* Subtitle */}
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
 
-      {/* Arrow Button */}
       <TouchableOpacity style={styles.arrowButton} onPress={onArrowPress}>
         <ChevronRight size={18} color="#FFFFFF" />
       </TouchableOpacity>
@@ -66,14 +62,14 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: '#787887',           // Subtitle color
+    color: '#787887',
     marginTop: 2,
   },
   arrowButton: {
-    width: 32,
+    width: 50,                 // Pill width
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#263077', // Arrow tab background
+    borderRadius: 16,          // Pill shape
+    backgroundColor: '#263077',
     alignItems: 'center',
     justifyContent: 'center',
   },
