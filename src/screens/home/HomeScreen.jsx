@@ -11,6 +11,7 @@ import HealthConcernList from '../../components/home/HealthConcernList';
 import VitaminsHeader from '../../components/home/VitaminsHeader';
 import VitaminsProducts from '../../components/home/VitaminsProducts';
 import DealsHeader from '../../components/home/DealsHeader';
+import DealsProducts from '../../components/home/DealsProducts';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -44,6 +45,10 @@ const HomeScreen = ({ navigation }) => {
           subtitle="Buy now to get the best deals"
           onArrowPress={() => console.log('Deals arrow pressed')}
         />  
+        <DealsProducts
+          onAddPress={(item) => console.log('Add pressed for product:', item.title)}
+          onQtyChange={(id, newQty) => console.log(`Quantity changed for product ID ${id}: ${newQty}`)}
+        />
       </ScrollView>
     </View>
   );
