@@ -31,6 +31,12 @@ const LoginScreen = ({ navigation }) => {
     navigation.navigate('Otp', { mobile });
   };
 
+  // --- NEW: Handle Skip Button ---
+  const handleSkip = () => {
+    // Navigate to Otp screen without a mobile number (or pass a dummy one)
+    navigation.navigate('Otp', { mobile: '' }); 
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#263077" translucent />
@@ -45,8 +51,8 @@ const LoginScreen = ({ navigation }) => {
           colors={['#263077', '#364193']} 
           style={styles.topSection}
         >
-          {/* Skip Button */}
-          <TouchableOpacity style={styles.skipButton}>
+          {/* Skip Button - UPDATED with onPress */}
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
 
@@ -79,7 +85,7 @@ const LoginScreen = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Medicine Bag Image - shifted right & up */}
+          {/* Medicine Bag Image */}
           <Image
             source={require('../../assets/images/Subtract.png')}
             style={styles.medicineImage}
@@ -131,6 +137,7 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
+// ... styles remain exactly the same as your original file ...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -139,8 +146,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-
-  /* ================= TOP SECTION ================= */
   topSection: {
     height: 360,                    
     paddingHorizontal: 24,
@@ -195,8 +200,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     fontWeight: '600',
   },
-  
-  /* ================= TAB STYLES ================= */
   brandedTab: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,8 +216,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginLeft: -24,             
   },
-  
-  /* ================= FIXED SHIELD STYLES ================= */
   shieldContainer: {
     marginRight: 12,             
     alignItems: 'center',
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 13,
     borderTopRightRadius: 13,
     borderBottomLeftRadius: 13, 
-    borderBottomRightRadius: 13, // <--- Changed to 13 to make it a perfect circle-ish shield
+    borderBottomRightRadius: 13, 
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#4CAF50',
@@ -248,12 +249,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: 'bold',
-    lineHeight: 16, // <--- Added lineHeight to vertically center the checkmark
-    marginTop: 0,  // <--- Removed negative margin
+    lineHeight: 16, 
+    marginTop: 0,  
     textAlign: 'center',
   },
-  /* ================================================================ */
-
   brandedTextContainer: {
     flexDirection: 'column',
   },
@@ -268,7 +267,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     marginTop: 2,                
   },
-
   medicineImage: {
     position: 'absolute',
     right: -50,                     
@@ -276,8 +274,6 @@ const styles = StyleSheet.create({
     width: width * 0.62,            
     height: 220,                    
   },
-
-  /* ================= BOTTOM SECTION ================= */
   bottomSection: {
     flex: 1,
     paddingHorizontal: 24,
