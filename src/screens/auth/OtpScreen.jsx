@@ -38,20 +38,27 @@ const OtpScreen = ({ navigation, route }) => {
   };
 
   const handleResend = () => {
-    // Static for now, no dynamic timer
     console.log('OTP Resent');
+  };
+
+  const handleSkip = () => {
+    navigation.navigate('Main', { screen: 'Home' });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8F9FB" />
-      
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
         <View style={styles.contentContainer}>
-          
+          {/* Skip Button */}
+          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+
           {/* Lock Icon */}
           <View style={styles.iconContainer}>
             <Image
@@ -64,14 +71,15 @@ const OtpScreen = ({ navigation, route }) => {
           <Text style={styles.title}>Verify your OTP</Text>
 
           {/* Subtitle */}
-          <Text style={styles.subtitle}>
-            Enter one time password send on
-          </Text>
+          <Text style={styles.subtitle}>Enter one time password send on</Text>
 
           {/* Mobile Number & Edit Button */}
           <View style={styles.mobileContainer}>
             <Text style={styles.mobileText}>91+ {mobileNumber}</Text>
-            <TouchableOpacity style={styles.editButton} onPress={() => navigation.goBack()}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => navigation.goBack()}
+            >
               <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
           </View>
@@ -81,14 +89,14 @@ const OtpScreen = ({ navigation, route }) => {
             {otp.map((digit, index) => (
               <TextInput
                 key={index}
-                ref={(ref) => (inputRefs.current[index] = ref)}
+                ref={ref => (inputRefs.current[index] = ref)}
                 style={[
                   styles.otpBox,
-                  { borderColor: digit ? '#2CB7DF' : '#D5D5D5' } 
+                  { borderColor: digit ? '#2CB7DF' : '#D5D5D5' },
                 ]}
                 value={digit}
-                onChangeText={(value) => handleOtpChange(value, index)}
-                onKeyPress={(e) => handleKeyPress(e, index)}
+                onChangeText={value => handleOtpChange(value, index)}
+                onKeyPress={e => handleKeyPress(e, index)}
                 keyboardType="number-pad"
                 maxLength={1}
                 selectTextOnFocus
@@ -100,18 +108,15 @@ const OtpScreen = ({ navigation, route }) => {
           {/* Resend Section */}
           <View style={styles.resendContainer}>
             <Text style={styles.noOtpText}>Didn't receive OTP?</Text>
-            
+
             <View style={styles.timerRow}>
               <Text style={styles.timerText}>Wait 53 secs to </Text>
-              
+
               <TouchableOpacity onPress={handleResend}>
-                <Text style={styles.resendText}>
-                  RESEND OTP
-                </Text>
+                <Text style={styles.resendText}>RESEND OTP</Text>
               </TouchableOpacity>
             </View>
           </View>
-
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -121,7 +126,7 @@ const OtpScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FB', 
+    backgroundColor: '#F8F9FB',
   },
   keyboardContainer: {
     flex: 1,
@@ -129,15 +134,26 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60, 
+    paddingTop: 60,
   },
-  
+
+  /* ================= SKIP ================= */
+  skipButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+  },
+  skipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#273179',
+  },
+
   /* ================= ICON ================= */
   iconContainer: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#2CB7DF', 
+    backgroundColor: '#2CB7DF',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
@@ -187,9 +203,9 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   otpBox: {
-    width: (width - 48 - 36) / 4, 
+    width: (width - 48 - 36) / 4,
     height: 60,
-    backgroundColor: '#FFFFFF', 
+    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#D5D5D5',
     borderRadius: 12,
