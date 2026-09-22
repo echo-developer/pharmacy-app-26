@@ -7,6 +7,7 @@ import OfferCarousel from '../../components/home/OfferCarousel';
 import TrustBadges from '../../components/home/TrustBadges';
 import HealthConcernHeader from '../../components/home/HealthConcernHeader';
 import ConcernPills from '../../components/home/ConcernPills';
+import HealthConcernList from '../../components/home/HealthConcernList';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -29,6 +30,7 @@ const HomeScreen = ({ navigation }) => {
           onArrowPress={() => console.log('Arrow pressed')}
         />
         <ConcernPills onPillPress={(item) => console.log('Pill pressed:', item.label)} />
+        <HealthConcernList onCardPress={(item) => console.log('Health concern card pressed:', item.label)} />
       </ScrollView>
     </View>
   );
