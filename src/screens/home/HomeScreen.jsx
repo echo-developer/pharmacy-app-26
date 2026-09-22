@@ -3,6 +3,8 @@ import { View, StyleSheet, ScrollView } from 'react-native';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
+import OfferCarousel from '../../components/home/OfferCarousel';
+import TrustBadges from '../../components/home/TrustBadges';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -19,7 +21,8 @@ const HomeScreen = ({ navigation }) => {
           onCallPress={() => console.log('Call pressed')}
         />
         
-        {/* Baaki content yahan aayega */}
+        <OfferCarousel onCardPress={(item) => console.log('Card pressed:', item.category)} />
+        <TrustBadges />
       </ScrollView>
     </View>
   );
