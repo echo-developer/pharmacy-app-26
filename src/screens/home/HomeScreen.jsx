@@ -10,6 +10,7 @@ import ConcernPills from '../../components/home/ConcernPills';
 import HealthConcernList from '../../components/home/HealthConcernList';
 import VitaminsHeader from '../../components/home/VitaminsHeader';
 import VitaminsProducts from '../../components/home/VitaminsProducts';
+import DealsHeader from '../../components/home/DealsHeader';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -38,6 +39,11 @@ const HomeScreen = ({ navigation }) => {
           title="Vitamins & Supplements"
         />
         <VitaminsProducts onCardPress={(item) => console.log('Vitamins product card pressed:', item.label)} />
+        <DealsHeader
+          title="Deals you'll love"
+          subtitle="Buy now to get the best deals"
+          onArrowPress={() => console.log('Deals arrow pressed')}
+        />  
       </ScrollView>
     </View>
   );
