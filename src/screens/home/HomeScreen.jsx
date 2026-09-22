@@ -1,13 +1,19 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import Header from '../../components/common/Header';
+import SearchBar from '../../components/common/SearchBar';
 
 const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Header 
-        onCartPress={() => navigation.navigate('Cart')} 
-      />
+      <Header onCartPress={() => navigation.navigate('Cart')} />
+      
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header ke turant neeche SearchBar */}
+        <SearchBar />
+        
+        {/* Baaki content yahan aayega */}
+      </ScrollView>
     </View>
   );
 };
