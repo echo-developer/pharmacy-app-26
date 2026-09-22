@@ -5,6 +5,7 @@ import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
 import OfferCarousel from '../../components/home/OfferCarousel';
 import TrustBadges from '../../components/home/TrustBadges';
+import HealthConcernHeader from '../../components/home/HealthConcernHeader';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -23,6 +24,9 @@ const HomeScreen = ({ navigation }) => {
         
         <OfferCarousel onCardPress={(item) => console.log('Card pressed:', item.category)} />
         <TrustBadges />
+        <HealthConcernHeader
+          onArrowPress={() => console.log('Arrow pressed')}
+        />
       </ScrollView>
     </View>
   );
