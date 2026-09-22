@@ -9,6 +9,7 @@ import HealthConcernHeader from '../../components/home/HealthConcernHeader';
 import ConcernPills from '../../components/home/ConcernPills';
 import HealthConcernList from '../../components/home/HealthConcernList';
 import VitaminsHeader from '../../components/home/VitaminsHeader';
+import VitaminsProducts from '../../components/home/VitaminsProducts';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -36,6 +37,7 @@ const HomeScreen = ({ navigation }) => {
           subtitle="Nourish their growth with"
           title="Vitamins & Supplements"
         />
+        <VitaminsProducts onCardPress={(item) => console.log('Vitamins product card pressed:', item.label)} />
       </ScrollView>
     </View>
   );
