@@ -8,6 +8,7 @@ import TrustBadges from '../../components/home/TrustBadges';
 import HealthConcernHeader from '../../components/home/HealthConcernHeader';
 import ConcernPills from '../../components/home/ConcernPills';
 import HealthConcernList from '../../components/home/HealthConcernList';
+import VitaminsHeader from '../../components/home/VitaminsHeader';
 
 const HomeScreen = ({ navigation }) => {
   return (
@@ -31,6 +32,10 @@ const HomeScreen = ({ navigation }) => {
         />
         <ConcernPills onPillPress={(item) => console.log('Pill pressed:', item.label)} />
         <HealthConcernList onCardPress={(item) => console.log('Health concern card pressed:', item.label)} />
+        <VitaminsHeader
+          subtitle="Nourish their growth with"
+          title="Vitamins & Supplements"
+        />
       </ScrollView>
     </View>
   );
