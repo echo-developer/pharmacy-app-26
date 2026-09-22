@@ -66,8 +66,10 @@ const LoginScreen = ({ navigation }) => {
             {/* Branded Substitutes Tab */}
             <View style={styles.brandedTab}>
               <View style={styles.shieldContainer}>
-                <View style={styles.shieldCircle}>
-                  <Text style={styles.shieldCheck}>✓</Text>
+                <View style={styles.shieldGlow}>
+                  <View style={styles.shieldIcon}>
+                    <Text style={styles.shieldCheck}>✓</Text>
+                  </View>
                 </View>
               </View>
               <View style={styles.brandedTextContainer}>
@@ -140,11 +142,11 @@ const styles = StyleSheet.create({
 
   /* ================= TOP SECTION ================= */
   topSection: {
-    height: 360,                    // ⬇️ Reduced from 430 → makes bottom modal start higher
+    height: 360,                    
     paddingHorizontal: 24,
     paddingTop: 40,
     position: 'relative',
-    borderBottomLeftRadius: 0,      // Radius moved to bottomSection's top corners
+    borderBottomLeftRadius: 0,      
     borderBottomRightRadius: 0,
   },
   skipButton: {
@@ -172,6 +174,7 @@ const styles = StyleSheet.create({
   },
   offerHighlight: {
     fontSize: 42,
+    marginTop: -10, 
   },
   lineContainer: {
     flexDirection: 'row',
@@ -192,27 +195,47 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     fontWeight: '600',
   },
+  
+  /* ================= TAB STYLES ================= */
   brandedTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 16,       
+    paddingVertical: 12,         
+    borderTopRightRadius: 16,    
+    borderBottomRightRadius: 16, 
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    width: 175,
-    alignSelf: 'flex-start', 
-    marginLeft: 0,
+    borderLeftWidth: 0,          
+    alignSelf: 'flex-start',
+    marginLeft: -24,             
   },
+  
+  /* ================= FIXED SHIELD STYLES ================= */
   shieldContainer: {
-    marginRight: 6,
+    marginRight: 12,             
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  shieldCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#4CAF50',
+  shieldGlow: {
+    width: 36,                   
+    height: 36,                  
+    borderRadius: 18,
+    backgroundColor: 'rgba(76, 175, 80, 0.2)', 
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shieldIcon: {
+    width: 26,                   
+    height: 26,                  
+    backgroundColor: '#4CAF50', 
+    borderTopLeftRadius: 13,
+    borderTopRightRadius: 13,
+    borderBottomLeftRadius: 13, 
+    borderBottomRightRadius: 13, // <--- Changed to 13 to make it a perfect circle-ish shield
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#4CAF50',
@@ -223,31 +246,35 @@ const styles = StyleSheet.create({
   },
   shieldCheck: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
+    lineHeight: 16, // <--- Added lineHeight to vertically center the checkmark
+    marginTop: 0,  // <--- Removed negative margin
+    textAlign: 'center',
   },
+  /* ================================================================ */
+
   brandedTextContainer: {
     flexDirection: 'column',
   },
   brandedTitle: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 14,                
     fontWeight: '700',
   },
   brandedSubtitle: {
     color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 9,
+    fontSize: 11,                
     fontWeight: '400',
-    marginTop: 1,
+    marginTop: 2,                
   },
 
-  /* ⬇️⬇️⬇️ MEDICINE BAG - shifted right & up ⬇️⬇️⬇️ */
   medicineImage: {
     position: 'absolute',
-    right: -50,                     // was -10 → more to the right (negative pushes off-screen right)
-    top: 95,                       // was bottom:20 → now anchored to top
-    width: width * 0.62,            // slightly bigger
-    height: 220,                    // taller
+    right: -50,                     
+    top: 95,                       
+    width: width * 0.62,            
+    height: 220,                    
   },
 
   /* ================= BOTTOM SECTION ================= */
@@ -256,11 +283,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 32,
     paddingBottom: 40,
-    borderTopLeftRadius: 28,        // ⬆️ Slightly bigger radius for smoother overlap
+    borderTopLeftRadius: 28,        
     borderTopRightRadius: 28,
-    marginTop: -60,                 // ⬆️ was -24 → pulls the modal higher up
-    minHeight: 480,                 // ⬆️ was 400 → taller card
-    zIndex: 2,                      // Ensures it sits above the top section
+    marginTop: -60,                 
+    minHeight: 480,                 
+    zIndex: 2,                      
   },
   title: {
     fontSize: 26,
