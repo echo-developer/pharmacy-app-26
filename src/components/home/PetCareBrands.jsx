@@ -14,6 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.52;
 const CARD_HEIGHT = 180;
+const IMAGE_CARD_HEIGHT = 220;
 
 const brands = [
   {
@@ -76,14 +77,7 @@ const PetCareBrands = ({ onBrandPress }) => {
                   style={styles.imageBackground}
                   imageStyle={styles.imageStyle}
                   resizeMode="cover"
-                >
-                  <View style={styles.availablePill}>
-                    <Text style={styles.availableText}>{item.available}</Text>
-                  </View>
-                  <View style={styles.arrowButton}>
-                    <ArrowUpRight size={18} color="#FFFFFF" />
-                  </View>
-                </ImageBackground>
+                />
               </TouchableOpacity>
             );
           }
@@ -130,7 +124,7 @@ const styles = StyleSheet.create({
   // Image-only card (Cipla / Sun Pharma) — no white background, no shadow
   imageCard: {
     width: CARD_WIDTH,
-    height: CARD_HEIGHT,
+    height: IMAGE_CARD_HEIGHT,
     borderRadius: 16,
     overflow: 'hidden',
   },
