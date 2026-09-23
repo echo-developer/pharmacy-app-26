@@ -1,11 +1,16 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import ProductDetailsHeader from '../../components/product/ProductDetailsHeader';
+import ProductSummaryBar from '../../components/product/ProductSummaryBar';
 
 const ProductDetailsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
 
       <ProductDetailsHeader
         cartCount={2}
@@ -16,6 +21,7 @@ const ProductDetailsScreen = ({ navigation }) => {
       />
 
       <ScrollView showsVerticalScrollIndicator={false}>
+        <ProductSummaryBar onPress={() => console.log('Summary pressed')} />
       </ScrollView>
     </View>
   );
