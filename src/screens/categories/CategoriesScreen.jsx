@@ -1,10 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import CategoryHeader from '../../components/categories/CategoryHeader';
 
-const CategoriesScreen = () => {
+const CategoriesScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Categories Screen</Text>
+      <CategoryHeader
+        title="Pet Supplements"
+        cartCount={2}
+        onBackPress={() => navigation.goBack()}
+        onSearchPress={() => console.log('Search pressed')}
+        onCartPress={() => console.log('Cart pressed')}
+      />
     </View>
   );
 };
@@ -12,14 +19,7 @@ const CategoriesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#043250',
   },
 });
 
