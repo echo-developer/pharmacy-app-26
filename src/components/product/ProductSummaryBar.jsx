@@ -78,11 +78,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 10,
-    marginHorizontal: 12,
+    // marginHorizontal: 12,
     marginTop: 8,
-    borderRadius: 10,
+    // borderRadius: 10,
     gap: 10,
   },
   imageBox: {
