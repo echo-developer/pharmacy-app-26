@@ -6,7 +6,7 @@ import AccountHeader from '../../components/account/AccountHeader';
 import ProfileCard from '../../components/account/ProfileCard';
 import QuickActions from '../../components/account/QuickActions';
 import AppUpdateBanner from '../../components/account/AppUpdateBanner';
-import { Heart, Map } from 'lucide-react-native';
+import { Heart, Map, Share2,Info,ShieldCheck,Bell,MessageSquare,RotateCcw, } from 'lucide-react-native';
 import SettingsSection from '../../components/account/SettingsSection';
 import SettingsRow from '../../components/account/SettingsRow';
 
@@ -67,6 +67,43 @@ const AccountScreen = ({ navigation }) => {
             Icon={Map}
             label="Address"
             onPress={() => console.log('Address')}
+          />
+        </SettingsSection>
+        <SettingsSection title="About">
+          <SettingsRow
+            Icon={Share2}
+            label="Share the app"
+            onPress={() => console.log('Share')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={Info}
+            label="About"
+            onPress={() => console.log('About')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={ShieldCheck}
+            label="Account Privacy"
+            onPress={() => console.log('Privacy')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={Bell}
+            label="Notifications"
+            onPress={() => console.log('Notifications')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={MessageSquare}
+            label="FAQ"
+            onPress={() => console.log('FAQ')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={RotateCcw}
+            label="Return Policy"
+            onPress={() => console.log('Return')}
           />
         </SettingsSection>
       </ScrollView>
