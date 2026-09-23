@@ -13,12 +13,13 @@ import VitaminsProducts from '../../components/home/VitaminsProducts';
 import DealsHeader from '../../components/home/DealsHeader';
 import DealsProducts from '../../components/home/DealsProducts';
 import PetCareHeader from '../../components/home/PetCareHeader';
+import PetCareBrands from '../../components/home/PetCareBrands';
 
 const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Header onCartPress={() => navigation.navigate('Cart')} />
-      
+
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header ke turant neeche SearchBar */}
         <SearchBar />
@@ -28,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
           onWhatsAppPress={() => console.log('WhatsApp pressed')}
           onCallPress={() => console.log('Call pressed')}
         />
-        
+
         <OfferCarousel onCardPress={(item) => console.log('Card pressed:', item.category)} />
         <TrustBadges />
         <HealthConcernHeader
@@ -45,15 +46,18 @@ const HomeScreen = ({ navigation }) => {
           title="Deals you'll love"
           subtitle="Buy now to get the best deals"
           onArrowPress={() => console.log('Deals arrow pressed')}
-        />  
+        />
         <DealsProducts
           onAddPress={(item) => console.log('Add pressed for product:', item.title)}
           onQtyChange={(id, newQty) => console.log(`Quantity changed for product ID ${id}: ${newQty}`)}
         />
-        <PetCareHeader
-          title="Pet Care Top Brands"
-          subtitle="Everyday care for a healthier you"
-        />
+        <View style={styles.petCareSection}>
+          <PetCareHeader
+            title="Pet Care Top Brands"
+            subtitle="Everyday care for a healthier you"
+          />
+          <PetCareBrands onBrandPress={(item) => console.log('Brand pressed:', item.name)} />
+        </View>
       </ScrollView>
     </View>
   );
@@ -63,6 +67,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  petCareSection: {
+    marginTop: 16,
+    marginHorizontal: 16,
+    borderRadius: 16,
   },
 });
 

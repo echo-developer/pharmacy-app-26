@@ -2,66 +2,34 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { PawPrint } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import MaskedView from '@react-native-masked-view/masked-view';
-
-const GradientText = ({ text, style }) => {
-  return (
-    <MaskedView
-      maskElement={
-        <Text style={[style, { backgroundColor: 'transparent' }]}>
-          {text}
-        </Text>
-      }
-    >
-      <LinearGradient
-        colors={['#69B503', '#81B534', '#303627']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        locations={[0, 0.24, 1]}
-      >
-        <Text style={[style, { opacity: 0 }]}>{text}</Text>
-      </LinearGradient>
-    </MaskedView>
-  );
-};
 
 const PetCareHeader = ({
-  title = 'Pet Care Top Brands',
   subtitle = 'Everyday care for a healthier you',
 }) => {
   return (
     <LinearGradient
-      colors={['#E9F6D6', '#FFFFFF']}
+      colors={['#E9F6D6', '#E9F6D6']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={styles.container}
     >
-      {/* ===== Top-Left Paw Print Cluster ===== */}
-      <View style={styles.pawCluster}>
-        <PawPrint
-          size={44}
-          color="#C9C9A0"
-          style={[styles.pawBg, { top: 0, left: 0, opacity: 0.55 }]}
-        />
-        <PawPrint
-          size={30}
-          color="#C9C9A0"
-          style={[styles.pawBg, { top: 28, left: 38, opacity: 0.5 }]}
-        />
-        <PawPrint
-          size={26}
-          color="#C9C9A0"
-          style={[styles.pawBg, { top: 55, left: 12, opacity: 0.45 }]}
-        />
+      {/* ===== Top-Left Decorative Circles ===== */}
+      <View style={styles.circleCluster}>
+        <View style={[styles.circle, { width: 52, height: 52, top: -8, left: -8, opacity: 0.45 }]} />
+        <View style={[styles.circle, { width: 36, height: 36, top: 32, left: 20, opacity: 0.35 }]} />
+        <View style={[styles.circle, { width: 24, height: 24, top: 14, left: 50, opacity: 0.3 }]} />
       </View>
 
       {/* ===== Center Content ===== */}
       <View style={styles.centerContent}>
         {/* Paw Icon */}
-        <PawPrint size={28} color="#69B503" fill="#69B503" />
+        <PawPrint size={30} color="#69B503" fill="#69B503" />
 
-        {/* Gradient Title */}
-        <GradientText text={title} style={styles.title} />
+        {/* Title: "Pet Care" dark + "Top Brands" green */}
+        <Text style={styles.title}>
+          <Text style={styles.titleDark}>Pet Care </Text>
+          <Text style={styles.titleGreen}>Top Brands</Text>
+        </Text>
 
         {/* Subtitle */}
         <Text style={styles.subtitle}>{subtitle}</Text>
@@ -72,41 +40,50 @@ const PetCareHeader = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
-    marginHorizontal: 16,
-    borderRadius: 16,
-    paddingVertical: 24,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingTop: 28,
+    paddingBottom: 20,
     paddingHorizontal: 16,
     position: 'relative',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#D5D5D5',
   },
-  pawCluster: {
+  circleCluster: {
     position: 'absolute',
-    top: -10,
-    left: -15,
+    top: 0,
+    left: 0,
     width: 100,
-    height: 100,
+    height: 90,
   },
-  pawBg: {
+  circle: {
     position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#C8C9A2',
   },
   centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginTop: 8,
+    marginTop: 10,
     textAlign: 'center',
+  },
+  titleDark: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1A1A2E',
+    letterSpacing: 0.2,
+  },
+  titleGreen: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#69B503',
     letterSpacing: 0.2,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#787887',
-    marginTop: 4,
+    marginTop: 6,
     textAlign: 'center',
   },
 });
