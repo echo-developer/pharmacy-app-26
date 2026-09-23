@@ -16,7 +16,7 @@ const CategoriesScreen = ({ navigation }) => {
         title="Pet Supplements"
         cartCount={2}
         onBackPress={() => navigation.goBack()}
-        onSearchPress={() => console.log('Search')}
+        onSearchPress={() => navigation.navigate('ProductDetails')}
         onCartPress={() => console.log('Cart')}
       />
 
