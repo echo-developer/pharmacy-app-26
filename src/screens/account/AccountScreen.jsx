@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import AccountHeader from '../../components/account/AccountHeader';
 import ProfileCard from '../../components/account/ProfileCard';
+import QuickActions from '../../components/account/QuickActions';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -35,7 +36,13 @@ const AccountScreen = ({ navigation }) => {
       <ScrollView
         style={styles.scrollArea}
         showsVerticalScrollIndicator={false}
-      />
+      >
+      <QuickActions
+          onOrdersPress={() => console.log('Orders pressed')}
+          onWalletPress={() => console.log('Wallet pressed')}
+          onHelpPress={() => console.log('Help pressed')}
+        />
+      </ScrollView>
     </View>
   );
 };
