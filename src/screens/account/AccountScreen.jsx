@@ -9,6 +9,7 @@ import AppUpdateBanner from '../../components/account/AppUpdateBanner';
 import { Heart, Map, Share2,Info,ShieldCheck,Bell,MessageSquare,RotateCcw, } from 'lucide-react-native';
 import SettingsSection from '../../components/account/SettingsSection';
 import SettingsRow from '../../components/account/SettingsRow';
+import LogoutButton from '../../components/account/LogoutButton';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -106,6 +107,7 @@ const AccountScreen = ({ navigation }) => {
             onPress={() => console.log('Return')}
           />
         </SettingsSection>
+        <LogoutButton onPress={() => console.log('Logout pressed')} />
       </ScrollView>
     </View>
   );
