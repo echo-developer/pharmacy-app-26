@@ -5,6 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import AccountHeader from '../../components/account/AccountHeader';
 import ProfileCard from '../../components/account/ProfileCard';
 import QuickActions from '../../components/account/QuickActions';
+import AppUpdateBanner from '../../components/account/AppUpdateBanner';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -41,6 +42,12 @@ const AccountScreen = ({ navigation }) => {
           onOrdersPress={() => console.log('Orders pressed')}
           onWalletPress={() => console.log('Wallet pressed')}
           onHelpPress={() => console.log('Help pressed')}
+        />
+      <AppUpdateBanner
+          title="App Update Available"
+          subtitle="Bug Fixes & Improvements" 
+          version="V1.010"
+          onPress={() => console.log('Update pressed')}
         />
       </ScrollView>
     </View>
