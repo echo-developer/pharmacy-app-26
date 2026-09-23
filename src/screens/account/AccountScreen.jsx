@@ -1,10 +1,41 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
+import AccountHeader from '../../components/account/AccountHeader';
+import ProfileCard from '../../components/account/ProfileCard';
 
-const AccountScreen = () => {
+const AccountScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Account Screen</Text>
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+
+      {/* Single gradient covers statusbar + header + profile card */}
+      <LinearGradient
+        colors={['#E4E5EF', '#F6F6F6']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ paddingTop: insets.top }}
+      >
+        <AccountHeader
+          title="My Account"
+          onBackPress={() => navigation.goBack()}
+          onWalletPress={() => console.log('Wallet pressed')}
+        />
+        <ProfileCard
+          phone="+91 9812345678"
+          email="Add your email"
+          onEditPress={() => console.log('Edit pressed')}
+          onEmailPress={() => console.log('Email pressed')}
+        />
+      </LinearGradient>
+
+      <ScrollView
+        style={styles.scrollArea}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 };
@@ -12,14 +43,10 @@ const AccountScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F6F6F6',
   },
-  text: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#043250',
+  scrollArea: {
+    flex: 1,
   },
 });
 
