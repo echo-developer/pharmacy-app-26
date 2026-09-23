@@ -6,13 +6,20 @@ import AccountHeader from '../../components/account/AccountHeader';
 import ProfileCard from '../../components/account/ProfileCard';
 import QuickActions from '../../components/account/QuickActions';
 import AppUpdateBanner from '../../components/account/AppUpdateBanner';
+import { Heart, Map } from 'lucide-react-native';
+import SettingsSection from '../../components/account/SettingsSection';
+import SettingsRow from '../../components/account/SettingsRow';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
 
       {/* Single gradient covers statusbar + header + profile card */}
       <LinearGradient
@@ -38,17 +45,30 @@ const AccountScreen = ({ navigation }) => {
         style={styles.scrollArea}
         showsVerticalScrollIndicator={false}
       >
-      <QuickActions
+        <QuickActions
           onOrdersPress={() => console.log('Orders pressed')}
           onWalletPress={() => console.log('Wallet pressed')}
           onHelpPress={() => console.log('Help pressed')}
         />
-      <AppUpdateBanner
+        <AppUpdateBanner
           title="App Update Available"
-          subtitle="Bug Fixes & Improvements" 
+          subtitle="Bug Fixes & Improvements"
           version="V1.010"
           onPress={() => console.log('Update pressed')}
         />
+        <SettingsSection title="Information">
+          <SettingsRow
+            Icon={Heart}
+            label="Wishlist"
+            onPress={() => console.log('Wishlist')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={Map}
+            label="Address"
+            onPress={() => console.log('Address')}
+          />
+        </SettingsSection>
       </ScrollView>
     </View>
   );
