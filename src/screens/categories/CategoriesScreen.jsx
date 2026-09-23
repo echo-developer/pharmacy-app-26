@@ -3,6 +3,7 @@ import { View, StyleSheet, StatusBar } from 'react-native';
 import CategoryHeader from '../../components/categories/CategoryHeader';
 import CategoriesSidebar from '../../components/categories/CategoriesSidebar';
 import FilterSortBar from '../../components/categories/FilterSortBar';
+import CategoryProductList from '../../components/categories/CategoryProductList';
 
 const CategoriesScreen = ({ navigation }) => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -29,7 +30,10 @@ const CategoriesScreen = ({ navigation }) => {
             onFilterPress={() => console.log('Filter pressed')}
             onSortPress={() => console.log('Sort pressed')}
           />
-          {/* Product list baad me yahan aayegi */}
+          <CategoryProductList
+            onAddPress={(item) => console.log('Add:', item.title)}
+            onFavPress={(item) => console.log('Fav:', item.title)}
+          />
         </View>
       </View>
     </View>
@@ -39,7 +43,7 @@ const CategoriesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F4F5FF' },
   body: { flex: 1, flexDirection: 'row' },
-  contentArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  contentArea: { flex: 1, backgroundColor: '#F4F5FF' },
 });
 
 export default CategoriesScreen;
