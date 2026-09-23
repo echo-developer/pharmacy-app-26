@@ -18,7 +18,7 @@ const BottomTabNavigator = () => {
       initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#2CB7DF',
+        tabBarActiveTintColor: '#263077',
         tabBarInactiveTintColor: '#787887',
         tabBarStyle: {
           height: 78 + insets.bottom,
