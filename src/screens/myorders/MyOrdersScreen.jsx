@@ -1,10 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet, StatusBar } from 'react-native';
+import OrderHistoryHeader from '../../components/orders/OrderHistoryHeader';
 
-const MyOrdersScreen = () => {
+const MyOrdersScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>My Orders Screen</Text>
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+
+      <OrderHistoryHeader
+        title="Order History"
+        onBackPress={() => navigation.goBack()}
+        onSearchPress={() => console.log('Search pressed')}
+      />
     </View>
   );
 };
@@ -12,14 +19,7 @@ const MyOrdersScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  text: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#043250',
+    backgroundColor: '#F6F6F6',
   },
 });
 
