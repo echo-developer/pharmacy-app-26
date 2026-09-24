@@ -24,14 +24,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#333333',   
-    left: 20,   
+    // left: 20,   
   },
   message: {
     fontSize: 12,
     fontWeight: '600',
     color: '#FF8D28',                  
     marginTop: 4,
-    left: 20,
+    // left: 20,
   },
 });
 

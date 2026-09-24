@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import OrderDetailsHeader from '../../components/orderdetails/OrderDetailsHeader';
 import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBanner';
+import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
 
 const OrderDetailsScreen = ({ navigation }) => {
   return (
@@ -18,6 +19,7 @@ const OrderDetailsScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
       >
         <OrderArrivingBanner />
+        <OrderItemsStrip />
       </ScrollView>
     </View>
   );
