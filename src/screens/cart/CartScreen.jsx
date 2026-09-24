@@ -5,6 +5,7 @@ import CartHeader from '../../components/cart/CartHeader';
 import SavingsBanner from '../../components/cart/SavingsBanner';
 import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
 import CartItemsList from '../../components/cart/CartItemList';
+import BeforeYouBuy from '../../components/cart/BeforeYouBuy';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -29,6 +30,11 @@ const CartScreen = ({ navigation }) => {
         </LinearGradient>
              <CartItemsList
           onQtyChange={(id, qty) => console.log('Qty changed', id, qty)}
+        />
+        <BeforeYouBuy
+          onProductPress={(product) => console.log('Product pressed', product)}
+          onAddPress={(product) => console.log('Add pressed', product)} 
+          onFavPress={(product) => console.log('Favorite pressed', product)}
         />
       </ScrollView>
     </View>
