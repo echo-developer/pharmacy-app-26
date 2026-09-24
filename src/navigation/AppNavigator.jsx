@@ -6,6 +6,7 @@ import AuthNavigator from './AuthNavigator';
 import BottomTabNavigator from './BottomTabNavigator';
 import ProductDetailsScreen from '../screens/product/ProductDetailsScreen';
 import CartScreen from '../screens/cart/CartScreen';
+import OrderDetailsScreen from '../screens/myorders/OrderDetailsScreen';
 import { View, Text, StyleSheet } from 'react-native';
 
 
@@ -23,6 +24,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Main" component={BottomTabNavigator} />
         <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
         <Stack.Screen name="Cart" component={CartScreen} />
+        <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

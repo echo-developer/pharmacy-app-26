@@ -11,7 +11,7 @@ const MyOrdersScreen = ({ navigation }) => {
       <OrderHistoryHeader
         title="Order History"
         onBackPress={() => navigation.goBack()}
-        onSearchPress={() => console.log('Search')}
+        onSearchPress={() => navigation.navigate('OrderDetails')}
       />
 
       <ScrollView showsVerticalScrollIndicator={false}>
