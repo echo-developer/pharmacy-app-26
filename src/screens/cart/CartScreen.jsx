@@ -6,6 +6,7 @@ import SavingsBanner from '../../components/cart/SavingsBanner';
 import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
 import CartItemsList from '../../components/cart/CartItemList';
 import BeforeYouBuy from '../../components/cart/BeforeYouBuy';
+import ViewCoupons from '../../components/cart/ViewCoupons';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -35,6 +36,10 @@ const CartScreen = ({ navigation }) => {
           onProductPress={(product) => console.log('Product pressed', product)}
           onAddPress={(product) => console.log('Add pressed', product)} 
           onFavPress={(product) => console.log('Favorite pressed', product)}
+        />
+        <ViewCoupons
+          label="View Coupons & Offers"
+          onPress={() => console.log('View Coupons pressed')}
         />
       </ScrollView>
     </View>
