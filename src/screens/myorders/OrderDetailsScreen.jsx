@@ -4,6 +4,7 @@ import OrderDetailsHeader from '../../components/orderdetails/OrderDetailsHeader
 import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBanner';
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
 import OrderTimelineCard from '../../components/orderdetails/OrderTimelineCard';
+import OrderBillDetails from '../../components/orderdetails/OrderBillDetails';
 
 const OrderDetailsScreen = ({ navigation }) => {
   return (
@@ -23,6 +24,14 @@ const OrderDetailsScreen = ({ navigation }) => {
         <OrderItemsStrip />
         <OrderTimelineCard
          onSeeAllUpdates={() => console.log('See all updates')}
+        />
+        <OrderBillDetails
+          itemsTotal="456"
+          itemsCutPrice="456"
+          deliveryCharge="FREE"
+          handlingCharge="456"
+          grandTotal="456"
+          onDownloadInvoice={() => console.log('Download invoice pressed')}
         />
       </ScrollView>
     </View>
