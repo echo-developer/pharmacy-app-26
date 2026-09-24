@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import OrderDetailsHeader from '../../components/orderdetails/OrderDetailsHeader';
 import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBanner';
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
+import OrderTimelineCard from '../../components/orderdetails/OrderTimelineCard';
 
 const OrderDetailsScreen = ({ navigation }) => {
   return (
@@ -20,6 +21,9 @@ const OrderDetailsScreen = ({ navigation }) => {
       >
         <OrderArrivingBanner />
         <OrderItemsStrip />
+        <OrderTimelineCard
+         onSeeAllUpdates={() => console.log('See all updates')}
+        />
       </ScrollView>
     </View>
   );
