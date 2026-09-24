@@ -5,6 +5,7 @@ import ProductSummaryBar from '../../components/product/ProductSummaryBar';
 import ProductImageGallery from '../../components/product/ProductImageGallery';
 import ProductInfoCard from '../../components/product/ProductInfoCard';
 import ProductTabs from '../../components/product/ProductTabs';
+import ProductDescription from '../../components/product/ProductDescription';
 
 const ProductDetailsScreen = ({ navigation }) => {
   return (
@@ -36,6 +37,7 @@ const ProductDetailsScreen = ({ navigation }) => {
           onAgePress={(age) => console.log('Age selected', age)}
         />
         <ProductTabs onTabPress={(tab) => console.log('Tab selected:', tab)} />
+        <ProductDescription/>
       </ScrollView>
     </View>
   );
