@@ -26,25 +26,23 @@ const ProductImageGallery = ({
         >
           <Heart size={20} color="#263077" />
         </TouchableOpacity>
-      </View>
 
-      {/* ===== Wave + Chevron ===== */}
-      <View style={styles.waveChevronContainer}>
-        {/* SVG Wave Shape */}
-        <Svg
-          width="100%"
-          height={54}
-          viewBox="0 0 414 54"
-          preserveAspectRatio="none"
-          style={styles.waveSvg}
-        >
-          <Path
-            d="M0,54 C80,54 150,8 207,8 C264,8 334,54 414,54 Z"
-            fill="#FFFFFF"
-          />
-        </Svg>
+        {/* ===== Wave overlay at the bottom of image ===== */}
+        <View style={styles.waveOverlay} pointerEvents="none">
+          <Svg
+            width="100%"
+            height={54}
+            viewBox="0 0 414 54"
+            preserveAspectRatio="none"
+          >
+            <Path
+              d="M0,54 C80,54 150,8 207,8 C264,8 334,54 414,54 Z"
+              fill="#F5F5F5"
+            />
+          </Svg>
+        </View>
 
-        {/* Chevron sits on top of the wave peak */}
+        {/* Chevron on top of the wave peak */}
         <TouchableOpacity
           style={styles.chevronWrapper}
           activeOpacity={0.7}
@@ -59,16 +57,16 @@ const ProductImageGallery = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
 
   /* ===== Image Area ===== */
   imageArea: {
     width: '100%',
     height: 380,
-    backgroundColor: '#B86E62',       // Tab background
+    backgroundColor: '#B86E62',
     position: 'relative',
-    overflow: 'hidden',
+    // No overflow:hidden — so wave can bleed out at bottom
   },
   image: {
     width: '100%',
@@ -83,9 +81,9 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF',       // Fill
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#CDDEE4',           // Border
+    borderColor: '#CDDEE4',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -95,25 +93,19 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  /* ===== Wave + Chevron ===== */
-  waveChevronContainer: {
-    position: 'relative',
-    height: 54,
-    backgroundColor: '#B86E62',       // matches imageArea background
-    marginBottom: 0,
-  },
-  waveSvg: {
+  /* ===== Wave Overlay ===== */
+  waveOverlay: {
     position: 'absolute',
-    bottom: 0,
+    bottom: -27,
     left: 0,
     right: 0,
+    height: 54,
   },
 
-  /* ===== Chevron Up ===== */
+  /* ===== Chevron ===== */
   chevronWrapper: {
     position: 'absolute',
-    bottom: 6,
-    alignSelf: 'center',
+    bottom: -20,
     left: 0,
     right: 0,
     alignItems: 'center',
