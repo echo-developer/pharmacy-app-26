@@ -9,7 +9,7 @@ import BeforeYouBuy from '../../components/cart/BeforeYouBuy';
 import ViewCoupons from '../../components/cart/ViewCoupons';
 import BillDetails from '../../components/cart/BillDetails';
 import DeliveryAddress from '../../components/cart/DeliveryAddress';
-import GetOTPButton from '../../components/cart/GetOtpButton';
+import GetOTPButton from '../../components/cart/GetOTPButton';
 
 const CartScreen = ({ navigation }) => {
   return (
