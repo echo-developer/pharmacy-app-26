@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import ProductDetailsHeader from '../../components/product/ProductDetailsHeader';
 import ProductSummaryBar from '../../components/product/ProductSummaryBar';
 import ProductImageGallery from '../../components/product/ProductImageGallery';
+import ProductInfoCard from '../../components/product/ProductInfoCard';
 
 const ProductDetailsScreen = ({ navigation }) => {
   return (
@@ -26,6 +27,12 @@ const ProductDetailsScreen = ({ navigation }) => {
         <ProductImageGallery
           onFavPress={() => console.log('Favorite pressed')}
           onExpandPress={() => console.log('Expand pressed')}
+        />
+        <ProductInfoCard
+          onLocationPress={() => console.log('Location pressed')}
+          onDeliveryPress={() => console.log('Delivery pressed')}
+          onPackPress={(pack) => console.log('Pack selected', pack)}
+          onAgePress={(age) => console.log('Age selected', age)}
         />
       </ScrollView>
     </View>
