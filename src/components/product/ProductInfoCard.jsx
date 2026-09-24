@@ -234,9 +234,9 @@ const styles = StyleSheet.create({
   pinkWrapper: {
     backgroundColor: '#EFE0E0',
     borderRadius: 16,
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
     paddingTop: 16,
-    paddingBottom: 12,
+    paddingBottom: 0,
     marginHorizontal: 16,
   },
 
@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     paddingVertical: 4,
+    paddingHorizontal: 12,
   },
   infoBoxWrapper: {
     flex: 1,
@@ -279,7 +280,8 @@ const styles = StyleSheet.create({
   /* White Sub-Tab */
   whiteSubTab: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 16,
     marginTop: 14,
