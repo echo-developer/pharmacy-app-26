@@ -9,6 +9,7 @@ import BeforeYouBuy from '../../components/cart/BeforeYouBuy';
 import ViewCoupons from '../../components/cart/ViewCoupons';
 import BillDetails from '../../components/cart/BillDetails';
 import DeliveryAddress from '../../components/cart/DeliveryAddress';
+import GetOTPButton from '../../components/cart/GetOtpButton';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -57,6 +58,10 @@ const CartScreen = ({ navigation }) => {
           onEditPress={() => console.log('Edit address')}
         />
       </ScrollView>
+      <GetOTPButton
+        label="Get OTP"
+        onPress={() => console.log('Get OTP pressed')}
+      />
     </View>
   );
 };
