@@ -8,6 +8,7 @@ import CartItemsList from '../../components/cart/CartItemList';
 import BeforeYouBuy from '../../components/cart/BeforeYouBuy';
 import ViewCoupons from '../../components/cart/ViewCoupons';
 import BillDetails from '../../components/cart/BillDetails';
+import DeliveryAddress from '../../components/cart/DeliveryAddress';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -50,6 +51,11 @@ const CartScreen = ({ navigation }) => {
           onPress={() => console.log('View Coupons pressed')}
         />
         <BillDetails />
+        <DeliveryAddress
+          title="Delivering to House"
+          address="4517 Washington Ave Manchester"
+          onEditPress={() => console.log('Edit address')}
+        />
       </ScrollView>
     </View>
   );
