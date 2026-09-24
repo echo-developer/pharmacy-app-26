@@ -7,6 +7,7 @@ import ProductInfoCard from '../../components/product/ProductInfoCard';
 import ProductTabs from '../../components/product/ProductTabs';
 import ProductDescription from '../../components/product/ProductDescription';
 import RelatedProducts from '../../components/product/RelatedProducts';
+import ProductPaymentSection from '../../components/product/ProductPaymentSection';
 
 const ProductDetailsScreen = ({ navigation }) => {
   return (
@@ -44,6 +45,7 @@ const ProductDetailsScreen = ({ navigation }) => {
           onProductPress={item => console.log('Product:', item.title)}
           onAddPress={item => console.log('Add:', item.title)}
         />
+        <ProductPaymentSection />
       </ScrollView>
     </View>
   );
