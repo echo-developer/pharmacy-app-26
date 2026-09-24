@@ -7,6 +7,7 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 
 const OrderDetailsHeader = ({
@@ -16,7 +17,7 @@ const OrderDetailsHeader = ({
   onHelpPress,
 }) => {
   return (
-    <View style={styles.header}>
+    <SafeAreaView style={styles.header}>
       {/* LEFT: Back + Title */}
       <View style={styles.leftGroup}>
         <TouchableOpacity
@@ -38,7 +39,7 @@ const OrderDetailsHeader = ({
       >
         <Text style={styles.helpText}>{helpLabel}</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -48,7 +49,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 12 : 54,
     paddingBottom: 12,
     backgroundColor: '#F6F6F6',       // Header bg matches screen bg
   },
