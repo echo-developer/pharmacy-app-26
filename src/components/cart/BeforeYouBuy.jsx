@@ -135,7 +135,7 @@ const BeforeYouBuy = ({ onArrowPress, onProductPress, onAddPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
+    // backgroundColor: '#FFFFFF',
     paddingVertical: 16,
     marginTop: 12,
   },

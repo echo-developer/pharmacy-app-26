@@ -7,13 +7,21 @@ import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
 import CartItemsList from '../../components/cart/CartItemList';
 import BeforeYouBuy from '../../components/cart/BeforeYouBuy';
 import ViewCoupons from '../../components/cart/ViewCoupons';
+import BillDetails from '../../components/cart/BillDetails';
 
 const CartScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="dark-content"
+      />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* ===== TOP GRADIENT WRAPPER ===== */}
         <LinearGradient
           colors={['#F4F5FF', '#FFFFFF']}
@@ -29,18 +37,19 @@ const CartScreen = ({ navigation }) => {
           <SavingsBanner amount="₹456" />
           <DeliveryTimeRow time="30 mins" />
         </LinearGradient>
-             <CartItemsList
+        <CartItemsList
           onQtyChange={(id, qty) => console.log('Qty changed', id, qty)}
         />
         <BeforeYouBuy
-          onProductPress={(product) => console.log('Product pressed', product)}
-          onAddPress={(product) => console.log('Add pressed', product)} 
-          onFavPress={(product) => console.log('Favorite pressed', product)}
+          onProductPress={product => console.log('Product pressed', product)}
+          onAddPress={product => console.log('Add pressed', product)}
+          onFavPress={product => console.log('Favorite pressed', product)}
         />
         <ViewCoupons
           label="View Coupons & Offers"
           onPress={() => console.log('View Coupons pressed')}
         />
+        <BillDetails />
       </ScrollView>
     </View>
   );
@@ -53,6 +62,9 @@ const styles = StyleSheet.create({
   },
   topGradient: {
     paddingBottom: 4,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
 });
 
