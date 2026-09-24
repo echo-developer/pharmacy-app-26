@@ -17,7 +17,7 @@ const CategoriesScreen = ({ navigation }) => {
         cartCount={2}
         onBackPress={() => navigation.goBack()}
         onSearchPress={() => navigation.navigate('ProductDetails')}
-        onCartPress={() => console.log('Cart')}
+        onCartPress={() => navigation.navigate('Cart')}
       />
 
       <View style={styles.body}>

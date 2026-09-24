@@ -5,6 +5,7 @@ import SplashScreen from '../screens/splash/SplashScreen';
 import AuthNavigator from './AuthNavigator';
 import BottomTabNavigator from './BottomTabNavigator';
 import ProductDetailsScreen from '../screens/product/ProductDetailsScreen';
+import CartScreen from '../screens/cart/CartScreen';
 import { View, Text, StyleSheet } from 'react-native';
 
 
@@ -21,6 +22,7 @@ const AppNavigator = () => {
         <Stack.Screen name="Auth" component={AuthNavigator} />
         <Stack.Screen name="Main" component={BottomTabNavigator} />
         <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+        <Stack.Screen name="Cart" component={CartScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
