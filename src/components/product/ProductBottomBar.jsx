@@ -56,9 +56,9 @@ const ProductBottomBar = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    paddingTop: 8,
-    paddingBottom: 10,
+    // backgroundColor: '#FFFFFF',
+    paddingTop: 12,
+    paddingBottom: 24,
   },
 
   /* ===== Top Strip ===== */
