@@ -3,6 +3,7 @@ import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CartHeader from '../../components/cart/CartHeader';
 import SavingsBanner from '../../components/cart/SavingsBanner';
+import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -23,6 +24,7 @@ const CartScreen = ({ navigation }) => {
             onSearchPress={() => console.log('Search')}
           />
           <SavingsBanner amount="₹456" />
+          <DeliveryTimeRow time="30 mins" />
         </LinearGradient>
       </ScrollView>
     </View>
