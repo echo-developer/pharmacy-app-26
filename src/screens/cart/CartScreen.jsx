@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import CartHeader from '../../components/cart/CartHeader';
 import SavingsBanner from '../../components/cart/SavingsBanner';
 import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
+import CartItemsList from '../../components/cart/CartItemList';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -26,6 +27,9 @@ const CartScreen = ({ navigation }) => {
           <SavingsBanner amount="₹456" />
           <DeliveryTimeRow time="30 mins" />
         </LinearGradient>
+             <CartItemsList
+          onQtyChange={(id, qty) => console.log('Qty changed', id, qty)}
+        />
       </ScrollView>
     </View>
   );
