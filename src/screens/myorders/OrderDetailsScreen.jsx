@@ -5,6 +5,7 @@ import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBann
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
 import OrderTimelineCard from '../../components/orderdetails/OrderTimelineCard';
 import OrderBillDetails from '../../components/orderdetails/OrderBillDetails';
+import OrderInfoCard from '../../components/orderdetails/OrderInfoCard';
 
 const OrderDetailsScreen = ({ navigation }) => {
   return (
@@ -33,6 +34,12 @@ const OrderDetailsScreen = ({ navigation }) => {
           grandTotal="456"
           onDownloadInvoice={() => console.log('Download invoice pressed')}
         />
+        <OrderInfoCard
+          orderId="ORD123456789"
+          payment="Cash on Delivery"
+          deliverTo="Tower 48, Tower 48B, Floor 21, Sector 62, Noida, Uttar Pradesh 201301, India"
+          placedDate="21 Jun 2026 10:05 AM"
+        />  
       </ScrollView>
     </View>
   );
