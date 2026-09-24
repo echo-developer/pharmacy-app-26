@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import ProductDetailsHeader from '../../components/product/ProductDetailsHeader';
 import ProductSummaryBar from '../../components/product/ProductSummaryBar';
+import ProductImageGallery from '../../components/product/ProductImageGallery';
 
 const ProductDetailsScreen = ({ navigation }) => {
   return (
@@ -22,6 +23,10 @@ const ProductDetailsScreen = ({ navigation }) => {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <ProductSummaryBar onPress={() => console.log('Summary pressed')} />
+        <ProductImageGallery
+          onFavPress={() => console.log('Favorite pressed')}
+          onExpandPress={() => console.log('Expand pressed')}
+        />
       </ScrollView>
     </View>
   );
