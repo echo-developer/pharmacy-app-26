@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CartHeader from '../../components/cart/CartHeader';
+import SavingsBanner from '../../components/cart/SavingsBanner';
 
 const CartScreen = ({ navigation }) => {
   return (
@@ -21,6 +22,7 @@ const CartScreen = ({ navigation }) => {
             onBackPress={() => navigation.goBack()}
             onSearchPress={() => console.log('Search')}
           />
+          <SavingsBanner amount="₹456" />
         </LinearGradient>
       </ScrollView>
     </View>
