@@ -6,6 +6,7 @@ import ProductImageGallery from '../../components/product/ProductImageGallery';
 import ProductInfoCard from '../../components/product/ProductInfoCard';
 import ProductTabs from '../../components/product/ProductTabs';
 import ProductDescription from '../../components/product/ProductDescription';
+import RelatedProducts from '../../components/product/RelatedProducts';
 
 const ProductDetailsScreen = ({ navigation }) => {
   return (
@@ -33,11 +34,16 @@ const ProductDetailsScreen = ({ navigation }) => {
         <ProductInfoCard
           onLocationPress={() => console.log('Location pressed')}
           onDeliveryPress={() => console.log('Delivery pressed')}
-          onPackPress={(pack) => console.log('Pack selected', pack)}
-          onAgePress={(age) => console.log('Age selected', age)}
+          onPackPress={pack => console.log('Pack selected', pack)}
+          onAgePress={age => console.log('Age selected', age)}
         />
-        <ProductTabs onTabPress={(tab) => console.log('Tab selected:', tab)} />
-        <ProductDescription/>
+        <ProductTabs onTabPress={tab => console.log('Tab selected:', tab)} />
+        <ProductDescription />
+        <RelatedProducts
+          onArrowPress={() => console.log('Arrow')}
+          onProductPress={item => console.log('Product:', item.title)}
+          onAddPress={item => console.log('Add:', item.title)}
+        />
       </ScrollView>
     </View>
   );
