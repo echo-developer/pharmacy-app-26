@@ -7,6 +7,7 @@ import OrderTimelineCard from '../../components/orderdetails/OrderTimelineCard';
 import OrderBillDetails from '../../components/orderdetails/OrderBillDetails';
 import OrderInfoCard from '../../components/orderdetails/OrderInfoCard';
 import YouMayAlsoLike from '../../components/orderdetails/YouMayAlsoLike';
+import RepeatOrderButton from '../../components/orderdetails/RepeatOrderButton';
 
 const OrderDetailsScreen = ({ navigation }) => {
   return (
@@ -47,6 +48,10 @@ const OrderDetailsScreen = ({ navigation }) => {
           onAddPress={(productId) => console.log(`Add product ${productId} pressed`)}
         />
       </ScrollView>
+       <RepeatOrderButton
+          label="Repeat Order"
+          onPress={() => console.log('Repeat order pressed')}
+        />
     </View>
   );
 };
