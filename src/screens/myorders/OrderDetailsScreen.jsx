@@ -6,6 +6,7 @@ import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
 import OrderTimelineCard from '../../components/orderdetails/OrderTimelineCard';
 import OrderBillDetails from '../../components/orderdetails/OrderBillDetails';
 import OrderInfoCard from '../../components/orderdetails/OrderInfoCard';
+import YouMayAlsoLike from '../../components/orderdetails/YouMayAlsoLike';
 
 const OrderDetailsScreen = ({ navigation }) => {
   return (
@@ -40,6 +41,11 @@ const OrderDetailsScreen = ({ navigation }) => {
           deliverTo="Tower 48, Tower 48B, Floor 21, Sector 62, Noida, Uttar Pradesh 201301, India"
           placedDate="21 Jun 2026 10:05 AM"
         />  
+        <YouMayAlsoLike
+          onArrowPress={() => console.log('Arrow pressed')}
+          onProductPress={(productId) => console.log(`Product ${productId} pressed`)}
+          onAddPress={(productId) => console.log(`Add product ${productId} pressed`)}
+        />
       </ScrollView>
     </View>
   );
