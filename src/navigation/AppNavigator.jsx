@@ -7,8 +7,8 @@ import BottomTabNavigator from './BottomTabNavigator';
 import ProductDetailsScreen from '../screens/product/ProductDetailsScreen';
 import CartScreen from '../screens/cart/CartScreen';
 import OrderDetailsScreen from '../screens/myorders/OrderDetailsScreen';
+import OrderTrackingScreen from '../screens/myorders/OrderTrackingScreen';
 import { View, Text, StyleSheet } from 'react-native';
-
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +25,15 @@ const AppNavigator = () => {
         <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
         <Stack.Screen name="Cart" component={CartScreen} />
         <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
+        <Stack.Screen
+          name="OrderTracking"
+          component={OrderTrackingScreen}
+          options={{
+            presentation: 'transparentModal',
+            animation: 'slide_from_bottom',
+            headerShown: false,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -26,7 +26,7 @@ const OrderDetailsScreen = ({ navigation }) => {
         <OrderArrivingBanner />
         <OrderItemsStrip />
         <OrderTimelineCard
-         onSeeAllUpdates={() => console.log('See all updates')}
+         onSeeAllUpdates={() => navigation.navigate('OrderTracking')}
         />
         <OrderBillDetails
           itemsTotal="456"
