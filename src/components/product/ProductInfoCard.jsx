@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import {
   Thermometer,
   Calendar,
@@ -10,45 +10,90 @@ import {
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const AGE_OPTIONS = ['18 - 60 Years', '18 - 60 Years'];
-const PACK_SIZES = [
-  { id: 1, units: '60 Units', price: '210.75', perTablet: '3.51/tablet' },
-  { id: 2, units: '60 Units', price: '210.75', perTablet: '3.51/tablet' },
-  { id: 3, units: '60 Units', price: '210.75', perTablet: '3.51/tablet' },
-];
+// Simple price formatter — no external dependency needed
+const formatPrice = (value) => {
+  if (value == null) return '₹0.00';
+  return '₹' + Number(value).toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
 
 const ProductInfoCard = ({
-  title = 'MuscleBlaze Biozyme Whey Protein',
-  mrp = '4599',
-  price = '1949',
-  discount = '58% OFF',
-  unitPrice = '2.14/gram (Inclusive off all taxes)',
+  product,
   onLocationPress,
   onDeliveryPress,
   onPackPress,
   onAgePress,
 }) => {
-  const [activeAge, setActiveAge] = useState(0);
-  const [activePack, setActivePack] = useState(1);
+  const [activePack, setActivePack] = useState(product?.product_id ?? null);
+
+  if (!product) return null;
+
+  const packSizes = product.productGroup || [];
+  const selectedPack = activePack
+    ? (packSizes.find(p => p.product_id === activePack) || null)
+    : null;
+
+  const displayPrice = selectedPack?.product_sell_price ?? product.product_sell_price;
+  const displayMrp = selectedPack?.product_mrp ?? product.product_mrp;
+  const displayUnit = selectedPack?.unit ?? product.unit ?? '';
+  const displayDiscount = product.discount;
 
   return (
     <View style={styles.wrapper}>
 
       {/* ========== 1. TITLE / MRP / PRICE ========== */}
       <View style={styles.titleSection}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.mrp}>MRP ₹{mrp}</Text>
+        <Text style={styles.title}>{product.product_name}</Text>
+
+        {/* Veg/Non-veg indicator */}
+        {product.setting?.is_food == 1 && (
+          <View style={styles.vegRow}>
+            <View
+              style={[
+                styles.vegBox,
+                {
+                  borderColor: product.setting?.is_veg == 0 ? '#8B0000' : '#709c29',
+                },
+              ]}>
+              <View
+                style={[
+                  styles.vegDot,
+                  {
+                    backgroundColor: product.setting?.is_veg == 0 ? '#8B0000' : '#709c29',
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.vegLabel}>
+              {product.setting?.is_veg == 0 ? 'Non-Veg' : 'Veg'}
+            </Text>
+          </View>
+        )}
+
+        {/* MRP */}
+        {displayMrp != displayPrice && (
+          <Text style={styles.mrp}>MRP {formatPrice(displayMrp)}</Text>
+        )}
+
+        {/* Sell Price + Discount */}
         <View style={styles.priceRow}>
-          <Text style={styles.price}>~₹{price}</Text>
-          <Text style={styles.discount}>{discount}</Text>
+          <Text style={styles.price}>{formatPrice(displayPrice)}</Text>
+          {displayDiscount && product.product_discount_type !== 'F' ? (
+            <Text style={styles.discount}>{displayDiscount} OFF</Text>
+          ) : null}
         </View>
-        <Text style={styles.unitPrice}>{unitPrice}</Text>
+
+        {displayUnit ? (
+          <Text style={styles.unitPrice}>{displayUnit} · Incl. of all taxes</Text>
+        ) : (
+          <Text style={styles.unitPrice}>Incl. of all taxes</Text>
+        )}
       </View>
 
-      {/* ========== 2. PINK TAB ========== */}
+      {/* ========== 2. INFO BADGES ========== */}
       <View style={styles.pinkWrapper}>
-
-        {/* Info Boxes */}
         <View style={styles.infoRow}>
           <View style={styles.infoBoxWrapper}>
             <View style={styles.infoBox}>
@@ -65,7 +110,9 @@ const ProductInfoCard = ({
               <View style={styles.iconCircle}>
                 <Calendar size={18} color="#333333" />
               </View>
-              <Text style={styles.infoText}>Expire on{'\n'}12 Sep, 2028</Text>
+              <Text style={styles.infoText}>
+                {product.expire_date ? `Expires${'\n'}${product.expire_date}` : 'Expiry{"\n"}Date N/A'}
+              </Text>
             </View>
             <View style={styles.divider} />
           </View>
@@ -80,83 +127,72 @@ const ProductInfoCard = ({
           </View>
         </View>
 
-        {/* White Sub-Tab (Age + Pack Size) */}
-        <View style={styles.whiteSubTab}>
+        {/* Pack Sizes from API */}
+        {packSizes.length > 0 && (
+          <View style={styles.whiteSubTab}>
+            <Text style={styles.packLabel}>
+              Pack Size:{' '}
+              <Text style={styles.packLabelBold}>{displayUnit}</Text>
+            </Text>
 
-          {/* Age */}
-          <View style={styles.ageHeaderRow}>
-            <Text style={styles.ageLabel}>Age: </Text>
-            <Text style={styles.ageValue}>18 - 60 Years</Text>
-          </View>
+            <View style={styles.packRow}>
+              {packSizes.map(pack => {
+                const isActive = activePack === pack.product_id;
+                const packDiscount =
+                  pack.discount ||
+                  (pack.product_mrp && pack.product_sell_price &&
+                    pack.product_mrp != pack.product_sell_price
+                    ? Math.round(
+                      ((pack.product_mrp - pack.product_sell_price) /
+                        pack.product_mrp) *
+                      100,
+                    ) + '% OFF'
+                    : null);
 
-          <View style={styles.agePillsRow}>
-            {AGE_OPTIONS.map((age, index) => {
-              const isActive = activeAge === index;
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.agePill, isActive ? styles.agePillActive : styles.agePillInactive]}
-                  onPress={() => { setActiveAge(index); onAgePress?.(age); }}
-                  activeOpacity={0.85}
-                >
-                  <Text style={[styles.agePillText, isActive ? styles.agePillTextActive : styles.agePillTextInactive]}>
-                    {age}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Pack Size */}
-          <Text style={styles.packLabel}>
-            Pack Size: <Text style={styles.packLabelBold}>60 Units</Text>
-          </Text>
-
-          <View style={styles.packRow}>
-            {PACK_SIZES.map((pack) => {
-              const isActive = activePack === pack.id;
-              return (
-                <TouchableOpacity
-                  key={pack.id}
-                  style={styles.packWrapper}
-                  activeOpacity={0.85}
-                  onPress={() => { setActivePack(pack.id); onPackPress?.(pack); }}
-                >
-                  {isActive ? (
-                    <LinearGradient
-                      colors={['#BE7152', 'rgba(190,113,82,0)']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.packUnitsStripActive}
-                    >
-                      <Text style={styles.packUnitsTextActive}>{pack.units}</Text>
-                    </LinearGradient>
-                  ) : (
-                    <View style={styles.packUnitsStripInactive}>
-                      <Text style={styles.packUnitsTextInactive}>{pack.units}</Text>
+                return (
+                  <Pressable
+                    key={pack.product_id}
+                    style={styles.packWrapper}
+                    onPress={() => {
+                      setActivePack(pack.product_id);
+                      onPackPress?.(pack);
+                    }}>
+                    {isActive ? (
+                      <LinearGradient
+                        colors={['#BE7152', 'rgba(190,113,82,0)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.packUnitsStripActive}>
+                        <Text style={styles.packUnitsTextActive}>{pack.unit}</Text>
+                      </LinearGradient>
+                    ) : (
+                      <View style={styles.packUnitsStripInactive}>
+                        <Text style={styles.packUnitsTextInactive}>{pack.unit}</Text>
+                      </View>
+                    )}
+                    <View style={styles.packPriceBox}>
+                      <Text style={styles.packPrice}>
+                        {formatPrice(pack.product_sell_price ?? product.product_sell_price)}
+                      </Text>
+                      {packDiscount ? (
+                        <Text style={styles.packPer}>{packDiscount}</Text>
+                      ) : null}
                     </View>
-                  )}
-                  <View style={styles.packPriceBox}>
-                    <Text style={styles.packPrice}>₹{pack.price}</Text>
-                    <Text style={styles.packPer}>₹{pack.perTablet}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-
-        </View>
+        )}
       </View>
 
       {/* ========== 3. LOCATION + DELIVERY ========== */}
       <View style={styles.locationBlock}>
         <View style={styles.locationCard}>
-
           <TouchableOpacity
             style={[styles.rowTab, styles.locationTab]}
             onPress={onLocationPress}
-            activeOpacity={0.85}
-          >
+            activeOpacity={0.85}>
             <MapPin size={18} color="#263077" />
             <Text style={styles.rowText}>
               <Text style={styles.locationLight}>Location not set </Text>
@@ -168,18 +204,15 @@ const ProductInfoCard = ({
           <TouchableOpacity
             style={[styles.rowTab, styles.deliveryTab]}
             onPress={onDeliveryPress}
-            activeOpacity={0.85}
-          >
+            activeOpacity={0.85}>
             <Bike size={18} color="#333333" />
             <Text style={styles.deliveryText}>
-              Delivery by <Text style={styles.deliveryBold}>Monday, 21 Sep</Text>
+              Check delivery availability
             </Text>
             <ChevronRight size={18} color="#333333" />
           </TouchableOpacity>
-
         </View>
       </View>
-
     </View>
   );
 };
@@ -201,6 +234,29 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#0E1442',
     lineHeight: 22,
+  },
+  vegRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  vegBox: {
+    width: 16,
+    height: 16,
+    borderWidth: 1.5,
+    borderRadius: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  vegDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  vegLabel: {
+    fontSize: 11,
+    color: '#555',
+    marginLeft: 6,
   },
   mrp: {
     fontSize: 12,
@@ -277,7 +333,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D5C8C8',
   },
 
-  /* White Sub-Tab */
+  /* White Sub-Tab for Pack Sizes */
   whiteSubTab: {
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 14,
@@ -286,58 +342,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 14,
   },
-
-  /* Age */
-  ageHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ageLabel: {
-    fontSize: 14,
-    color: '#2A2A2A',
-    fontWeight: '600',
-  },
-  ageValue: {
-    fontSize: 14,
-    color: '#263077',
-    fontWeight: '700',
-  },
-  agePillsRow: {
-    flexDirection: 'row',
-    marginTop: 12,
-    gap: 10,
-  },
-  agePill: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    borderWidth: 1,
-  },
-  agePillActive: {
-    backgroundColor: '#263077',
-    borderColor: '#263077',
-  },
-  agePillInactive: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#B7DBE5',
-  },
-  agePillText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  agePillTextActive: {
-    color: '#FFFFFF',
-  },
-  agePillTextInactive: {
-    color: '#6A6A6A',
-  },
-
-  /* Pack Size */
   packLabel: {
     fontSize: 14,
     fontWeight: '600',
     color: '#2A2A2A',
-    marginTop: 20,
     marginBottom: 12,
   },
   packLabelBold: {
@@ -346,10 +354,11 @@ const styles = StyleSheet.create({
   },
   packRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
   },
   packWrapper: {
-    flex: 1,
+    width: 130,
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1.5,

@@ -14,61 +14,52 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
 const CARD_HEIGHT = CARD_WIDTH * 1.4;
 
-const concerns = [
-  {
-    id: 1,
-    label: 'Allergy',
-    image: require('../../assets/images/allergy.png'),
-    gradient: ['#DEE9EE', '#FAD1D2'],
-  },
-  {
-    id: 2,
-    label: 'Cold & Cough',
-    image: require('../../assets/images/cold&cough.png'),
-    gradient: ['#DEE9EE', '#D0DEF9'],
-  },
-  {
-    id: 3,
-    label: 'Pain Relief',
-    image: require('../../assets/images/painrelief.png'),
-    gradient: ['#DEE9EE', '#FAD1D2'],
-  },
-];
+const defaultAsset = require('../../assets/images/allergy.png');
 
-const HealthConcernList = ({ onCardPress }) => {
+const getImageSource = (img) => {
+  if (!img) return defaultAsset;
+  if (typeof img === 'string') return { uri: img };
+  return img;
+};
+
+const HealthConcernList = ({ concerns = [], onCardPress }) => {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContent}
     >
-      {concerns.map((item) => (
-        <TouchableOpacity
-          key={item.id}
-          activeOpacity={0.9}
-          style={styles.cardWrapper}
-          onPress={() => onCardPress?.(item)}
-        >
-          {/* Gradient Background (hexagon corners) */}
-          <LinearGradient
-            colors={item.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.gradientBg}
-          />
-
-          {/* Image full bleed */}
-          <ImageBackground
-            source={item.image}
-            style={styles.cardImage}
-            imageStyle={styles.cardImageStyle}
-            resizeMode="cover"
+      {concerns.map((item, index) => {
+        const itemId = item.category_id || item.id || item.product_id || index;
+        const imgSource = getImageSource(item.image);
+        return (
+          <TouchableOpacity
+            key={itemId.toString()}
+            activeOpacity={0.9}
+            style={styles.cardWrapper}
+            onPress={() => onCardPress?.(item)}
           >
-            {/* Label at bottom */}
-            <Text style={styles.cardLabel}>{item.label}</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-      ))}
+            {/* Gradient Background */}
+            <LinearGradient
+              colors={item.gradient || ['#E3FCE4', '#FEFCFD']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientBg}
+            />
+
+            {/* Image full bleed */}
+            <ImageBackground
+              source={imgSource}
+              style={styles.cardImage}
+              imageStyle={styles.cardImageStyle}
+              resizeMode="cover"
+            >
+              {/* Label at bottom */}
+              <Text style={styles.cardLabel}>{item.label || item.category_name || item.name || 'Health Concern'}</Text>
+            </ImageBackground>
+          </TouchableOpacity>
+        );
+      })}
     </ScrollView>
   );
 };

@@ -16,7 +16,11 @@ const CategoryProductCard = ({ product, onAddPress, onFavPress }) => {
             </View>
           )}
           <Image
-            source={product.image}
+            source={
+              product.image && typeof product.image === 'string'
+                ? { uri: product.image }
+                : product.image || require('../../assets/images/products.png')
+            }
             style={styles.image}
             resizeMode="contain"
           />

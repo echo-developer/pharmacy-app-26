@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -10,9 +10,19 @@ import { Heart, Map, Share2,Info,ShieldCheck,Bell,MessageSquare,RotateCcw, } fro
 import SettingsSection from '../../components/account/SettingsSection';
 import SettingsRow from '../../components/account/SettingsRow';
 import LogoutButton from '../../components/account/LogoutButton';
+import { AuthContext } from '../../authcontext';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { signOut, loginState } = useContext(AuthContext);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -35,8 +45,8 @@ const AccountScreen = ({ navigation }) => {
           onWalletPress={() => console.log('Wallet pressed')}
         />
         <ProfileCard
-          phone="+91 9812345678"
-          email="Add your email"
+          phone={loginState?.userToken?.mobile || loginState?.userToken?.phone || '+91 9812345678'}
+          email={loginState?.userToken?.email || 'Add your email'}
           onEditPress={() => console.log('Edit pressed')}
           onEmailPress={() => console.log('Email pressed')}
         />
@@ -47,7 +57,7 @@ const AccountScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <QuickActions
-          onOrdersPress={() => console.log('Orders pressed')}
+          onOrdersPress={() => navigation.navigate('My Orders')}
           onWalletPress={() => console.log('Wallet pressed')}
           onHelpPress={() => console.log('Help pressed')}
         />
@@ -61,13 +71,13 @@ const AccountScreen = ({ navigation }) => {
           <SettingsRow
             Icon={Heart}
             label="Wishlist"
-            onPress={() => console.log('Wishlist')}
+            onPress={() => navigation.navigate('Wishlist')}
             showDivider
           />
           <SettingsRow
             Icon={Map}
             label="Address"
-            onPress={() => console.log('Address')}
+            onPress={() => navigation.navigate('MyAddress')}
           />
         </SettingsSection>
         <SettingsSection title="About">
@@ -80,13 +90,13 @@ const AccountScreen = ({ navigation }) => {
           <SettingsRow
             Icon={Info}
             label="About"
-            onPress={() => console.log('About')}
+            onPress={() => navigation.navigate('AboutUs', { title: 'About Us', type: 'about' })}
             showDivider
           />
           <SettingsRow
             Icon={ShieldCheck}
             label="Account Privacy"
-            onPress={() => console.log('Privacy')}
+            onPress={() => navigation.navigate('WebScreen', { title: 'Account Privacy', type: 'privacy' })}
             showDivider
           />
           <SettingsRow
@@ -98,16 +108,16 @@ const AccountScreen = ({ navigation }) => {
           <SettingsRow
             Icon={MessageSquare}
             label="FAQ"
-            onPress={() => console.log('FAQ')}
+            onPress={() => navigation.navigate('Faq', { title: 'FAQ', type: 'faq' })}
             showDivider
           />
           <SettingsRow
             Icon={RotateCcw}
             label="Return Policy"
-            onPress={() => console.log('Return')}
+            onPress={() => navigation.navigate('ReturnPolicy', { title: 'Return Policy', type: 'return' })}
           />
         </SettingsSection>
-        <LogoutButton onPress={() => console.log('Logout pressed')} />
+        <LogoutButton onPress={handleLogout} />
       </ScrollView>
     </View>
   );

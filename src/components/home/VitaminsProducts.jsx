@@ -14,21 +14,12 @@ const CARD_GAP = 10;
 const CARD_WIDTH = (width - 32 - CARD_GAP * 2) / 3;
 const CARD_HEIGHT = 126;
 
-const products = [
-  { id: 1, label: 'Pet Supplements' },
-  { id: 2, label: 'Prescription Diet' },
-  { id: 3, label: 'Dog Food' },
-  { id: 4, label: 'Cat Food' },
-  { id: 5, label: 'Pet Treats' },
-  { id: 6, label: 'Pet Grooming' },
-];
-
-const VitaminsProducts = ({ onCardPress }) => {
+const VitaminsProducts = ({ products = [], onCardPress }) => {
   return (
     <View style={styles.grid}>
-      {products.map((item) => (
+      {products.map((item, index) => (
         <TouchableOpacity
-          key={item.id}
+          key={(item.product_id || item.category_id || item.id || index).toString()}
           activeOpacity={0.9}
           style={styles.card}
           onPress={() => onCardPress?.(item)}
@@ -42,15 +33,23 @@ const VitaminsProducts = ({ onCardPress }) => {
             style={styles.gradientBg}
           >
             {/* Label (Top) */}
-            <Text style={styles.cardLabel}>{item.label}</Text>
+            <Text style={styles.cardLabel}>{item.label || item.category_name || item.product_name}</Text>
           </LinearGradient>
 
-          {/* Image (Touching Bottom) */}
-          <Image
-            source={require('../../assets/images/petsupplements.png')}
-            style={styles.cardImage}
-            resizeMode="contain"
-          />
+          {/* Image */}
+          {item.image && !item.image.includes('via.placeholder') ? (
+            <Image
+              source={{ uri: item.image }}
+              style={styles.cardImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <Image
+              source={require('../../assets/images/petsupplements.png')}
+              style={styles.cardImage}
+              resizeMode="contain"
+            />
+          )}
         </TouchableOpacity>
       ))}
     </View>

@@ -2,46 +2,24 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import CartItemCard from './CartItemCard';
 
-const items = [
-  {
-    id: 1,
-    title: 'Cake world chocolate Toast Bake & Go lorem',
-    pack: '1 Pack (1kg)',
-    qty: 12,
-    price: '456',
-    cutPrice: '456',
-    image: require('../../assets/images/deals.png'),
-  },
-  {
-    id: 2,
-    title: 'Cake world chocolate Toast Bake & Go lorem',
-    pack: '1 Pack (1kg)',
-    qty: 12,
-    price: '456',
-    cutPrice: '456',
-    image: require('../../assets/images/Subtract.png'),
-  },
-  {
-    id: 3,
-    title: 'Cake world chocolate Toast Bake & Go lorem',
-    pack: '1 Pack (1kg)',
-    qty: 12,
-    price: '456',
-    cutPrice: '456',
-    image: require('../../assets/images/deals.png'),
-  },
-];
-
-const CartItemsList = ({ onQtyChange }) => {
+const CartItemsList = ({ items = [], onQtyChange }) => {
   return (
     <View style={styles.wrapper}>
       {items.map((item, index) => (
         <CartItemCard
-          key={item.id}
-          item={item}
+          key={item.product_id || item.id}
+          item={{
+            id: item.product_id || item.id,
+            title: item.product_name || item.title,
+            pack: item.unit || item.pack,
+            qty: item.cartqty || item.qty,
+            price: item.price || item.product_sell_price,
+            cutPrice: item.mrp || item.product_mrp,
+            image: item.image,
+          }}
           showDashedBorder={index !== items.length - 1}
-          onIncrease={() => onQtyChange?.(item.id, item.qty + 1)}
-          onDecrease={() => onQtyChange?.(item.id, item.qty - 1)}
+          onIncrease={() => onQtyChange?.(item.product_id || item.id, (item.cartqty || item.qty) + 1)}
+          onDecrease={() => onQtyChange?.(item.product_id || item.id, (item.cartqty || item.qty) - 1)}
         />
       ))}
     </View>

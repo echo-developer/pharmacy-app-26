@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
   ImageBackground,
   useWindowDimensions,   
 } from 'react-native';
+import { AuthContext } from '../../authcontext';
 
 const SplashScreen = ({ navigation }) => {
+  const { loginState } = useContext(AuthContext);
   const { width, height } = useWindowDimensions(); 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -30,12 +32,16 @@ const SplashScreen = ({ navigation }) => {
 
     const timer = setTimeout(() => {
       if (navigation) {
-        navigation.replace('Auth');
+        if (loginState?.userToken) {
+          navigation.replace('Main');
+        } else {
+          navigation.replace('Login');
+        }
       }
     }, 2500);
 
     return () => clearTimeout(timer);
-  }, [fadeAnim, scaleAnim, navigation]);
+  }, [fadeAnim, scaleAnim, navigation, loginState]);
 
   
   const styles = getStyles(width, height);

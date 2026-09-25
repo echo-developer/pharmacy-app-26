@@ -16,27 +16,6 @@ const CARD_WIDTH = SCREEN_WIDTH * 0.52;
 const CARD_HEIGHT = 180;
 const IMAGE_CARD_HEIGHT = 220;
 
-const brands = [
-  {
-    id: 1,
-    name: 'Cipla',
-    available: '15 available',
-    logo: require('../../assets/images/cipla.png'),
-  },
-  {
-    id: 2,
-    name: 'Abbott',
-    available: '21 available',
-    logo: null,
-  },
-  {
-    id: 3,
-    name: 'Sun Pharma',
-    available: '18 available',
-    logo: require('../../assets/images/sunpharma.png'),
-  },
-];
-
 const AbbottLogo = () => (
   <View style={styles.abbottWrapper}>
     <View style={styles.abbottSymbol}>
@@ -46,7 +25,7 @@ const AbbottLogo = () => (
   </View>
 );
 
-const PetCareBrands = ({ onBrandPress }) => {
+const PetCareBrands = ({ brands = [], onBrandPress }) => {
   return (
     <LinearGradient
       colors={['#E9F6D6', '#E9F6D6']}
@@ -63,11 +42,12 @@ const PetCareBrands = ({ onBrandPress }) => {
         contentContainerStyle={styles.scrollContent}
       >
         {brands.map((item) => {
+          const itemId = item.id || item.brand_id;
           // Cipla / Sun Pharma — no card, just image with overlays
           if (item.logo) {
             return (
               <TouchableOpacity
-                key={item.id}
+                key={itemId}
                 activeOpacity={0.9}
                 style={styles.imageCard}
                 onPress={() => onBrandPress?.(item)}
@@ -82,19 +62,30 @@ const PetCareBrands = ({ onBrandPress }) => {
             );
           }
 
-          // Abbott — white card with custom logo
+          // Default brand card with name label
           return (
             <TouchableOpacity
-              key={item.id}
+              key={itemId}
               activeOpacity={0.9}
               style={styles.card}
               onPress={() => onBrandPress?.(item)}
             >
-              <View style={styles.availablePill}>
-                <Text style={styles.availableText}>{item.available}</Text>
-              </View>
+              {item.available && (
+                <View style={styles.availablePill}>
+                  <Text style={styles.availableText}>{item.available}</Text>
+                </View>
+              )}
               <View style={styles.logoContainer}>
-                <AbbottLogo />
+                {item.image ? (
+                  <ImageBackground
+                    source={{ uri: item.image }}
+                    style={styles.brandImageBg}
+                    imageStyle={styles.brandImageStyle}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Text style={styles.brandNameText}>{item.name || item.brand_name}</Text>
+                )}
               </View>
               <View style={styles.arrowButton}>
                 <ArrowUpRight size={18} color="#FFFFFF" />
@@ -217,6 +208,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#263077',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  brandImageBg: {
+    width: '80%',
+    height: 60,
+  },
+  brandImageStyle: {
+    borderRadius: 8,
+  },
+  brandNameText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#263077',
+    textAlign: 'center',
+    paddingHorizontal: 8,
   },
 });
 

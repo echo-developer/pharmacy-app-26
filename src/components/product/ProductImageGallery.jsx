@@ -1,22 +1,82 @@
-import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 import { Heart, ChevronUp } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
 const ProductImageGallery = ({
+  images,
   image,
   onFavPress,
   onExpandPress,
 }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Support both `images` array (from API) and legacy single `image`
+  const gallery =
+    images && images.length > 0
+      ? images
+      : image
+        ? [image]
+        : [];
+
+  const hasMultiple = gallery.length > 1;
+
   return (
     <View style={styles.container}>
       {/* ===== Image Area ===== */}
       <View style={styles.imageArea}>
-        <Image
-          source={image || require('../../assets/images/Subtract.png')}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        {gallery.length > 0 ? (
+          <FlatList
+            data={gallery}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item, idx) => `${item}-${idx}`}
+            onMomentumScrollEnd={e => {
+              const idx = Math.round(
+                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+              );
+              setActiveIndex(idx);
+            }}
+            renderItem={({ item }) => (
+              <Image
+                source={{ uri: item }}
+                style={[styles.image, { width: SCREEN_WIDTH }]}
+                resizeMode="cover"
+              />
+            )}
+          />
+        ) : (
+          <Image
+            source={require('../../assets/images/Subtract.png')}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        )}
+
+        {/* Dot indicators */}
+        {hasMultiple && (
+          <View style={styles.dotsContainer}>
+            {gallery.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.dot,
+                  i === activeIndex ? styles.dotActive : styles.dotInactive,
+                ]}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Heart Button (top-right) */}
         <TouchableOpacity
@@ -69,8 +129,30 @@ const styles = StyleSheet.create({
     // No overflow:hidden — so wave can bleed out at bottom
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: SCREEN_WIDTH,
+    height: 380,
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 36,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dot: {
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 3,
+  },
+  dotActive: {
+    width: 18,
+    backgroundColor: '#263077',
+  },
+  dotInactive: {
+    width: 6,
+    backgroundColor: '#ccc',
   },
 
   /* ===== Heart Circle ===== */

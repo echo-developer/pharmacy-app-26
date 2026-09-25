@@ -13,41 +13,14 @@ import { Star, Minus, Plus } from 'lucide-react-native';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.5;
 
-const products = [
-  {
-    id: 1,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discount: '58%',
-    delivery: 'Get in 30 mins',
-    rating: '4.3',
-    ratingCount: '10',
-    initialQty: 0,
-  },
-  {
-    id: 2,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discount: '58%',
-    delivery: 'Get in 30 mins',
-    rating: '4.3',
-    ratingCount: '10',
-    initialQty: 12,
-  },
-];
-
-const DealsProducts = ({ onAddPress, onQtyChange }) => {
+const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
   const [cart, setCart] = useState(
-    products.reduce((acc, p) => ({ ...acc, [p.id]: p.initialQty }), {})
+    products.reduce((acc, p) => ({ ...acc, [p.product_id || p.id]: 0 }), {})
   );
 
   const updateQty = (id, delta) => {
     setCart((prev) => {
-      const newQty = Math.max(0, prev[id] + delta);
+      const newQty = Math.max(0, (prev[id] || 0) + delta);
       onQtyChange?.(id, newQty);
       return { ...prev, [id]: newQty };
     });
@@ -59,49 +32,65 @@ const DealsProducts = ({ onAddPress, onQtyChange }) => {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.scrollContent}
     >
-      {products.map((item) => {
-        const qty = cart[item.id];
+      {products.map((item, index) => {
+        const itemId = item.product_id || item.id || index;
+        const qty = cart[itemId] || 0;
+        // Support both API field names and legacy field names
+        const title = item.product_name || item.title;
+        const mrp = item.product_mrp || item.mrp;
+        const price = item.product_sell_price || item.price;
+        const unit = item.unit || item.tablets;
+        const rating = item.product_rating || item.rating || 0;
+        const ratingCount = item.product_total_rating || item.ratingCount || 0;
+        const discount = item.discount || '';
+        const delivery = item.delivery || '';
         return (
-          <View key={item.id} style={styles.card}>
+          <View key={itemId.toString()} style={styles.card}>
             {/* ===== IMAGE AREA ===== */}
             <View style={styles.imageArea}>
               <Image
-                source={require('../../assets/images/deals.png')}
+                source={
+                  item.image && !item.image.includes('via.placeholder')
+                    ? { uri: item.image }
+                    : require('../../assets/images/deals.png')
+                }
                 style={styles.productImage}
                 resizeMode="contain"
               />
 
               {/* Rating Pill */}
-              <View style={styles.ratingPill}>
-                <Star size={12} color="#FF8D28" fill="#FF8D28" />
-                <Text style={styles.ratingText}>
-                  {item.rating} ({item.ratingCount})
-                </Text>
-              </View>
+              {(rating > 0 || ratingCount > 0) && (
+                <View style={styles.ratingPill}>
+                  <Star size={12} color="#FF8D28" fill="#FF8D28" />
+                  <Text style={styles.ratingText}>
+                    {rating} ({ratingCount})
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* ===== DETAILS ===== */}
             <Text style={styles.title} numberOfLines={2}>
-              {item.title}
+              {title}
             </Text>
 
-            <Text style={styles.tablets}>{item.tablets}</Text>
+            {unit ? <Text style={styles.tablets}>{unit}</Text> : null}
 
-            <Text style={styles.mrp}>MRP ₹{item.mrp}</Text>
+            {mrp ? <Text style={styles.mrp}>MRP ₹{mrp}</Text> : null}
 
             <View style={styles.priceRow}>
-              <Text style={styles.price}>~₹{item.price}</Text>
-              <Text style={styles.discount}>{item.discount}</Text>
+              <Text style={styles.price}>₹{price}</Text>
+              {discount ? <Text style={styles.discount}>{discount}</Text> : null}
             </View>
 
-            <Text style={styles.delivery}>{item.delivery} ⚡</Text>
+            {delivery ? <Text style={styles.delivery}>{delivery} ⚡</Text> : null}
 
             {/* ===== BUTTON AREA ===== */}
             {qty === 0 ? (
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
-                  updateQty(item.id, 1);
+                  updateQty(itemId, 1);
                   onAddPress?.(item);
                 }}
               >
@@ -111,7 +100,7 @@ const DealsProducts = ({ onAddPress, onQtyChange }) => {
               <View style={styles.qtyContainer}>
                 <TouchableOpacity
                   style={styles.qtyBtn}
-                  onPress={() => updateQty(item.id, -1)}
+                  onPress={() => updateQty(itemId, -1)}
                 >
                   <Minus size={16} color="#FFFFFF" />
                 </TouchableOpacity>
@@ -120,7 +109,7 @@ const DealsProducts = ({ onAddPress, onQtyChange }) => {
 
                 <TouchableOpacity
                   style={styles.qtyBtn}
-                  onPress={() => updateQty(item.id, 1)}
+                  onPress={() => updateQty(itemId, 1)}
                 >
                   <Plus size={16} color="#FFFFFF" />
                 </TouchableOpacity>

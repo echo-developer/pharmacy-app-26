@@ -2,13 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const BillDetails = ({
-  itemsTotal = '456',
-  itemsCutPrice = '456',
+  subtotal = 0,
+  discount = 0,
+  total = 0,
   deliveryCharge = 'FREE',
-  handlingCharge = '456',
-  grandTotal = '456',
-  totalSavings = '456.00',
+  handlingCharge = 0,
 }) => {
+  const itemsCutPrice = subtotal + discount;
+  const totalSavings = discount;
   return (
     <View style={styles.wrapper}>
       {/* ===== White Card ===== */}
@@ -20,7 +21,7 @@ const BillDetails = ({
           <Text style={styles.label}>Items Total</Text>
           <View style={styles.valueRow}>
             <Text style={styles.cutPrice}>₹{itemsCutPrice}</Text>
-            <Text style={styles.price}>₹{itemsTotal}</Text>
+            <Text style={styles.price}>₹{subtotal}</Text>
           </View>
         </View>
 
@@ -42,15 +43,17 @@ const BillDetails = ({
         {/* Grand Total */}
         <View style={styles.row}>
           <Text style={styles.grandLabel}>Grand Total</Text>
-          <Text style={styles.grandValue}>₹{grandTotal}</Text>
+          <Text style={styles.grandValue}>₹{total}</Text>
         </View>
       </View>
 
       {/* ===== Savings Strip (with rounded bottom) ===== */}
-      <View style={styles.savingsStrip}>
-        <Text style={styles.savingsText}>Your total savings</Text>
-        <Text style={styles.savingsValue}>₹{totalSavings}</Text>
-      </View>
+      {discount > 0 && (
+        <View style={styles.savingsStrip}>
+          <Text style={styles.savingsText}>Your total savings</Text>
+          <Text style={styles.savingsValue}>₹{totalSavings}</Text>
+        </View>
+      )}
     </View>
   );
 };

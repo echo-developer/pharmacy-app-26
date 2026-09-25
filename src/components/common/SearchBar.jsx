@@ -1,14 +1,19 @@
 import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Search } from 'lucide-react-native';
 
 const SearchBar = ({ 
   placeholder = 'Search "Medicine Scroll"', 
-  onSearch 
+  onSearch,
+  onPress,
 }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.searchWrapper}>
+      <TouchableOpacity
+        style={styles.searchWrapper}
+        activeOpacity={onPress ? 0.8 : 1}
+        onPress={onPress}
+      >
         {/* Search Icon */}
         <Search size={20} color="#787C77" style={styles.searchIcon} />
 
@@ -18,8 +23,10 @@ const SearchBar = ({
           placeholder={placeholder}
           placeholderTextColor="#787C77"
           onChangeText={onSearch}
+          editable={!onPress}
+          pointerEvents={onPress ? 'none' : 'auto'}
         />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

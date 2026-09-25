@@ -2,17 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import CategoryItem from './CategoryItem';
 
-const categories = [
-  { id: 'all', label: 'All' },
-  { id: 'personal', label: 'All' },
-  { id: 'health', label: 'All' },
-  { id: 'baby', label: 'All' },
-  { id: 'devices', label: 'All' },
-  { id: 'ayurveda', label: 'All' },
-  { id: 'nutrition', label: 'All' },
-];
-
-const CategoriesSidebar = ({ activeCategory = 'all', onCategoryPress, style }) => {
+const CategoriesSidebar = ({ categories = [], activeCategory = 'all', onCategoryPress, style }) => {
   return (
     <ScrollView
       style={[styles.sidebar, style]}
@@ -21,10 +11,10 @@ const CategoriesSidebar = ({ activeCategory = 'all', onCategoryPress, style }) =
     >
       {categories.map((cat) => (
         <CategoryItem
-          key={cat.id}
-          label={cat.label}
-          isActive={activeCategory === cat.id}
-          onPress={() => onCategoryPress?.(cat.id)}
+          key={cat.category_id || cat.id}
+          label={cat.category_name || cat.label}
+          isActive={activeCategory === (cat.category_id || cat.id)}
+          onPress={() => onCategoryPress?.(cat.category_id || cat.id)}
         />
       ))}
     </ScrollView>

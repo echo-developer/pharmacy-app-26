@@ -16,28 +16,8 @@ const CARD_WIDTH = width * 0.78;
 const CARD_SPACING = 12;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_SPACING;
 
-const offers = [
-  {
-    id: 1,
-    category: 'Body Care',
-    offer: 'UP TO 20% OFF',
-    image: require('../../assets/images/products.png'),
-  },
-  {
-    id: 2,
-    category: 'Health Care Essentials',
-    offer: 'UP TO 20% OFF',
-    image: require('../../assets/images/products.png'),
-  },
-  {
-    id: 3,
-    category: 'Daily Body',
-    offer: 'UP TO 20% OFF',
-    image: require('../../assets/images/products.png'),
-  },
-];
-
-const GradientText = ({ text, style }) => {
+const GradientText = ({ text = '', style }) => {
+  if (!text) return null;
   return (
     <MaskedView
       maskElement={
@@ -57,7 +37,15 @@ const GradientText = ({ text, style }) => {
   );
 };
 
-const OfferCarousel = ({ onCardPress }) => {
+const defaultBannerAsset = require('../../assets/images/deals.png');
+
+const getImageSource = (img) => {
+  if (!img) return defaultBannerAsset;
+  if (typeof img === 'string') return { uri: img };
+  return img;
+};
+
+const OfferCarousel = ({ offers = [], onCardPress }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleScroll = (event) => {
@@ -77,31 +65,35 @@ const OfferCarousel = ({ onCardPress }) => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        {offers.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            activeOpacity={0.9}
-            style={styles.card}
-            onPress={() => onCardPress?.(item)}
-          >
-            {/* Image */}
-            <ImageBackground
-              source={item.image}
-              style={styles.cardImage}
-              imageStyle={styles.cardImageStyle}
-              resizeMode="cover"
-            />
-
-            {/* Texts below image */}
-            <View style={styles.textContainer}>
-              <Text style={styles.categoryText}>{item.category}</Text>
-              <GradientText
-                text={item.offer}
-                style={styles.offerText}
+        {offers.map((item, index) => {
+          const itemId = item.banner_id || item.id || index;
+          const imgSource = getImageSource(item.image);
+          return (
+            <TouchableOpacity
+              key={itemId.toString()}
+              activeOpacity={0.9}
+              style={styles.card}
+              onPress={() => onCardPress?.(item)}
+            >
+              {/* Image */}
+              <ImageBackground
+                source={imgSource}
+                style={styles.cardImage}
+                imageStyle={styles.cardImageStyle}
+                resizeMode="cover"
               />
-            </View>
-          </TouchableOpacity>
-        ))}
+
+              {/* Texts below image */}
+              <View style={styles.textContainer}>
+                <Text style={styles.categoryText}>{item.category_name || item.category || 'Special Offer'}</Text>
+                <GradientText
+                  text={item.offer || item.discount || 'FLAT DISCOUNT'}
+                  style={styles.offerText}
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Pagination Dots */}

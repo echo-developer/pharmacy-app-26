@@ -10,14 +10,18 @@ import {
   StatusBar,
   Dimensions,
   ScrollView,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import CommonService from '../../utils/CommonService';
 
 const { width } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
   const [mobile, setMobile] = useState('');
   const [isChecked, setIsChecked] = useState(false);
+  const [loader, setLoader] = useState(false);
 
   const handleGetOtp = () => {
     if (mobile.length !== 10) {
@@ -28,13 +32,41 @@ const LoginScreen = ({ navigation }) => {
       alert('Please agree to the Terms of Use & Privacy Policy');
       return;
     }
-    navigation.navigate('Otp', { mobile });
+    Keyboard.dismiss();
+    setLoader(true);
+    const inputdata = new FormData();
+    inputdata.append('user', mobile);
+    CommonService._callApi({
+      api: '/login/otp',
+      method: 'CONVERT',
+      body: inputdata,
+    })
+      .then(r => r.json())
+      .then(json => {
+        setLoader(false);
+        if (json.status == 1) {
+          navigation.navigate('Otp', {
+            phone: mobile,
+            mobile: mobile,
+            otp: json.response.data.otp,
+          });
+        } else {
+          alert(
+            'Login Failed: ' + (json.response.message || 'Unable to continue. Please try again.')
+          );
+        }
+      })
+      .catch(() => {
+        setLoader(false);
+        alert('Something Went Wrong: Unable to process your request right now. Please try again later.');
+      });
   };
 
-  // --- NEW: Handle Skip Button ---
   const handleSkip = () => {
-    // Navigate to Otp screen without a mobile number (or pass a dummy one)
-    navigation.navigate('Otp', { mobile: '' }); 
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Main' }],
+    });
   };
 
   return (
@@ -114,8 +146,12 @@ const LoginScreen = ({ navigation }) => {
             />
           </View>
 
-          <TouchableOpacity style={styles.otpButton} onPress={handleGetOtp}>
-            <Text style={styles.otpButtonText}>Get OTP</Text>
+          <TouchableOpacity style={styles.otpButton} onPress={handleGetOtp} disabled={loader}>
+            {loader ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text style={styles.otpButtonText}>Get OTP</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.termsContainer}>

@@ -3,13 +3,28 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform, StatusBar } from 'r
 import { ChevronDown, ShoppingBag, MapPin, Navigation } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+import store from '../../store/store';
+
 const Header = ({ 
   userName = "Rubi, Rajdanga", 
-  location = "Sector F, South Kolkata", 
-  cartCount = 2,
+  location, 
+  cartCount,
   onLocationPress,
   onCartPress 
 }) => {
+  const [storeState, setStoreState] = React.useState(store.getState().GlobalReducer);
+
+  React.useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      setStoreState(store.getState().GlobalReducer);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const activeCity = storeState.chosencity;
+  const displayLocation = location || activeCity?.tempaddress?.address || "Pincode 721401, Contai";
+  const displayCartCount = cartCount !== undefined ? cartCount : (storeState.cart?.items?.length || 0);
+
   return (
     <LinearGradient
       colors={['#E3FCE4', '#FEFCFD']} 
@@ -31,7 +46,7 @@ const Header = ({
           
           <View style={styles.locationRow}>
             <MapPin size={12} color="#787887" style={styles.locationIcon} />
-            <Text style={styles.locationText}>{location}</Text>
+            <Text style={styles.locationText} numberOfLines={1}>{displayLocation}</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -40,9 +55,9 @@ const Header = ({
       <TouchableOpacity style={styles.cartButton} onPress={onCartPress}>
         <View style={styles.cartIconWrapper}>
           <ShoppingBag size={22} color="#263077" />
-          {cartCount > 0 && (
+          {displayCartCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{cartCount}</Text>
+              <Text style={styles.badgeText}>{displayCartCount}</Text>
             </View>
           )}
         </View>

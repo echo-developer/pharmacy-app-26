@@ -2,43 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import CategoryProductCard from './CategoryProductCard';
 
-const products = [
-  {
-    id: 1,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discountPct: '58%',
-    delivery: 'Get in 30 mins',
-    discount: '20% Off',
-    image: require('../../assets/images/products.png'),
-  },
-  {
-    id: 2,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discountPct: '58%',
-    delivery: 'Get in 30 mins',
-    discount: '20% Off',
-    image: require('../../assets/images/deals.png'),
-  },
-  {
-    id: 3,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discountPct: '58%',
-    delivery: 'Get in 30 mins',
-    discount: '20% Off',
-    image: require('../../assets/images/Subtract.png'),
-  },
-];
-
-const CategoryProductList = ({ onAddPress, onFavPress }) => {
+const CategoryProductList = ({ products = [], onAddPress, onFavPress }) => {
   return (
     <ScrollView
       style={styles.list}
@@ -47,8 +11,18 @@ const CategoryProductList = ({ onAddPress, onFavPress }) => {
     >
       {products.map((item) => (
         <CategoryProductCard
-          key={item.id}
-          product={item}
+          key={item.product_id || item.id}
+          product={{
+            id: item.product_id || item.id,
+            title: item.product_name || item.title,
+            tablets: item.unit || item.tablets,
+            mrp: item.mrp || item.product_mrp,
+            price: item.price || item.product_sell_price,
+            discountPct: item.discount || item.discountPct,
+            delivery: item.delivery || 'Get in 30 mins',
+            discount: item.discount || '20% Off',
+            image: item.image,
+          }}
           onAddPress={() => onAddPress?.(item)}
           onFavPress={() => onFavPress?.(item)}
         />

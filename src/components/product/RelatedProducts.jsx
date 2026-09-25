@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -13,46 +13,10 @@ import { ChevronRight, Star, Zap } from 'lucide-react-native';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
 
-const PRODUCTS = [
-  {
-    id: 1,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discount: '58%',
-    delivery: 'Get in 30 mins',
-    rating: '4.3',
-    ratingCount: '10',
-    image: require('../../assets/images/deals.png'),
-  },
-  {
-    id: 2,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discount: '58%',
-    delivery: 'Get in 30 mins',
-    rating: '4.3',
-    ratingCount: '10',
-    image: require('../../assets/images/deals.png'),
-  },
-  {
-    id: 3,
-    title: 'Lorem ipsum dolor sit amet dolor sit...',
-    tablets: '60 tablets',
-    mrp: '4599',
-    price: '1949',
-    discount: '58%',
-    delivery: 'Get in 30 mins',
-    rating: '4.3',
-    ratingCount: '10',
-    image: require('../../assets/images/deals.png'),
-  },
-];
+const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPress }) => {
+  // Don't render section if no products
+  if (!products || products.length === 0) return null;
 
-const RelatedProducts = ({ onArrowPress, onProductPress, onAddPress }) => {
   return (
     <View style={styles.container}>
       {/* ===== HEADER ===== */}
@@ -65,8 +29,7 @@ const RelatedProducts = ({ onArrowPress, onProductPress, onAddPress }) => {
         <TouchableOpacity
           style={styles.arrowPill}
           onPress={onArrowPress}
-          activeOpacity={0.85}
-        >
+          activeOpacity={0.85}>
           <ChevronRight size={18} color="#FFFFFF" strokeWidth={3} />
         </TouchableOpacity>
       </View>
@@ -75,59 +38,89 @@ const RelatedProducts = ({ onArrowPress, onProductPress, onAddPress }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {PRODUCTS.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            activeOpacity={0.85}
-            style={styles.card}
-            onPress={() => onProductPress?.(item)}
-          >
-            {/* Image Area with Rating Pill */}
-            <View style={styles.imageArea}>
-              <Image
-                source={item.image}
-                style={styles.image}
-                resizeMode="contain"
-              />
-              <View style={styles.ratingPill}>
-                <Star size={10} color="#FF8D28" fill="#FF8D28" />
-                <Text style={styles.ratingText}>
-                  {item.rating} ({item.ratingCount})
-                </Text>
-              </View>
-            </View>
+        contentContainerStyle={styles.scrollContent}>
+        {products.map((item, index) => {
+          const hasDiscount =
+            item.product_mrp && item.product_sell_price &&
+            item.product_mrp > item.product_sell_price;
+          const discountPct = hasDiscount
+            ? Math.round(
+              ((item.product_mrp - item.product_sell_price) / item.product_mrp) * 100,
+            )
+            : null;
 
-            {/* Details */}
-            <Text style={styles.cardTitle} numberOfLines={2}>
-              {item.title}
-            </Text>
-            <Text style={styles.tablets}>{item.tablets}</Text>
-            <Text style={styles.mrp}>MRP ₹{item.mrp}</Text>
+          const avgRating =
+            item.rating && item.rating.length > 0
+              ? (
+                item.rating.reduce(
+                  (a, b) => a + parseFloat(b.rating_value || 0),
+                  0,
+                ) / item.rating.length
+              ).toFixed(1)
+              : null;
 
-            <View style={styles.priceRow}>
-              <Text style={styles.price}>~₹{item.price}</Text>
-              <Text style={styles.discount}>{item.discount}</Text>
-            </View>
-
-            <View style={styles.deliveryRow}>
-              <Text style={styles.delivery}>{item.delivery}</Text>
-              <View style={styles.zapCircle}>
-                <Zap size={10} color="#043250" fill="#043250" />
-              </View>
-            </View>
-
-            {/* ADD Button */}
+          return (
             <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => onAddPress?.(item)}
+              key={item.product_id ?? index}
               activeOpacity={0.85}
-            >
-              <Text style={styles.addText}>ADD</Text>
+              style={styles.card}
+              onPress={() => onProductPress?.(item)}>
+              {/* Image Area with Rating Pill */}
+              <View style={styles.imageArea}>
+                <Image
+                  source={
+                    item.image
+                      ? { uri: item.image }
+                      : require('../../assets/images/deals.png')
+                  }
+                  style={styles.image}
+                  resizeMode="contain"
+                />
+                {avgRating && (
+                  <View style={styles.ratingPill}>
+                    <Star size={10} color="#FF8D28" fill="#FF8D28" />
+                    <Text style={styles.ratingText}>
+                      {avgRating} ({item.rating.length})
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Details */}
+              <Text style={styles.cardTitle} numberOfLines={2}>
+                {item.product_name}
+              </Text>
+              {item.unit ? (
+                <Text style={styles.tablets}>{item.unit}</Text>
+              ) : null}
+              {hasDiscount ? (
+                <Text style={styles.mrp}>MRP ₹{item.product_mrp}</Text>
+              ) : null}
+
+              <View style={styles.priceRow}>
+                <Text style={styles.price}>₹{item.product_sell_price}</Text>
+                {discountPct ? (
+                  <Text style={styles.discount}>{discountPct}%</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.deliveryRow}>
+                <Text style={styles.delivery}>Get in 30 mins</Text>
+                <View style={styles.zapCircle}>
+                  <Zap size={10} color="#043250" fill="#043250" />
+                </View>
+              </View>
+
+              {/* ADD Button */}
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => onAddPress?.(item)}
+                activeOpacity={0.85}>
+                <Text style={styles.addText}>ADD</Text>
+              </TouchableOpacity>
             </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -153,18 +146,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#043250',              // Title color
+    color: '#043250',
   },
   subtitle: {
     fontSize: 12,
-    color: '#787887',              // Subtitle color
+    color: '#787887',
     marginTop: 4,
   },
   arrowPill: {
     width: 50,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#0F848B',    // Arrow pill bg
+    backgroundColor: '#0F848B',
     alignItems: 'center',
     justifyContent: 'center',
   },
