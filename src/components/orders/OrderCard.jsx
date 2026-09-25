@@ -29,6 +29,8 @@ const OrderCard = ({
   status = 'ontime',
   headerText = 'Arriving by 10th Jun',
   images = [],
+  orderId,
+  amount,
   timelineSteps = [],
   actions = [],
   onPress,
@@ -54,18 +56,43 @@ const OrderCard = ({
         <ChevronRight size={20} color={config.chevronColor} />
       </LinearGradient>
 
+      {/* ===== ORDER META ===== */}
+      {(orderId || amount) ? (
+        <View style={styles.metaRow}>
+          {orderId ? (
+            <Text style={styles.metaText}>Order #{orderId}</Text>
+          ) : null}
+          {amount ? (
+            <Text style={styles.metaAmount}>₹{amount}</Text>
+          ) : null}
+        </View>
+      ) : null}
+
       {/* ===== IMAGES ROW ===== */}
-      <View style={styles.imagesRow}>
-        {images.map((_, index) => (
-          <View key={index} style={styles.imageBox}>
-            <Image
-              source={require('../../assets/images/deals.png')}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          </View>
-        ))}
-      </View>
+      {images.length > 0 && (
+        <View style={styles.imagesRow}>
+          {images.slice(0, 4).map((item, index) => {
+            const imgUri = item?.image || item?.img || null;
+            return (
+              <View key={index} style={styles.imageBox}>
+                {imgUri ? (
+                  <Image
+                    source={{ uri: imgUri }}
+                    style={styles.image}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Image
+                    source={require('../../assets/images/deals.png')}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                )}
+              </View>
+            );
+          })}
+        </View>
+      )}
 
       {/* ===== TIMELINE ===== */}
       {timelineSteps.length > 0 && (
@@ -89,11 +116,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     overflow: 'hidden',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.04,
-    // shadowRadius: 4,
-    // elevation: 2,
   },
 
   /* ===== Header ===== */
@@ -116,6 +138,26 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
+  /* ===== Order Meta ===== */
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  metaText: {
+    fontSize: 13,
+    color: '#787887',
+    fontWeight: '500',
+  },
+  metaAmount: {
+    fontSize: 14,
+    color: '#043250',
+    fontWeight: '700',
+  },
+
   /* ===== Images Row ===== */
   imagesRow: {
     flexDirection: 'row',
@@ -128,8 +170,6 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 8,
     backgroundColor: '#EBE9E9',
-    // alignItems: 'center',
-    // justifyContent: 'center',
     overflow: 'hidden',
   },
   image: {

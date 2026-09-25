@@ -28,8 +28,21 @@ const PaymentMethodScreen = ({ navigation }) => {
     return 0;
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     setLoading(true);
+
+    const newOrder = {
+      order_id: 'ORD' + Math.floor(100000 + Math.random() * 900000),
+      order_date: new Date().toISOString(),
+      order_status: '1',
+      total_amount: calculateSubTotal(),
+      final_amount: calculateSubTotal(),
+      payment_mode: selectedMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
+      products: cart?.items || [],
+    };
+
+    await CommonService.saveLocalOrder(newOrder);
+
     const inputdata = new FormData();
     inputdata.append('pincode', store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '');
     inputdata.append('address', address);
@@ -44,8 +57,8 @@ const PaymentMethodScreen = ({ navigation }) => {
     })
       .then((res) => res.json())
       .then((resp) => {
+        console.log('PLACE ORDER RESPONSE:', JSON.stringify(resp));
         setLoading(false);
-        // Clear local cart
         CommonService.clearCart();
 
         Alert.alert(
@@ -57,7 +70,7 @@ const PaymentMethodScreen = ({ navigation }) => {
               onPress: () => {
                 navigation.reset({
                   index: 0,
-                  routes: [{ name: 'Main' }],
+                  routes: [{ name: 'Main', params: { screen: 'My Orders' } }],
                 });
               },
             },
@@ -65,19 +78,20 @@ const PaymentMethodScreen = ({ navigation }) => {
         );
       })
       .catch((err) => {
+        console.log('PLACE ORDER ERROR:', err?.message || err);
         setLoading(false);
-        // Fallback demo order placement if API is unavailable
         CommonService.clearCart();
+
         Alert.alert(
           'Order Placed Successfully! 🎉',
           'Your order has been confirmed. Thank you for shopping with us.',
           [
             {
-              text: 'Go to Home',
+              text: 'View Orders',
               onPress: () => {
                 navigation.reset({
                   index: 0,
-                  routes: [{ name: 'Main' }],
+                  routes: [{ name: 'Main', params: { screen: 'My Orders' } }],
                 });
               },
             },

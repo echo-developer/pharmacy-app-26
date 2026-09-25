@@ -15,6 +15,7 @@ import DealsProducts from '../../components/home/DealsProducts';
 import PetCareHeader from '../../components/home/PetCareHeader';
 import PetCareBrands from '../../components/home/PetCareBrands';
 import CommonService from '../../utils/CommonService';
+import CartFloatingBar from '../../components/cart/CartFloatingBar';
 
 const homeReducer = (prevState, action) => {
   switch (action.type) {
@@ -233,6 +234,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </ScrollView>
       )}
+      <CartFloatingBar />
     </View>
   );
 };

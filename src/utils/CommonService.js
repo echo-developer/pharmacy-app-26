@@ -270,5 +270,29 @@ export default CommonService = {
     }).catch(error => {
       if (__DEV__) console.log('Notification send error:', error.message);
     });
+  },
+  saveLocalOrder: async (order) => {
+    try {
+      console.log('SAVING LOCAL ORDER:', JSON.stringify(order));
+      const existing = await AsyncStorage.getItem('@user_local_orders');
+      let orders = existing ? JSON.parse(existing) : [];
+      orders.unshift(order);
+      await AsyncStorage.setItem('@user_local_orders', JSON.stringify(orders));
+      console.log('LOCAL ORDER SAVED. Total local orders now:', orders.length);
+    } catch (e) {
+      console.log('Error saving local order:', e);
+    }
+  },
+  getLocalOrders: async () => {
+    try {
+      const existing = await AsyncStorage.getItem('@user_local_orders');
+      const orders = existing ? JSON.parse(existing) : [];
+      console.log('GET LOCAL ORDERS - found:', orders.length);
+      return orders;
+    } catch (e) {
+      console.log('getLocalOrders error:', e);
+      return [];
+    }
   }
 };
+

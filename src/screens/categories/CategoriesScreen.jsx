@@ -6,6 +6,7 @@ import FilterSortBar from '../../components/categories/FilterSortBar';
 import CategoryProductList from '../../components/categories/CategoryProductList';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
+import CartFloatingBar from '../../components/cart/CartFloatingBar';
 
 const CategoriesScreen = ({ navigation }) => {
   const [loader, setLoader] = useState(false);
@@ -111,6 +112,7 @@ const CategoriesScreen = ({ navigation }) => {
           </View>
         </>
       )}
+      <CartFloatingBar />
     </View>
   );
 };

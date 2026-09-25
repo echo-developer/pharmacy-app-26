@@ -13,6 +13,7 @@ import { ArrowLeft, Search, ShoppingBag, SlidersHorizontal } from 'lucide-react-
 import { useRoute } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
+import CartFloatingBar from '../../components/cart/CartFloatingBar';
 
 const ProductsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -181,6 +182,7 @@ const ProductsScreen = ({ navigation }) => {
           columnWrapperStyle={styles.columnWrapper}
         />
       )}
+      <CartFloatingBar />
     </View>
   );
 };
