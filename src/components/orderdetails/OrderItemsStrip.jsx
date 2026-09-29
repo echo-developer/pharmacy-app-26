@@ -14,6 +14,7 @@ const OrderItemsStrip = ({
   totalAmount = '456',
   onPressItems,
   onPayNow,
+  showPayNow = true,
 }) => {
   return (
     <View style={styles.container}>
@@ -32,28 +33,38 @@ const OrderItemsStrip = ({
 
       {/* ===== Middle Row: Image Thumbnails ===== */}
       <View style={styles.imagesRow}>
-        {images.map((_, index) => (
-          <View key={index} style={styles.imageBox}>
-            <Image
-              source={require('../../assets/images/deals.png')}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          </View>
-        ))}
+        {images.map((item, index) => {
+          // Handle both object and string types
+          const imageUrl = typeof item === 'object' ? item.image : item;
+          const imageSource = imageUrl 
+            ? { uri: imageUrl } 
+            : require('../../assets/images/deals.png');
+          
+          return (
+            <View key={index} style={styles.imageBox}>
+              <Image
+                source={imageSource}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            </View>
+          );
+        })}
       </View>
 
       {/* ===== Bottom Row: Amount + Pay Now ===== */}
       <View style={styles.bottomRow}>
         <Text style={styles.amount}>₹{totalAmount}</Text>
 
-        <TouchableOpacity
-          style={styles.payNowBtn}
-          onPress={onPayNow}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.payNowText}>Pay Now</Text>
-        </TouchableOpacity>
+        {showPayNow && onPayNow && (
+          <TouchableOpacity
+            style={styles.payNowBtn}
+            onPress={onPayNow}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.payNowText}>Pay Now</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

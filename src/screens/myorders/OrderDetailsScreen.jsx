@@ -9,6 +9,9 @@ import OrderInfoCard from '../../components/orderdetails/OrderInfoCard';
 import YouMayAlsoLike from '../../components/orderdetails/YouMayAlsoLike';
 import RepeatOrderButton from '../../components/orderdetails/RepeatOrderButton';
 import CommonService from '../../utils/CommonService';
+import RazorpayCheckout from 'react-native-razorpay';
+import StaticConst from '../../utils/StaticConst';
+import store from '../../store/store';
 
 // Helper date formatting function replacing moment
 const formatDate = (dateString, withTime = false) => {
@@ -41,9 +44,11 @@ const addDaysToDate = (dateString, days) => {
 };
 
 const OrderDetailsScreen = ({ route, navigation }) => {
-  const orderIdParam = route?.params?.orderId || '';
+  const orderIdParam = route?.params?.id || route?.params?.oid || route?.params?.orderId || '';
   const [loader, setLoader] = useState(true);
   const [orderData, setOrderData] = useState(null);
+  const [paymentLoader, setPaymentLoader] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
 
   useEffect(() => {
     if (orderIdParam) {
@@ -58,13 +63,31 @@ const OrderDetailsScreen = ({ route, navigation }) => {
     CommonService._callApi({
       api: '/order/details',
       method: 'GET',
-      urlParams: { order_id: id },
+      urlParams: { oid: id },
     })
       .then(async resp => {
         const res = resp.data;
-        if (res.status === 1 && res.response) {
+        if (res.status === 1 && res.response && res.response.data) {
+          const orderData = res.response.data;
+          
+          // Format statusdetails for timeline
+          if (Array.isArray(orderData.statusdetails)) {
+            orderData.statusdetails = orderData.statusdetails.map(sd => ({
+              ...sd,
+              bind_date: formatDate(sd.reg_date),
+              bind_time: sd.reg_date ? new Date(sd.reg_date).toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+              }) : '',
+            }));
+          }
+          
           setLoader(false);
-          setOrderData(res.response);
+          setOrderData(orderData);
+          
+          // Load recommended products
+          loadRecommendedProducts();
         } else {
           const localOrders = await CommonService.getLocalOrders();
           const found = localOrders.find(o => String(o.order_id) === String(id));
@@ -78,6 +101,28 @@ const OrderDetailsScreen = ({ route, navigation }) => {
         const found = localOrders.find(o => String(o.order_id) === String(id));
         setLoader(false);
         setOrderData(found || null);
+      });
+  };
+
+  const loadRecommendedProducts = () => {
+    CommonService._callApi({
+      api: '/product/recommended',
+      method: 'GET',
+      urlParams: { limit: 10 },
+    })
+      .then(resp => {
+        const res = resp.data;
+        if (res.status === 1 && res.response) {
+          const products = Array.isArray(res.response.data) 
+            ? res.response.data 
+            : Array.isArray(res.response) 
+              ? res.response 
+              : [];
+          setRecommendedProducts(products);
+        }
+      })
+      .catch(err => {
+        console.log('Error loading recommended products:', err);
       });
   };
 
@@ -96,6 +141,137 @@ const OrderDetailsScreen = ({ route, navigation }) => {
       return `Cancelled on ${formatDate(order.order_date, true)}`;
     }
     return `Your Order Arriving by ${addDaysToDate(order.order_date, 3)}`;
+  };
+
+  const formatAddress = (address) => {
+    if (!address) return 'Address details';
+    if (typeof address === 'string') return address;
+    
+    const { place_address, place_landmark, city, place_pincode } = address;
+    const parts = [place_address, place_landmark, city, place_pincode].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : 'Address details';
+  };
+
+  const canShowPayNow = (order) => {
+    if (!order) return false;
+    
+    const isPaid = parseInt(order.is_paid, 10) === 1;
+    const status = parseInt(order.order_status, 10);
+    
+    // Hide if delivered (4) or cancelled (7)
+    if (status === 4 || status === 7) {
+      return false;
+    }
+    
+    // Hide if already paid
+    if (isPaid) {
+      return false;
+    }
+    
+    // Only show for COD orders
+    return order.payment_method === 'COD' || order.payment_mode === 'Cash on Delivery';
+  };
+
+  const handleRepeatOrder = () => {
+    if (!orderData || (!orderData.items && !orderData.products)) return;
+    
+    const items = orderData.items || orderData.products || [];
+    let addedCount = 0;
+    
+    items.forEach(item => {
+      const productData = {
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_sell_price: item.product_sell_price || item.price || item.sell_price,
+        product_mrp: item.product_mrp || item.mrp,
+        qty: item.qty || 1,
+        cartqty: 1,
+        discount: item.discount || '',
+        unit: item.unit || '',
+        image: item.image,
+      };
+      
+      const success = CommonService.addToCart(productData);
+      if (success) addedCount++;
+    });
+    
+    if (addedCount > 0) {
+      console.log(`Added ${addedCount} items to cart`);
+      navigation.navigate('Cart');
+    }
+  };
+
+  const handlePayNow = () => {
+    if (!orderData) return;
+    setPaymentLoader(true);
+
+    CommonService._callApi({
+      api: '/cart/createrarororder',
+      method: 'GET',
+      urlParams: { order_id: orderData.order_id },
+    })
+      .then(resp => {
+        setPaymentLoader(false);
+        if (resp.data.status === 1 && resp.data.response.data.id) {
+          const sessionuser = store.getState().GlobalReducer.authuser;
+          const options = {
+            description: 'Pay for your pharmacy order',
+            image: StaticConst.api.endpoint + '/useruploads/site-logo/logo.png',
+            currency: 'INR',
+            key: resp.data.response.data.RazorpayKey,
+            amount: orderData.final_amount,
+            name: 'Order - ' + orderData.order_id,
+            order_id: resp.data.response.data.id,
+            prefill: {
+              email: sessionuser?.member_email || '',
+              contact: sessionuser?.member_phone || '',
+              name: sessionuser?.member_name || '',
+            },
+            theme: { color: '#2CB7DF' },
+          };
+
+          RazorpayCheckout.open(options)
+            .then(data => {
+              if (data?.razorpay_order_id) {
+                setPaymentLoader(true);
+                const body = JSON.stringify({
+                  razorpay_order_id: data.razorpay_order_id,
+                  razorpay_payment_id: data.razorpay_payment_id,
+                  razorpay_signature: data.razorpay_signature,
+                });
+                CommonService._callApi({
+                  api: '/cart/verifypayment',
+                  method: 'POST',
+                  body: body,
+                })
+                  .then(resp => resp.json())
+                  .then(rzrresp => {
+                    setPaymentLoader(false);
+                    if (rzrresp.status === 1) {
+                      console.log('Payment successful');
+                      loadOrderDetails(orderData.order_id);
+                    } else {
+                      console.log('Payment verification failed');
+                    }
+                  })
+                  .catch(() => {
+                    setPaymentLoader(false);
+                    console.log('Payment verification error');
+                  });
+              } else {
+                console.log('Razorpay order creation failed');
+              }
+            })
+            .catch(() => {
+              setPaymentLoader(false);
+              console.log('Razorpay payment failed');
+            });
+        }
+      })
+      .catch(err => {
+        setPaymentLoader(false);
+        console.log('Failed to create Razorpay order:', err);
+      });
   };
 
   return (
@@ -127,14 +303,16 @@ const OrderDetailsScreen = ({ route, navigation }) => {
           />
 
           <OrderItemsStrip
-            itemCount={`${orderData.products?.length || orderData.total_items || 0} items ordered`}
-            images={orderData.products || [1, 2, 3, 4]}
+            itemCount={`${orderData.items?.length || orderData.products?.length || orderData.total_items || 0} items ordered`}
+            images={orderData.items || orderData.products || []}
             totalAmount={orderData.final_amount || orderData.net_amount || '0'}
             onPressItems={() => {}}
-            onPayNow={() => console.log('Pay Now')}
+            onPayNow={canShowPayNow(orderData) ? handlePayNow : null}
+            showPayNow={canShowPayNow(orderData)}
           />
 
           <OrderTimelineCard
+            statusdetails={orderData.statusdetails}
             onSeeAllUpdates={() => navigation.navigate('OrderTracking')}
           />
 
@@ -150,14 +328,32 @@ const OrderDetailsScreen = ({ route, navigation }) => {
           <OrderInfoCard
             orderId={orderData.order_id || orderIdParam}
             payment={orderData.payment_mode || 'Cash on Delivery'}
-            deliverTo={orderData.shipping_address || orderData.address || 'Address details'}
+            deliverTo={formatAddress(orderData.shipping_address || orderData.address)}
             placedDate={formatDate(orderData.order_date, true)}
           />  
 
           <YouMayAlsoLike
+            products={recommendedProducts}
             onArrowPress={() => console.log('Arrow pressed')}
-            onProductPress={(productId) => console.log(`Product ${productId} pressed`)}
-            onAddPress={(productId) => console.log(`Add product ${productId} pressed`)}
+            onProductPress={(product) => {
+              console.log(`Product ${product.product_id} pressed`);
+              navigation.navigate('ProductDetails', { id: product.product_id });
+            }}
+            onAddPress={(product) => {
+              console.log(`Add product ${product.product_id} pressed`);
+              const productData = {
+                product_id: product.product_id,
+                product_name: product.product_name || product.title,
+                product_sell_price: product.product_sell_price || product.price || product.sell_price,
+                product_mrp: product.product_mrp || product.mrp,
+                qty: product.qty || 1,
+                cartqty: 1,
+                discount: product.discount || '',
+                unit: product.unit || '',
+                image: product.image,
+              };
+              CommonService.addToCart(productData);
+            }}
           />
         </ScrollView>
       )}
@@ -165,7 +361,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
       {orderData && (
         <RepeatOrderButton
           label="Repeat Order"
-          onPress={() => console.log('Repeat order pressed')}
+          onPress={handleRepeatOrder}
         />
       )}
     </View>
@@ -191,4 +387,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrderDetailsScreen;
+export default OrderDetailsScreen;

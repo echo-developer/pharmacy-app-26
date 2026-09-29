@@ -7,12 +7,20 @@ const EVENTS = [
   { id: 2, label: 'Delivered, Jun 17, 2026', isCompleted: false },
 ];
 
-const OrderTimelineCard = ({ events = EVENTS, onSeeAllUpdates }) => {
+const OrderTimelineCard = ({ events = EVENTS, onSeeAllUpdates, statusdetails }) => {
+  // Use real statusdetails if available, otherwise fallback to events prop
+  const timelineEvents = statusdetails && statusdetails.length > 0 
+    ? statusdetails.map((sd, index) => ({
+        id: index,
+        label: `${sd.note || 'Order Update'}, ${sd.bind_date || ''} ${sd.bind_time || ''}`,
+        isCompleted: String(sd.isComplete) === '1',
+      }))
+    : events;
   return (
     <View style={styles.card}>
       {/* ===== Timeline Events ===== */}
-      {events.map((event, index) => {
-        const isLast = index === events.length - 1;
+      {timelineEvents.map((event, index) => {
+        const isLast = index === timelineEvents.length - 1;
         return (
           <View key={event.id} style={styles.eventRow}>
             {/* Left: Tick + Line */}

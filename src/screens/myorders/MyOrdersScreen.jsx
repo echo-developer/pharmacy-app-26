@@ -198,7 +198,7 @@ const MyOrdersScreen = ({ navigation }) => {
                 <TouchableOpacity
                   key={item._uniqueKey || item.order_id || idx.toString()}
                   activeOpacity={0.9}
-                  onPress={() => navigation.navigate('OrderDetails', { orderId: item.order_id })}
+                  onPress={() => navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id })}
                 >
                   <View style={styles.dateLabelWrapper}>
                     <Text style={styles.dateLabel}>
@@ -210,7 +210,7 @@ const MyOrdersScreen = ({ navigation }) => {
                     status={status}
                     headerText={headerText}
                     images={imagesList}
-                    onPress={() => navigation.navigate('OrderDetails', { orderId: item.order_id })}
+                    onPress={() => navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id })}
                     timelineSteps={[
                       { label: 'Placed', isCompleted: true },
                       { label: 'Shipped', isCompleted: status === 'completed' || status === 'ontime' },
@@ -222,7 +222,7 @@ const MyOrdersScreen = ({ navigation }) => {
                           {
                             label: 'Track Order',
                             onPress: () =>
-                              navigation.navigate('OrderDetails', { orderId: item.order_id }),
+                              navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
                           },
                         ]
                         : status === 'completed'
@@ -230,14 +230,14 @@ const MyOrdersScreen = ({ navigation }) => {
                             {
                               label: 'View Details',
                               onPress: () =>
-                                navigation.navigate('OrderDetails', { orderId: item.order_id }),
+                                navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
                             },
                           ]
                           : [
                             {
                               label: 'View Details',
                               onPress: () =>
-                                navigation.navigate('OrderDetails', { orderId: item.order_id }),
+                                navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
                             },
                           ]
                     }
