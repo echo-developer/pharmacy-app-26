@@ -20,8 +20,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
-    // ❌ No backgroundColor
-    // ❌ No borderTop
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#EAEAEA',
   },
   button: {
     backgroundColor: '#2CB7DF',

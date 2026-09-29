@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CartHeader from '../../components/cart/CartHeader';
@@ -18,32 +18,32 @@ const CartScreen = ({ navigation }) => {
   const [cartcalc, setCartcalc] = useState(null);
   const [coupon, setCoupon] = useState('');
 
-  const calculateSubTotal = () => {
-    const cart = store.getState().GlobalReducer.cart;
-    if (cart && Array.isArray(cart.items) && cart.items.length > 0) {
-      return cart.items.map(o => (Math.abs(o.price || 0) * o.cartqty)).reduce((a, b) => (a + b), 0);
+  // Reactive cart state — updated whenever Redux store changes
+  const [cartState, setCartState] = useState(() => {
+    const s = store.getState().GlobalReducer.cart;
+    return s ? { ...s } : { items: [] };
+  });
+
+  const calculateSubTotal = (items) => {
+    if (items && items.length > 0) {
+      return items.reduce((sum, o) => sum + Math.abs(o.price || 0) * o.cartqty, 0);
     }
     return 0;
   };
 
-  const calculateDiscountTotal = () => {
-    const cart = store.getState().GlobalReducer.cart;
-    if (cart && Array.isArray(cart.items) && cart.items.length > 0) {
-      const mrptotal = cart.items.map(o => (Math.abs(o.mrp || o.price || 0) * o.cartqty)).reduce((a, b) => (a + b), 0);
-      const totalsubtotal = calculateSubTotal();
-      return Math.max(0, mrptotal - totalsubtotal);
+  const calculateDiscountTotal = (items) => {
+    if (items && items.length > 0) {
+      const mrpTotal = items.reduce((sum, o) => sum + Math.abs(o.mrp || o.price || 0) * o.cartqty, 0);
+      return Math.max(0, mrpTotal - calculateSubTotal(items));
     }
     return 0;
   };
 
-  const calculateGrandTotal = () => {
-    const subtotalAmount = calculateSubTotal();
-    return subtotalAmount;
-  };
+  const calculateGrandTotal = (items) => calculateSubTotal(items);
 
-  const cartCheck = (IsCouponApplied = false) => {
+  const cartCheck = () => {
     const cart = store.getState().GlobalReducer.cart;
-    if (cart && cart.hasOwnProperty('items') && cart.items && cart.items.length > 0) {
+    if (cart?.items?.length > 0) {
       setCartloader(true);
       const inputdata = new FormData();
       inputdata.append('pincode', store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '');
@@ -51,11 +51,11 @@ const CartScreen = ({ navigation }) => {
       inputdata.append('couponcode', coupon);
       inputdata.append('cartdata', JSON.stringify(cart.items));
       inputdata.append('member_id', store.getState().GlobalReducer.authuser?.member_id || '');
-      
+
       CommonService._callApi({
         api: '/cart/check',
         method: 'CONVERT',
-        body: inputdata
+        body: inputdata,
       })
         .then(response => response.json())
         .then(resp => {
@@ -71,15 +71,32 @@ const CartScreen = ({ navigation }) => {
     }
   };
 
-  const [cartState, setCartState] = useState(store.getState().GlobalReducer.cart);
+  // Sync cart from store before first paint so Buy Now items are visible immediately
+  useLayoutEffect(() => {
+    const fresh = store.getState().GlobalReducer.cart;
+    setCartState(fresh ? { ...fresh } : { items: [] });
+  }, []);
 
   useEffect(() => {
     cartCheck();
+
     const unsubscribe = store.subscribe(() => {
-      setCartState(store.getState().GlobalReducer.cart);
+      const updated = store.getState().GlobalReducer.cart;
+      setCartState(updated ? { ...updated } : { items: [] });
     });
-    return () => unsubscribe();
-  }, []);
+
+    // Re-read on every screen focus (handles Buy Now navigation)
+    const focusSub = navigation.addListener('focus', () => {
+      const focused = store.getState().GlobalReducer.cart;
+      setCartState(focused ? { ...focused } : { items: [] });
+      cartCheck();
+    });
+
+    return () => {
+      unsubscribe();
+      focusSub();
+    };
+  }, [navigation]);
 
   const handleQtyChange = (id, qty) => {
     if (qty === 0) {
@@ -99,8 +116,9 @@ const CartScreen = ({ navigation }) => {
     setTimeout(() => cartCheck(), 300);
   };
 
-  const cart = cartState || store.getState().GlobalReducer.cart;
-  const hasItems = cart && cart.items && cart.items.length > 0;
+  const cart = cartState;
+  const items = cart?.items || [];
+  const hasItems = items.length > 0;
   const isUserLoggedIn = Boolean(store.getState().GlobalReducer.authuser);
 
   const handleCheckoutPress = () => {
@@ -139,11 +157,11 @@ const CartScreen = ({ navigation }) => {
               onBackPress={() => navigation.goBack()}
               onSearchPress={() => navigation.navigate('Search')}
             />
-            <SavingsBanner amount={`₹${calculateDiscountTotal()}`} />
+            <SavingsBanner amount={`₹${calculateDiscountTotal(items)}`} />
             <DeliveryTimeRow time="30 mins" />
           </LinearGradient>
           <CartItemsList
-            items={cart?.items || []}
+            items={items}
             onQtyChange={handleQtyChange}
           />
           <BeforeYouBuy
@@ -155,10 +173,10 @@ const CartScreen = ({ navigation }) => {
             label="View Coupons & Offers"
             onPress={() => console.log('View Coupons pressed')}
           />
-          <BillDetails 
-            subtotal={calculateSubTotal()}
-            discount={calculateDiscountTotal()}
-            total={calculateGrandTotal()}
+          <BillDetails
+            subtotal={calculateSubTotal(items)}
+            discount={calculateDiscountTotal(items)}
+            total={calculateGrandTotal(items)}
           />
           <DeliveryAddress
             title="Delivering to House"
@@ -169,7 +187,7 @@ const CartScreen = ({ navigation }) => {
       )}
       {hasItems && (
         <GetOTPButton
-          label={isUserLoggedIn ? "Proceed to Checkout" : "Login to Checkout"}
+          label={isUserLoggedIn ? 'Proceed to Checkout' : 'Login to Checkout'}
           onPress={handleCheckoutPress}
         />
       )}

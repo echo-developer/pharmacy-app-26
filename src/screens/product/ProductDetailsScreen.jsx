@@ -57,7 +57,9 @@ const ProductDetailsScreen = ({ navigation }) => {
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
+    if (productData) {
+      CommonService.addToCart(productData);
+    }
     navigation.navigate('Cart');
   };
 

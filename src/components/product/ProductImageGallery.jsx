@@ -6,11 +6,13 @@ import {
   StyleSheet,
   FlatList,
   Dimensions,
+  Modal,
+  StatusBar,
 } from 'react-native';
-import { Heart, ChevronUp } from 'lucide-react-native';
+import { Heart, ChevronUp, X } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const ProductImageGallery = ({
   images,
@@ -19,6 +21,8 @@ const ProductImageGallery = ({
   onExpandPress,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [fullscreenVisible, setFullscreenVisible] = useState(false);
+  const [fullscreenIndex, setFullscreenIndex] = useState(0);
 
   // Support both `images` array (from API) and legacy single `image`
   const gallery =
@@ -30,8 +34,63 @@ const ProductImageGallery = ({
 
   const hasMultiple = gallery.length > 1;
 
+  const openFullscreen = (idx) => {
+    setFullscreenIndex(idx);
+    setFullscreenVisible(true);
+  };
+
   return (
     <View style={styles.container}>
+      {/* ===== Fullscreen Image Modal ===== */}
+      <Modal
+        visible={fullscreenVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFullscreenVisible(false)}
+        statusBarTranslucent
+      >
+        <View style={styles.modalOverlay}>
+          <StatusBar backgroundColor="rgba(0,0,0,0.95)" barStyle="light-content" />
+          <TouchableOpacity
+            style={styles.modalClose}
+            onPress={() => setFullscreenVisible(false)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <X size={26} color="#fff" />
+          </TouchableOpacity>
+          <FlatList
+            data={gallery}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={fullscreenIndex}
+            getItemLayout={(_, index) => ({
+              length: SCREEN_WIDTH,
+              offset: SCREEN_WIDTH * index,
+              index,
+            })}
+            keyExtractor={(item, idx) => `full-${item}-${idx}`}
+            renderItem={({ item }) => (
+              <Image
+                source={{ uri: item }}
+                style={styles.fullscreenImage}
+                resizeMode="contain"
+              />
+            )}
+          />
+          {hasMultiple && (
+            <View style={styles.modalDots}>
+              {gallery.map((_, i) => (
+                <View
+                  key={i}
+                  style={[styles.dot, i === fullscreenIndex ? styles.dotActive : styles.dotInactive]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+      </Modal>
+
       {/* ===== Image Area ===== */}
       <View style={styles.imageArea}>
         {gallery.length > 0 ? (
@@ -47,20 +106,27 @@ const ProductImageGallery = ({
               );
               setActiveIndex(idx);
             }}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: item }}
-                style={[styles.image, { width: SCREEN_WIDTH }]}
-                resizeMode="cover"
-              />
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                activeOpacity={0.95}
+                onPress={() => openFullscreen(index)}
+              >
+                <Image
+                  source={{ uri: item }}
+                  style={[styles.image, { width: SCREEN_WIDTH }]}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
             )}
           />
         ) : (
-          <Image
-            source={require('../../assets/images/Subtract.png')}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <TouchableOpacity activeOpacity={0.95} onPress={() => openFullscreen(0)}>
+            <Image
+              source={require('../../assets/images/Subtract.png')}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         )}
 
         {/* Dot indicators */}
@@ -118,6 +184,34 @@ const ProductImageGallery = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
+  },
+
+  /* ===== Fullscreen Modal ===== */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalClose: {
+    position: 'absolute',
+    top: 48,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    padding: 6,
+  },
+  fullscreenImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+  },
+  modalDots: {
+    position: 'absolute',
+    bottom: 40,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   /* ===== Image Area ===== */
