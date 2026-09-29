@@ -33,12 +33,12 @@ const Header = ({
       style={styles.container}
     >
       {/* LEFT SIDE */}
-      <View style={styles.leftContainer}>
+      <TouchableOpacity style={styles.leftContainer} onPress={onLocationPress} activeOpacity={0.8}>
         <View style={styles.iconCircle}>
           <Navigation size={18} color="#FFFFFF" fill="#FFFFFF" />
         </View>
 
-        <TouchableOpacity style={styles.textColumn} onPress={onLocationPress}>
+        <View style={styles.textColumn}>
           <View style={styles.nameRow}>
             <Text style={styles.userName}>{userName}</Text>
             <ChevronDown size={16} color="#043250" style={styles.dropdownArrow} />
@@ -48,8 +48,8 @@ const Header = ({
             <MapPin size={12} color="#787887" style={styles.locationIcon} />
             <Text style={styles.locationText} numberOfLines={1}>{displayLocation}</Text>
           </View>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
 
       {/* RIGHT SIDE */}
       <TouchableOpacity style={styles.cartButton} onPress={onCartPress}>

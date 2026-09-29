@@ -194,9 +194,18 @@ const ProductInfoCard = ({
             onPress={onLocationPress}
             activeOpacity={0.85}>
             <MapPin size={18} color="#263077" />
-            <Text style={styles.rowText}>
-              <Text style={styles.locationLight}>Location not set </Text>
-              <Text style={styles.locationBold}>Select delivery location</Text>
+            <Text style={styles.rowText} numberOfLines={1}>
+              {product.currentAddress ? (
+                <>
+                  <Text style={styles.locationLight}>Deliver to: </Text>
+                  <Text style={styles.locationBold}>{product.currentAddress}</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.locationLight}>Location not set </Text>
+                  <Text style={styles.locationBold}>Select delivery location</Text>
+                </>
+              )}
             </Text>
             <ChevronRight size={18} color="#263077" />
           </TouchableOpacity>
@@ -206,8 +215,8 @@ const ProductInfoCard = ({
             onPress={onDeliveryPress}
             activeOpacity={0.85}>
             <Bike size={18} color="#333333" />
-            <Text style={styles.deliveryText}>
-              Check delivery availability
+            <Text style={styles.deliveryText} numberOfLines={1}>
+              {product.deliveryStatus || 'Check delivery availability'}
             </Text>
             <ChevronRight size={18} color="#333333" />
           </TouchableOpacity>

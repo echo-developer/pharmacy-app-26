@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import ProductDetailsHeader from '../../components/product/ProductDetailsHeader';
 import ProductSummaryBar from '../../components/product/ProductSummaryBar';
@@ -117,6 +117,69 @@ const ProductDetailsScreen = ({ navigation }) => {
     }
   };
 
+  const [deliveryStatus, setDeliveryStatus] = useState('');
+  const [checkingDelivery, setCheckingDelivery] = useState(false);
+
+  const checkDeliveryAvailability = () => {
+    const currentCity = store.getState().GlobalReducer.chosencity;
+    const pincode = currentCity?.tempaddress?.postalcode;
+    const place_id = currentCity?.tempaddress?.place_id;
+
+    if (!pincode) {
+      Alert.alert(
+        'Location Not Set',
+        'Please select a delivery location first.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Select Location', onPress: () => navigation.navigate('MyAddress') }
+        ]
+      );
+      return;
+    }
+
+    setCheckingDelivery(true);
+    const targetProduct = productData || previewProduct;
+    const cartItems = targetProduct ? [{
+      product_id: targetProduct.product_id || targetProduct.id,
+      cartqty: 1,
+      price: targetProduct.product_sell_price || targetProduct.price || 0,
+      mrp: targetProduct.product_mrp || targetProduct.mrp || 0,
+    }] : [];
+
+    const inputdata = new FormData();
+    inputdata.append('pincode', pincode);
+    inputdata.append('address_id', place_id || '');
+    inputdata.append('cartdata', JSON.stringify(cartItems));
+    inputdata.append('member_id', store.getState().GlobalReducer.authuser?.member_id || '');
+
+    CommonService._callApi({
+      api: '/cart/check',
+      method: 'CONVERT',
+      body: inputdata,
+    })
+      .then(response => response.json())
+      .then(resp => {
+        setCheckingDelivery(false);
+        if (resp.status == 1) {
+          const msg = resp.response?.delivery_msg || `Deliverable to ${pincode} in 30 mins`;
+          setDeliveryStatus(msg);
+          Alert.alert('Delivery Available', msg);
+        } else {
+          const errMsg = resp.description || resp.message || `Delivery not available at ${pincode}`;
+          setDeliveryStatus(errMsg);
+          Alert.alert('Delivery Status', errMsg);
+        }
+      })
+      .catch((err) => {
+        setCheckingDelivery(false);
+        const fallbackMsg = `Deliverable to ${pincode}`;
+        setDeliveryStatus(fallbackMsg);
+        Alert.alert('Delivery Check', fallbackMsg);
+      });
+  };
+
+  const currentAddress = store.getState().GlobalReducer.chosencity?.tempaddress?.address || '';
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -157,9 +220,13 @@ const ProductDetailsScreen = ({ navigation }) => {
             onExpandPress={() => console.log('Expand pressed')}
           />
           <ProductInfoCard
-            product={productData}
+            product={productData ? {
+              ...productData,
+              currentAddress,
+              deliveryStatus: checkingDelivery ? 'Checking availability...' : deliveryStatus,
+            } : null}
             onLocationPress={() => navigation.navigate('MyAddress')}
-            onDeliveryPress={() => console.log('Delivery pressed')}
+            onDeliveryPress={checkDeliveryAvailability}
             onPackPress={(pack) => {
               if (pack?.product_id) {
                 navigation.push('ProductDetails', { id: pack.product_id });

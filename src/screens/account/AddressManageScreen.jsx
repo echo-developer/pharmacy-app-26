@@ -107,11 +107,13 @@ const AddressManageScreen = ({ navigation }) => {
     const id = item.place_id || item.id;
     setSelectedId(id);
     await saveAddressToStore(item);
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
   };
 
   const handleSelectAndGoBack = async (item) => {
     await handleSelectAddress(item);
-    Alert.alert('Address Selected', `Delivering to: ${item.place_address || item.address}`);
   };
 
   const handleSaveAddress = () => {
