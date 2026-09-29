@@ -120,17 +120,18 @@ const AddressManageScreen = ({ navigation }) => {
       return;
     }
     setSaving(true);
-    const inputdata = new FormData();
-    inputdata.append('place_address', newAddress.trim());
-    inputdata.append('place_pincode', newPincode.trim());
-    inputdata.append('place_type_name', newTitle.trim() || 'Home');
-    inputdata.append('contact_phone', newPhone.trim() || '');
-    inputdata.append('member_id', store.getState().GlobalReducer.authuser?.member_id || '');
+    const body = JSON.stringify({
+      place_address: newAddress.trim(),
+      place_pincode: newPincode.trim(),
+      place_type_name: newTitle.trim() || 'Home',
+      contact_phone: newPhone.trim() || '',
+      member_id: store.getState().GlobalReducer.authuser?.member_id || '',
+    });
 
     CommonService._callApi({
       api: '/member/addaddress',
-      method: 'CONVERT',
-      body: inputdata,
+      method: 'POST',
+      body: body,
     })
       .then(r => r.json())
       .then(async resp => {
@@ -183,12 +184,11 @@ const AddressManageScreen = ({ navigation }) => {
         {
           text: 'Delete', style: 'destructive',
           onPress: () => {
-            const inputdata = new FormData();
-            inputdata.append('id', item.place_id || item.id);
+            const body = JSON.stringify({ id: item.place_id || item.id });
             CommonService._callApi({
               api: '/member/removeaddress',
-              method: 'CONVERT',
-              body: inputdata,
+              method: 'POST',
+              body: body,
             })
               .then(r => r.json())
               .then(resp => {

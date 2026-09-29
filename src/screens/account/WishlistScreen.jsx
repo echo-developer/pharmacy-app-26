@@ -52,12 +52,11 @@ const WishlistScreen = ({ navigation }) => {
     // Optimistic remove from UI
     setWishlistItems(prev => prev.filter(item => Math.abs(item.product_id) !== Math.abs(product_id)));
 
-    const inputparams = new FormData();
-    inputparams.append('product_id', product_id);
+    const body = JSON.stringify({ product_id: product_id });
     CommonService._callApi({
       api: '/member/favorite',
-      method: 'CONVERT',
-      body: inputparams,
+      method: 'POST',
+      body: body,
     })
       .then(r => r.json())
       .then(response => {

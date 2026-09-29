@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, StatusBar, Alert, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import AccountHeader from '../../components/account/AccountHeader';
@@ -11,10 +11,32 @@ import SettingsSection from '../../components/account/SettingsSection';
 import SettingsRow from '../../components/account/SettingsRow';
 import LogoutButton from '../../components/account/LogoutButton';
 import { AuthContext } from '../../authcontext';
+import CommonService from '../../utils/CommonService';
+import store from '../../store/store';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { signOut, loginState } = useContext(AuthContext);
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  useEffect(() => {
+    loadWalletBalance();
+  }, []);
+
+  const loadWalletBalance = () => {
+    CommonService._callApi({
+      api: '/member/balance',
+      method: 'GET',
+    })
+      .then(resp => {
+        if (resp.data.status === 1) {
+          setWalletBalance(resp.data.response.data.balance || 0);
+        }
+      })
+      .catch(err => {
+        console.log('Error loading wallet balance:', err);
+      });
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -22,6 +44,92 @@ const AccountScreen = ({ navigation }) => {
       index: 0,
       routes: [{ name: 'Login' }],
     });
+  };
+
+  const handleWalletPress = () => {
+    const balance = typeof walletBalance === 'number' ? walletBalance.toFixed(2) : '0.00';
+    Alert.alert(
+      'Wallet Balance',
+      `Your current wallet balance is ₹${balance}`,
+      [
+        { text: 'OK', onPress: () => {} }
+      ]
+    );
+  };
+
+  const handleShareApp = async () => {
+    try {
+      await Share.share({
+        message: 'Check out this amazing Pharmacy App! Download it now.',
+        url: 'https://play.google.com/store/apps/details?id=com.pharmacyapp',
+      });
+    } catch (error) {
+      console.log('Error sharing app:', error);
+    }
+  };
+
+  const handleNotifications = () => {
+    Alert.alert(
+      'Notifications',
+      'You can manage your notification preferences in device settings.',
+      [
+        { text: 'OK', onPress: () => {} }
+      ]
+    );
+  };
+
+  const handleHelpPress = () => {
+    Alert.alert(
+      'Help & Support',
+      'For help and support, please contact us at support@pharmacyapp.com or call our helpline.',
+      [
+        { text: 'Call Support', onPress: () => console.log('Call support') },
+        { text: 'Email Support', onPress: () => console.log('Email support') },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const handleAppUpdate = () => {
+    Alert.alert(
+      'App Update',
+      'You are using the latest version of the app.',
+      [
+        { text: 'OK', onPress: () => {} }
+      ]
+    );
+  };
+
+  const handleEditProfile = () => {
+    Alert.alert(
+      'Edit Profile',
+      'Profile editing feature coming soon!',
+      [
+        { text: 'OK', onPress: () => {} }
+      ]
+    );
+  };
+
+  const handleEmailPress = () => {
+    const email = loginState?.userToken?.email;
+    if (email && email !== 'Add your email') {
+      Alert.alert(
+        'Email Address',
+        email,
+        [
+          { text: 'OK', onPress: () => {} }
+      ]
+      );
+    } else {
+      Alert.alert(
+        'Add Email',
+        'Would you like to add your email address?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Add', onPress: handleEditProfile }
+        ]
+      );
+    }
   };
 
   return (
@@ -42,13 +150,13 @@ const AccountScreen = ({ navigation }) => {
         <AccountHeader
           title="My Account"
           onBackPress={() => navigation.goBack()}
-          onWalletPress={() => console.log('Wallet pressed')}
+          onWalletPress={handleWalletPress}
         />
         <ProfileCard
           phone={loginState?.userToken?.mobile || loginState?.userToken?.phone || '+91 9812345678'}
           email={loginState?.userToken?.email || 'Add your email'}
-          onEditPress={() => console.log('Edit pressed')}
-          onEmailPress={() => console.log('Email pressed')}
+          onEditPress={handleEditProfile}
+          onEmailPress={handleEmailPress}
         />
       </LinearGradient>
 
@@ -58,14 +166,14 @@ const AccountScreen = ({ navigation }) => {
       >
         <QuickActions
           onOrdersPress={() => navigation.navigate('My Orders')}
-          onWalletPress={() => console.log('Wallet pressed')}
-          onHelpPress={() => console.log('Help pressed')}
+          onWalletPress={handleWalletPress}
+          onHelpPress={handleHelpPress}
         />
         <AppUpdateBanner
           title="App Update Available"
           subtitle="Bug Fixes & Improvements"
           version="V1.010"
-          onPress={() => console.log('Update pressed')}
+          onPress={handleAppUpdate}
         />
         <SettingsSection title="Information">
           <SettingsRow
@@ -84,7 +192,7 @@ const AccountScreen = ({ navigation }) => {
           <SettingsRow
             Icon={Share2}
             label="Share the app"
-            onPress={() => console.log('Share')}
+            onPress={handleShareApp}
             showDivider
           />
           <SettingsRow
@@ -102,7 +210,7 @@ const AccountScreen = ({ navigation }) => {
           <SettingsRow
             Icon={Bell}
             label="Notifications"
-            onPress={() => console.log('Notifications')}
+            onPress={handleNotifications}
             showDivider
           />
           <SettingsRow

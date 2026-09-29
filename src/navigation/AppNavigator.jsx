@@ -8,6 +8,7 @@ import ProductDetailsScreen from '../screens/product/ProductDetailsScreen';
 import CartScreen from '../screens/cart/CartScreen';
 import OrderDetailsScreen from '../screens/myorders/OrderDetailsScreen';
 import OrderTrackingScreen from '../screens/myorders/OrderTrackingScreen';
+import MyOrdersScreen from '../screens/myorders/MyOrdersScreen';
 import { AuthContext } from '../authcontext';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -46,6 +47,7 @@ const AppNavigator = () => {
         <Stack.Screen name="AboutUs" component={WebScreen} />
         <Stack.Screen name="Faq" component={WebScreen} />
         <Stack.Screen name="ReturnPolicy" component={WebScreen} />
+        <Stack.Screen name="My Orders" component={MyOrdersScreen} />
         <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
         <Stack.Screen
           name="OrderTracking"
