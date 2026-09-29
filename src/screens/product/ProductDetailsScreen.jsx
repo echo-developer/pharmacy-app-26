@@ -51,13 +51,13 @@ const ProductDetailsScreen = ({ navigation }) => {
   }, [productId]);
 
   const handleAddToCart = () => {
-    if (productData) {
+    if (productData && productData.product_sell_price != null) {
       CommonService.addToCart(productData);
     }
   };
 
   const handleBuyNow = () => {
-    if (productData) {
+    if (productData && productData.product_sell_price != null) {
       CommonService.addToCart(productData);
     }
     navigation.navigate('Cart');

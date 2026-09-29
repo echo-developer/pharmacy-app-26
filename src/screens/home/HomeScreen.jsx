@@ -163,7 +163,7 @@ const HomeScreen = ({ navigation }) => {
           />
           <VitaminsProducts
             products={vitamins}
-            onCardPress={(item) => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
+            onCardPress={(item) => navigation.navigate('Products', { title: item.category_name || item.label || item.product_name || 'Products', category_id: item.category_id })}
           />
           <DealsHeader
             title="Deals you'll love"
