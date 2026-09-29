@@ -1,9 +1,24 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { Heart, Zap } from 'lucide-react-native';
+import { Heart, Zap, Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSelector } from 'react-redux';
+import CommonService from '../../utils/CommonService';
 
-const CategoryProductCard = ({ product, onAddPress, onFavPress }) => {
+const CategoryProductCard = ({ product, onAddPress, onFavPress, isFavorite = false }) => {
+  // Read live cart qty from redux
+  const cart = useSelector(state => state.GlobalReducer.cart);
+  const cartQty = React.useMemo(() => {
+    if (!cart?.items || !product?.id) return 0;
+    const item = cart.items.find(o => Math.abs(o.product_id) === Math.abs(product.id));
+    return item ? item.cartqty : 0;
+  }, [cart, product?.id]);
+
+  const handleIncrease = () => onAddPress?.();
+  const handleDecrease = () => {
+    if (product?.id) CommonService.decreaseCart(product.id);
+  };
+
   return (
     <View style={styles.card}>
       {/* ===== TOP: Image + Details ===== */}
@@ -31,19 +46,14 @@ const CategoryProductCard = ({ product, onAddPress, onFavPress }) => {
           <Text style={styles.title} numberOfLines={2}>
             {product.title}
           </Text>
-
           <Text style={styles.tablets}>{product.tablets}</Text>
-
           <Text style={styles.mrp}>MRP ₹{product.mrp}</Text>
-
           <View style={styles.priceRow}>
             <Text style={styles.price}>~₹{product.price}</Text>
             <Text style={styles.discountPct}>{product.discountPct}</Text>
           </View>
-
           <View style={styles.deliveryRow}>
             <Text style={styles.delivery}>{product.delivery}</Text>
-            {/* Gradient Zap Icon */}
             <LinearGradient
               colors={['#E8F4FA', '#A2D0E8']}
               start={{ x: 0, y: 0 }}
@@ -56,15 +66,33 @@ const CategoryProductCard = ({ product, onAddPress, onFavPress }) => {
         </View>
       </View>
 
-      {/* ===== BOTTOM: Heart + ADD ===== */}
+      {/* ===== BOTTOM: Heart + ADD / Stepper ===== */}
       <View style={styles.bottomRow}>
+        {/* Heart button */}
         <TouchableOpacity style={styles.iconBox} onPress={onFavPress}>
-          <Heart size={18} color="#263077" />
+          <Heart
+            size={18}
+            color={isFavorite ? '#ff0000' : '#263077'}
+            fill={isFavorite ? '#ff0000' : 'none'}
+          />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addButton} onPress={onAddPress}>
-          <Text style={styles.addText}>ADD</Text>
-        </TouchableOpacity>
+        {/* Stepper or ADD */}
+        {cartQty > 0 ? (
+          <View style={styles.stepper}>
+            <TouchableOpacity style={styles.stepBtn} onPress={handleDecrease} activeOpacity={0.8}>
+              <Minus size={14} color="#263077" strokeWidth={2.5} />
+            </TouchableOpacity>
+            <Text style={styles.stepQty}>{cartQty}</Text>
+            <TouchableOpacity style={styles.stepBtn} onPress={handleIncrease} activeOpacity={0.8}>
+              <Plus size={14} color="#263077" strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity style={styles.addButton} onPress={onAddPress}>
+            <Text style={styles.addText}>ADD</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -78,14 +106,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#EFF3F5',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.04,
-    // shadowRadius: 4,
-    // elevation: 2,
   },
-
-  /* ===== Top Row ===== */
   topRow: {
     flexDirection: 'row',
   },
@@ -120,8 +141,6 @@ const styles = StyleSheet.create({
     width: '80%',
     height: '80%',
   },
-
-  /* ===== Details ===== */
   details: {
     flex: 1,
     justifyContent: 'flex-start',
@@ -176,8 +195,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  /* ===== Bottom Row ===== */
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -205,6 +222,34 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#263077',
     letterSpacing: 0.5,
+  },
+  // Stepper
+  stepper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#263077',
+    paddingHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  stepBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#EEF0F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepQty: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#263077',
+    minWidth: 24,
+    textAlign: 'center',
   },
 });
 

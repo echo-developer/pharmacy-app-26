@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, StatusBar, ActivityIndicator } from 'react-native';
+import { useSelector } from 'react-redux';
 import CategoryHeader from '../../components/categories/CategoryHeader';
 import CategoriesSidebar from '../../components/categories/CategoriesSidebar';
 import FilterSortBar from '../../components/categories/FilterSortBar';
@@ -66,11 +67,61 @@ const CategoriesScreen = ({ navigation }) => {
     getProductsApi(categoryId);
   };
 
+  const handleFavPress = (item) => {
+    const authuser = store.getState().GlobalReducer.authuser;
+    if (!authuser) {
+      navigation.navigate('Login');
+      return;
+    }
+    const pid = item.product_id || item.id;
+    const currentFav =
+      store.getState().GlobalReducer.favoriteOverrides[Math.abs(pid)] !== undefined
+        ? store.getState().GlobalReducer.favoriteOverrides[Math.abs(pid)] === 1
+        : item.is_favorite === 1;
+
+    // Optimistic update
+    store.dispatch({
+      type: 'SET_FAVORITE_STATUS',
+      payload: { product_id: pid, is_favorite: !currentFav },
+    });
+
+    const inputparams = new FormData();
+    inputparams.append('product_id', pid);
+    CommonService._callApi({
+      api: '/member/favorite',
+      method: 'CONVERT',
+      body: inputparams,
+    })
+      .then(r => r.json())
+      .then(response => {
+        if (response.status == 1) {
+          // Use API response value directly
+          const newIsFav = response.response?.data?.is_favorite === 1;
+          store.dispatch({
+            type: 'SET_FAVORITE_STATUS',
+            payload: { product_id: pid, is_favorite: newIsFav },
+          });
+        } else {
+          // Revert on failure
+          store.dispatch({
+            type: 'SET_FAVORITE_STATUS',
+            payload: { product_id: pid, is_favorite: currentFav },
+          });
+        }
+      })
+      .catch(() => {
+        store.dispatch({
+          type: 'SET_FAVORITE_STATUS',
+          payload: { product_id: pid, is_favorite: currentFav },
+        });
+      });
+  };
+
   useEffect(() => {
     getCategoriesApi();
   }, []);
 
-  const cart = store.getState().GlobalReducer.cart;
+  const cart = useSelector(state => state.GlobalReducer.cart);
   const cartCount = cart?.items?.length || 0;
 
   return (
@@ -106,7 +157,7 @@ const CategoriesScreen = ({ navigation }) => {
                 products={products}
                 onProductPress={(item) => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
                 onAddPress={(item) => CommonService.addToCart(item)}
-                onFavPress={(item) => console.log('Fav:', item.product_name)}
+                onFavPress={handleFavPress}
               />
             </View>
           </View>

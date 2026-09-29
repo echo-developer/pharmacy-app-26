@@ -1,15 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ShoppingCart } from 'lucide-react-native';
+import { ShoppingCart, Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSelector } from 'react-redux';
+import CommonService from '../../utils/CommonService';
 
 const ProductBottomBar = ({
   message = 'yay! you have unlocked',
   highlight = 'EXTRA 10% OFF',
   suffix = 'on this product',
+  product,
   onAddToCart,
   onBuyNow,
 }) => {
+  const cart = useSelector(state => state.GlobalReducer.cart);
+
+  // Derive cartQty from redux cart so it re-renders on change
+  const cartQty = React.useMemo(() => {
+    if (!cart || !cart.items || !product?.product_id) return 0;
+    const item = cart.items.find(
+      o => Math.abs(o.product_id) === Math.abs(product.product_id),
+    );
+    return item ? item.cartqty : 0;
+  }, [cart, product?.product_id]);
+
+  const handleIncrease = () => {
+    if (product) CommonService.addToCart(product);
+  };
+
+  const handleDecrease = () => {
+    if (product) CommonService.decreaseCart(product.product_id);
+  };
+
   return (
     <View style={styles.container}>
       {/* ===== TOP STRIP ===== */}
@@ -30,15 +52,35 @@ const ProductBottomBar = ({
 
       {/* ===== BUTTONS ROW ===== */}
       <View style={styles.buttonRow}>
-        {/* Add to Cart */}
-        <TouchableOpacity
-          style={styles.addToCartBtn}
-          activeOpacity={0.85}
-          onPress={onAddToCart}
-        >
-          <ShoppingCart size={18} color="#263077" />
-          <Text style={styles.addToCartText}>Add to Cart</Text>
-        </TouchableOpacity>
+        {/* Add to Cart / Stepper */}
+        {cartQty > 0 ? (
+          <View style={styles.stepperBtn}>
+            <TouchableOpacity
+              style={styles.stepperCircle}
+              activeOpacity={0.8}
+              onPress={handleDecrease}
+            >
+              <Minus size={16} color="#263077" strokeWidth={2.5} />
+            </TouchableOpacity>
+            <Text style={styles.stepperQty}>{cartQty}</Text>
+            <TouchableOpacity
+              style={styles.stepperCircle}
+              activeOpacity={0.8}
+              onPress={handleIncrease}
+            >
+              <Plus size={16} color="#263077" strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addToCartBtn}
+            activeOpacity={0.85}
+            onPress={onAddToCart}
+          >
+            <ShoppingCart size={18} color="#263077" />
+            <Text style={styles.addToCartText}>Add to Cart</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Buy Now */}
         <TouchableOpacity
@@ -56,7 +98,6 @@ const ProductBottomBar = ({
 
 const styles = StyleSheet.create({
   container: {
-    // backgroundColor: '#FFFFFF',
     paddingTop: 12,
     paddingBottom: 24,
   },
@@ -66,7 +107,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6E6E56',         // Strip bg
+    backgroundColor: '#6E6E56',
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderTopLeftRadius: 14,
@@ -75,7 +116,7 @@ const styles = StyleSheet.create({
   },
   stripText: {
     fontSize: 12,
-    color: '#FFFFFF',                  // Strip text
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   highlightPill: {
@@ -87,7 +128,7 @@ const styles = StyleSheet.create({
   highlightText: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#FFFFFF',                  // Highlight text
+    color: '#FFFFFF',
     letterSpacing: 0.3,
   },
 
@@ -104,7 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#CACCDA',            // Border
+    borderColor: '#CACCDA',
     borderRadius: 24,
     paddingVertical: 12,
     backgroundColor: '#FFFFFF',
@@ -113,14 +154,44 @@ const styles = StyleSheet.create({
   addToCartText: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#263077',                  // Add to Cart text
+    color: '#263077',
   },
+
+  /* ===== Stepper ===== */
+  stepperBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1.5,
+    borderColor: '#263077',
+    borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  stepperCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#EEF0F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperQty: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#263077',
+    minWidth: 28,
+    textAlign: 'center',
+  },
+
   buyNowBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#263077',        // Buy Now bg
+    backgroundColor: '#263077',
     borderRadius: 24,
     paddingVertical: 12,
     gap: 6,
@@ -128,7 +199,7 @@ const styles = StyleSheet.create({
   buyNowText: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#FFFFFF',                  // Buy Now text
+    color: '#FFFFFF',
   },
 });
 

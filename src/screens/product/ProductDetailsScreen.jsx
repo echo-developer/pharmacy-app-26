@@ -12,6 +12,7 @@ import ProductPaymentSection from '../../components/product/ProductPaymentSectio
 import ProductBottomBar from '../../components/product/ProductBottomBar';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
+import { useSelector } from 'react-redux';
 
 const ProductDetailsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -20,6 +21,14 @@ const ProductDetailsScreen = ({ navigation }) => {
 
   const [loader, setLoader] = useState(false);
   const [productData, setProductData] = useState(previewProduct || null);
+
+  // Wishlist state
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
+
+  // Cart count from redux for header badge
+  const cart = useSelector(state => state.GlobalReducer.cart);
+  const cartCount = cart?.items?.length || 0;
 
   const getProductDetails = (id) => {
     setLoader(true);
@@ -35,7 +44,10 @@ const ProductDetailsScreen = ({ navigation }) => {
       .then(dataresp => {
         setLoader(false);
         if (dataresp.status == 1) {
-          setProductData(dataresp.response.data);
+          const data = dataresp.response.data;
+          setProductData(data);
+          // Sync favorite state from API response
+          setIsFavorite(data?.is_favorite === 1);
         }
       })
       .catch(error => {
@@ -47,8 +59,47 @@ const ProductDetailsScreen = ({ navigation }) => {
   useEffect(() => {
     if (productId) {
       getProductDetails(productId);
+    } else if (previewProduct) {
+      // Sync favorite state from preview product too
+      setIsFavorite(previewProduct?.is_favorite === 1);
     }
   }, [productId]);
+
+  const handleFavPress = () => {
+    if (!productData?.product_id) return;
+    const authuser = store.getState().GlobalReducer.authuser;
+    if (!authuser) {
+      navigation.navigate('Login');
+      return;
+    }
+
+    setFavLoading(true);
+    const inputparams = new FormData();
+    inputparams.append('product_id', productData.product_id);
+
+    CommonService._callApi({
+      api: '/member/favorite',
+      method: 'CONVERT',
+      body: inputparams,
+    })
+      .then(r => r.json())
+      .then(response => {
+        setFavLoading(false);
+        if (response.status == 1) {
+          // Use API response value directly (is_favorite: 1 = added, 0 = removed)
+          const newIsFav = response.response?.data?.is_favorite === 1;
+          setIsFavorite(newIsFav);
+          store.dispatch({
+            type: 'SET_FAVORITE_STATUS',
+            payload: {
+              product_id: productData.product_id,
+              is_favorite: newIsFav,
+            },
+          });
+        }
+      })
+      .catch(() => setFavLoading(false));
+  };
 
   const handleAddToCart = () => {
     if (productData && productData.product_sell_price != null) {
@@ -62,9 +113,6 @@ const ProductDetailsScreen = ({ navigation }) => {
     }
     navigation.navigate('Cart');
   };
-
-  const cart = store.getState().GlobalReducer.cart;
-  const cartCount = cart?.items?.length || 0;
 
   return (
     <View style={styles.container}>
@@ -101,7 +149,9 @@ const ProductDetailsScreen = ({ navigation }) => {
                     ? [productData.image]
                     : []
               }
-              onFavPress={() => console.log('Favorite pressed')}
+              isFavorite={isFavorite}
+              favLoading={favLoading}
+              onFavPress={handleFavPress}
               onExpandPress={() => console.log('Expand pressed')}
             />
             <ProductInfoCard

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Provider } from 'react-redux';
 import { AuthContext } from './src/authcontext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import base64 from 'react-native-base64';
@@ -124,9 +125,11 @@ const App = () => {
   );
 
   return (
-    <AuthContext.Provider value={{ ...AuthContextMethods, loginState }}>
-      <AppNavigator />
-    </AuthContext.Provider>
+    <Provider store={store}>
+      <AuthContext.Provider value={{ ...AuthContextMethods, loginState }}>
+        <AppNavigator />
+      </AuthContext.Provider>
+    </Provider>
   );
 };
 

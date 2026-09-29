@@ -8,6 +8,7 @@ import {
   Dimensions,
   Modal,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Heart, ChevronUp, X } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -17,7 +18,9 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const ProductImageGallery = ({
   images,
   image,
+  isFavorite = false,
   onFavPress,
+  favLoading = false,
   onExpandPress,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -150,7 +153,15 @@ const ProductImageGallery = ({
           activeOpacity={0.85}
           onPress={onFavPress}
         >
-          <Heart size={20} color="#263077" />
+          {favLoading ? (
+            <ActivityIndicator size="small" color="#263077" />
+          ) : (
+            <Heart
+              size={20}
+              color={isFavorite ? '#ff0000' : '#263077'}
+              fill={isFavorite ? '#ff0000' : 'none'}
+            />
+          )}
         </TouchableOpacity>
 
         {/* ===== Wave overlay at the bottom of image ===== */}

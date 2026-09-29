@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,32 +7,70 @@ import {
   StyleSheet,
   StatusBar,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
+import store from '../../store/store';
 
 const WishlistScreen = ({ navigation }) => {
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      product_id: 201,
-      product_name: 'Accu-Chek Active Test Strips (50 Strips)',
-      product_sell_price: 975,
-      product_mrp: 1049,
-      unit: '50 Strips Box',
-      image: 'https://via.placeholder.com/150',
-    },
-    {
-      product_id: 202,
-      product_name: 'Dettol Instant Hand Sanitizer 500ml',
-      product_sell_price: 220,
-      product_mrp: 250,
-      unit: '500 ml Bottle',
-      image: 'https://via.placeholder.com/150',
-    },
-  ]);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [loader, setLoader] = useState(true);
 
-  const handleRemove = (id) => {
-    setWishlistItems(wishlistItems.filter(item => item.product_id !== id));
+  const loadWishlist = () => {
+    setLoader(true);
+    CommonService._callApi({
+      api: '/member/favoritelist',
+      method: 'GET',
+      urlParams: {},
+    })
+      .then(r => r.data)
+      .then(resp => {
+        setLoader(false);
+        if (resp.status == 1) {
+          const raw = resp.response?.data || resp.response || [];
+          setWishlistItems(Array.isArray(raw) ? raw : []);
+        } else {
+          setWishlistItems([]);
+        }
+      })
+      .catch(() => {
+        setLoader(false);
+        setWishlistItems([]);
+      });
+  };
+
+  // Reload every time screen is focused (e.g. after toggling heart on product detail)
+  useFocusEffect(
+    useCallback(() => {
+      loadWishlist();
+    }, [])
+  );
+
+  const handleRemove = (product_id) => {
+    // Optimistic remove from UI
+    setWishlistItems(prev => prev.filter(item => Math.abs(item.product_id) !== Math.abs(product_id)));
+
+    const inputparams = new FormData();
+    inputparams.append('product_id', product_id);
+    CommonService._callApi({
+      api: '/member/favorite',
+      method: 'CONVERT',
+      body: inputparams,
+    })
+      .then(r => r.json())
+      .then(response => {
+        // Sync redux so heart on product/category screens reflects removal
+        store.dispatch({
+          type: 'SET_FAVORITE_STATUS',
+          payload: {
+            product_id: product_id,
+            is_favorite: response.response?.data?.is_favorite === 1,
+          },
+        });
+      })
+      .catch(() => { });
   };
 
   const handleAddToCart = (product) => {
@@ -42,11 +80,21 @@ const WishlistScreen = ({ navigation }) => {
 
   const renderWishlistItem = ({ item }) => (
     <View style={styles.card}>
-      <Image
-        source={{ uri: item.image }}
-        style={styles.productImage}
-        resizeMode="contain"
-      />
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
+      >
+        <Image
+          source={
+            item.image
+              ? { uri: item.image }
+              : require('../../assets/images/products.png')
+          }
+          style={styles.productImage}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
+
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
           {item.product_name}
@@ -54,18 +102,24 @@ const WishlistScreen = ({ navigation }) => {
         <Text style={styles.unitText}>{item.unit}</Text>
         <View style={styles.priceRow}>
           <Text style={styles.priceText}>₹{item.product_sell_price}</Text>
-          {item.product_mrp && (
+          {item.product_mrp ? (
             <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
-          )}
+          ) : null}
         </View>
       </View>
-      
+
       <View style={styles.actionsCol}>
-        <TouchableOpacity style={styles.deleteBtn} onPress={() => handleRemove(item.product_id)}>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => handleRemove(item.product_id)}
+        >
           <Trash2 size={18} color="#FF4D4D" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.addBtn} onPress={() => handleAddToCart(item)}>
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => handleAddToCart(item)}
+        >
           <ShoppingBag size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
           <Text style={styles.addBtnText}>ADD</Text>
         </TouchableOpacity>
@@ -85,10 +139,14 @@ const WishlistScreen = ({ navigation }) => {
         <Text style={styles.headerTitle}>My Wishlist</Text>
       </View>
 
-      {wishlistItems.length > 0 ? (
+      {loader ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#2CB7DF" />
+        </View>
+      ) : wishlistItems.length > 0 ? (
         <FlatList
           data={wishlistItems}
-          keyExtractor={(item) => item.product_id.toString()}
+          keyExtractor={(item, idx) => (item.product_id || idx).toString()}
           renderItem={renderWishlistItem}
           contentContainerStyle={styles.listContent}
         />
@@ -125,6 +183,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#043250',
+  },
+  loaderContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   listContent: {
     padding: 16,
