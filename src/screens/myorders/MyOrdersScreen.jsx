@@ -93,7 +93,15 @@ const MyOrdersScreen = ({ navigation }) => {
           hasMoreRef.current = false;
         }
 
-        const combined = page === 1 ? [...localOrders, ...serverOrders] : serverOrders;
+        const taggedLocal = localOrders.map((o, i) => ({
+          ...o,
+          _uniqueKey: `local_${o.order_id || i}`,
+        }));
+        const taggedServer = serverOrders.map((o, i) => ({
+          ...o,
+          _uniqueKey: `server_${o.order_id || i}`,
+        }));
+        const combined = page === 1 ? [...taggedLocal, ...taggedServer] : taggedServer;
         console.log('COMBINED ORDERS:', combined.length);
         const mapped = combined.map(o => ({
           ...o,
@@ -112,8 +120,9 @@ const MyOrdersScreen = ({ navigation }) => {
         setRefreshing(false);
         setInfiniteLoader(false);
         isFetchingRef.current = false;
-        const mapped = localOrders.map(o => ({
+        const mapped = localOrders.map((o, i) => ({
           ...o,
+          _uniqueKey: `local_${o.order_id || i}`,
           order_date_formatted: formatDate(o.order_date),
         }));
         setAllOrders(mapped);
@@ -187,7 +196,7 @@ const MyOrdersScreen = ({ navigation }) => {
 
               return (
                 <TouchableOpacity
-                  key={item.order_id || idx.toString()}
+                  key={item._uniqueKey || item.order_id || idx.toString()}
                   activeOpacity={0.9}
                   onPress={() => navigation.navigate('OrderDetails', { orderId: item.order_id })}
                 >
