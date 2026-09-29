@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { ShoppingCart, Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';

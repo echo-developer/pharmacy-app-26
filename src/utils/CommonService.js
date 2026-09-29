@@ -228,6 +228,38 @@ export default CommonService = {
     store.dispatch({ type: 'SETCART', payload: cart });
   },
 
+  decreaseCart: (id) => {
+    let cart = store.getState().GlobalReducer.cart;
+    if (cart && Array.isArray(cart.items)) {
+      cart = Object.assign({}, JSON.parse(JSON.stringify(cart)));
+      const cartkey = cart.items.map(o => Math.abs(o.product_id)).indexOf(Math.abs(id));
+      if (cartkey > -1) {
+        if (cart.items[cartkey].cartqty > 1) {
+          // Reduce by 1
+          cart.items[cartkey].cartqty = cart.items[cartkey].cartqty - 1;
+        } else {
+          // qty will become 0 — remove from cart → ADD button comes back automatically
+          cart.items.splice(cartkey, 1);
+        }
+      }
+      AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));
+      store.dispatch({ type: 'SETCART', payload: cart });
+    }
+  },
+
+  removeCart: (id) => {
+    let cart = store.getState().GlobalReducer.cart;
+    if (cart && Array.isArray(cart.items)) {
+      cart = Object.assign({}, JSON.parse(JSON.stringify(cart)));
+      const cartkey = cart.items.map(o => Math.abs(o.product_id)).indexOf(Math.abs(id));
+      if (cartkey > -1) {
+        cart.items.splice(cartkey, 1);
+      }
+      AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));
+      store.dispatch({ type: 'SETCART', payload: cart });
+    }
+  },
+
   clearCart: () => {
     let cart = { items: [] };
     AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
@@ -19,6 +19,13 @@ const CartScreen = ({ navigation }) => {
   const cart = useSelector(state => state.GlobalReducer.cart);
   const items = cart?.items || [];
   const hasItems = items.length > 0;
+
+  // Auto go back when cart becomes empty (last item removed via stepper)
+  useEffect(() => {
+    if (!hasItems) {
+      navigation.goBack();
+    }
+  }, [hasItems]);
 
   const isUserLoggedIn = Boolean(store.getState().GlobalReducer.authuser);
 
