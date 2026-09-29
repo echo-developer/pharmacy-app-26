@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 
-const CategoryProductCard = ({ product, onAddPress, onFavPress, isFavorite = false }) => {
+const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, isFavorite = false }) => {
   // Read live cart qty from redux
   const cart = useSelector(state => state.GlobalReducer.cart);
   const cartQty = React.useMemo(() => {
@@ -22,7 +22,7 @@ const CategoryProductCard = ({ product, onAddPress, onFavPress, isFavorite = fal
   return (
     <View style={styles.card}>
       {/* ===== TOP: Image + Details ===== */}
-      <View style={styles.topRow}>
+      <TouchableOpacity style={styles.topRow} activeOpacity={0.85} onPress={onProductPress}>
         {/* Image Area */}
         <View style={styles.imageArea}>
           {product.discount && (
@@ -64,7 +64,7 @@ const CategoryProductCard = ({ product, onAddPress, onFavPress, isFavorite = fal
             </LinearGradient>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       {/* ===== BOTTOM: Heart + ADD / Stepper ===== */}
       <View style={styles.bottomRow}>

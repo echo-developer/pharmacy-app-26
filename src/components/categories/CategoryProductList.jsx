@@ -36,6 +36,7 @@ const CategoryProductList = ({ products = [], onAddPress, onFavPress, favoriteId
               image: item.image,
             }}
             isFavorite={isFav}
+            onProductPress={() => onProductPress?.(item)}
             onAddPress={() => onAddPress?.(item)}
             onFavPress={() => onFavPress?.(item)}
           />
