@@ -1,103 +1,438 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
   StatusBar,
-  Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import { ArrowLeft, CheckCircle2, ShieldCheck, MapPin, CreditCard, Banknote, Smartphone } from 'lucide-react-native';
+import { ArrowLeft, ShieldCheck, MapPin, CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import RazorpayCheckout from 'react-native-razorpay';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import base64 from 'react-native-base64';
 import CommonService from '../../utils/CommonService';
+import StaticConst from '../../utils/StaticConst';
+import StatusModal from '../../components/common/StatusModal';
 import store from '../../store/store';
 
 const PaymentMethodScreen = ({ navigation }) => {
-  const [selectedMethod, setSelectedMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'COD' | 'ONLINE'
   const [loading, setLoading] = useState(false);
+  const [statusModalConfig, setStatusModalConfig] = useState({
+    visible: false,
+    type: 'success',
+    title: '',
+    message: '',
+    orderId: '',
+    primaryButtonText: '',
+    secondaryButtonText: '',
+    onPrimaryPress: () => { },
+    onSecondaryPress: () => { },
+  });
 
-  const cart = store.getState().GlobalReducer.cart;
-  const address = store.getState().GlobalReducer.chosencity?.tempaddress?.address || 'Sector F, South Kolkata, 700107';
+  const [screenState, setScreenState] = useState(store.getState().GlobalReducer);
+
+  // ─── Validate & sync address from backend on every screen focus ──────────
+  // The stored place_id may be stale or a random fallback number that the
+  // pharmacy backend will reject. Fetch real addresses and fix it silently.
+  const syncAddressFromBackend = () => {
+    const state = store.getState().GlobalReducer;
+    if (!state.authuser?.member_id) return; // not logged in, nothing to sync
+
+    CommonService._callApi({ api: '/member/address', method: 'GET' })
+      .then(resp => {
+        if (
+          resp.data?.status == 1 &&
+          Array.isArray(resp.data?.response?.data) &&
+          resp.data.response.data.length > 0
+        ) {
+          const list = resp.data.response.data;
+          const currentPlaceId = store.getState().GlobalReducer.chosencity?.tempaddress?.place_id;
+
+          // Check if stored place_id matches a real backend address
+          const validMatch = currentPlaceId
+            ? list.find(a => String(a.place_id) === String(currentPlaceId))
+            : null;
+
+          if (!validMatch) {
+            // Stale / random ID — silently fix to the first real backend address
+            const first = list[0];
+            const payloadData = {
+              tempaddress: {
+                address: first.place_address || first.address || '',
+                postalcode: first.place_pincode || first.pincode || '',
+                place_id: first.place_id || first.id,
+              },
+            };
+            store.dispatch({ type: 'SETCITY', payload: payloadData });
+            AsyncStorage.setItem(
+              StaticConst.sessionkey.city,
+              base64.encode(JSON.stringify(payloadData))
+            ).catch(() => { });
+            console.log('ADDRESS SYNCED:', payloadData.tempaddress.place_id, payloadData.tempaddress.address);
+          }
+        }
+      })
+      .catch(() => { });
+  };
+
+  useEffect(() => {
+    // Sync on mount
+    syncAddressFromBackend();
+
+    const unsubscribe = store.subscribe(() => {
+      setScreenState(store.getState().GlobalReducer);
+    });
+    const focusSub = navigation.addListener('focus', () => {
+      setScreenState(store.getState().GlobalReducer);
+      // Re-sync whenever user comes back to this screen (e.g. after adding address)
+      syncAddressFromBackend();
+    });
+    return () => {
+      unsubscribe();
+      focusSub();
+    };
+  }, [navigation]);
+
+  const cart = screenState.cart;
+  const authuser = screenState.authuser;
+  const address = screenState.chosencity?.tempaddress?.address || '';
+  const pincode = screenState.chosencity?.tempaddress?.postalcode || '';
+  const placeId = screenState.chosencity?.tempaddress?.place_id || '';
+
+  const hasAddress = Boolean(address && (pincode || placeId));
 
   const calculateSubTotal = () => {
-    if (cart && cart.items.length > 0) {
-      return cart.items.map(o => (Math.abs(o.price) * o.cartqty)).reduce((a, b) => (a + b), 0);
+    if (cart?.items?.length > 0) {
+      return cart.items.reduce((sum, o) => sum + Math.abs(o.price) * o.cartqty, 0);
     }
     return 0;
   };
 
-  const handlePlaceOrder = async () => {
-    setLoading(true);
+  const subTotal = calculateSubTotal();
 
-    const newOrder = {
-      order_id: 'ORD' + Math.floor(100000 + Math.random() * 900000),
-      order_date: new Date().toISOString(),
-      order_status: '1',
-      total_amount: calculateSubTotal(),
-      final_amount: calculateSubTotal(),
-      payment_mode: selectedMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment',
-      products: cart?.items || [],
-    };
+  // ─── Modal helpers ────────────────────────────────────────────────────────
 
-    await CommonService.saveLocalOrder(newOrder);
+  const hideStatusModal = () => {
+    setStatusModalConfig(prev => ({ ...prev, visible: false }));
+  };
 
-    const inputdata = new FormData();
-    inputdata.append('pincode', store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '');
-    inputdata.append('address', address);
-    inputdata.append('payment_method', selectedMethod);
-    inputdata.append('cartdata', JSON.stringify(cart?.items || []));
-    inputdata.append('member_id', store.getState().GlobalReducer.authuser?.member_id || '');
-
-    CommonService._callApi({
-      api: '/order/place',
-      method: 'CONVERT',
-      body: inputdata,
-    })
-      .then((res) => res.json())
-      .then((resp) => {
-        console.log('PLACE ORDER RESPONSE:', JSON.stringify(resp));
-        setLoading(false);
+  const showSuccessModal = ({ title, message, orderId }) => {
+    setStatusModalConfig({
+      visible: true,
+      type: 'success',
+      title,
+      message,
+      orderId: orderId || '',
+      primaryButtonText: 'View Orders',
+      secondaryButtonText: 'Continue Shopping',
+      onPrimaryPress: () => {
+        hideStatusModal();
         CommonService.clearCart();
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main', params: { screen: 'My Orders' } }],
+        });
+      },
+      onSecondaryPress: () => {
+        hideStatusModal();
+        CommonService.clearCart();
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main', params: { screen: 'Home' } }],
+        });
+      },
+    });
+  };
 
-        Alert.alert(
-          'Order Placed Successfully! 🎉',
-          'Your medicine order has been placed and will be delivered soon.',
-          [
-            {
-              text: 'View Orders',
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'Main', params: { screen: 'My Orders' } }],
+  const showErrorModal = ({ title, message, retryCallback }) => {
+    setStatusModalConfig({
+      visible: true,
+      type: 'error',
+      title,
+      message,
+      orderId: '',
+      primaryButtonText: 'Retry',
+      secondaryButtonText: 'Close',
+      onPrimaryPress: () => {
+        hideStatusModal();
+        if (typeof retryCallback === 'function') retryCallback();
+      },
+      onSecondaryPress: hideStatusModal,
+    });
+  };
+
+  const triggerRazorpayCheckoutWithOptions = (options, orderId, amount) => {
+    RazorpayCheckout.open(options)
+      .then(rzrData => {
+        if (rzrData?.razorpay_order_id) {
+          setLoading(true);
+          const rzrfd = new FormData();
+          rzrfd.append('razorpay_order_id', rzrData.razorpay_order_id);
+          rzrfd.append('razorpay_payment_id', rzrData.razorpay_payment_id);
+          rzrfd.append('razorpay_signature', rzrData.razorpay_signature);
+          CommonService._callApi({
+            api: '/cart/verifypayment',
+            method: 'CONVERT',
+            body: rzrfd,
+          })
+            .then(r => r.json())
+            .then(rzrResp => {
+              setLoading(false);
+              if (rzrResp.status == 1) {
+                onOrderSuccess(orderId);
+              } else {
+                showErrorModal({
+                  title: 'Payment Failed',
+                  message: 'Failed to process payment, something is wrong',
+                  retryCallback: () => openRazorpay(orderId, amount),
                 });
-              },
-            },
-          ]
-        );
+              }
+            })
+            .catch(() => {
+              setLoading(false);
+              showErrorModal({
+                title: 'Payment Failed',
+                message: 'Payment verification failed',
+                retryCallback: () => openRazorpay(orderId, amount),
+              });
+            });
+        } else {
+          showErrorModal({
+            title: 'Payment Failed',
+            message: 'Failed to process payment, something is wrong',
+            retryCallback: () => openRazorpay(orderId, amount),
+          });
+        }
       })
       .catch((err) => {
-        console.log('PLACE ORDER ERROR:', err?.message || err);
         setLoading(false);
-        CommonService.clearCart();
-
-        Alert.alert(
-          'Order Placed Successfully! 🎉',
-          'Your order has been confirmed. Thank you for shopping with us.',
-          [
-            {
-              text: 'View Orders',
-              onPress: () => {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: 'Main', params: { screen: 'My Orders' } }],
-                });
-              },
-            },
-          ]
-        );
+        console.log('Razorpay dismiss/cancel:', err);
+        // If user cancelled, don't force order success
+        if (err?.code === 0 || err?.description?.toLowerCase().includes('cancel')) {
+          showErrorModal({
+            title: 'Payment Cancelled',
+            message: 'You cancelled the online payment transaction.',
+            retryCallback: () => openRazorpay(orderId, amount),
+          });
+        } else {
+          // On any other error, show error modal
+          showErrorModal({
+            title: 'Payment Failed',
+            message: 'Failed to complete payment. Please try again later.',
+            retryCallback: () => openRazorpay(orderId, amount),
+          });
+        }
       });
+  };
+
+  const openRazorpay = (orderId, amount) => {
+    setLoading(true);
+
+    // Get current auth data from store
+    const currentState = store.getState().GlobalReducer;
+    const currentAuth = currentState.authuser;
+
+    CommonService._callApi({
+      api: '/cart/createrarororder',
+      method: 'GET',
+      urlParams: { order_id: orderId },
+    })
+      .then(resp => {
+        setLoading(false);
+        const data = resp.data;
+        if (data.status == 1 && data.response?.data?.id) {
+          const options = {
+            description: 'Order Payment',
+            image: StaticConst.domainname + '/useruploads/site-logo/logo.png',
+            currency: 'INR',
+            key: data.response.data.RazorpayKey,
+            amount: amount,
+            name: 'Order #' + orderId,
+            order_id: data.response.data.id,
+            prefill: {
+              email: currentAuth?.member_email || 'user@example.com',
+              contact: currentAuth?.member_phone || '9876543210',
+              name: currentAuth?.member_name || 'Customer',
+            },
+            theme: { color: '#2CB7DF' },
+          };
+          triggerRazorpayCheckoutWithOptions(options, orderId, amount);
+        } else {
+          setLoading(false);
+          showErrorModal({
+            title: 'Payment Failed',
+            message: 'Unable to initialize payment. Please try again.',
+            retryCallback: () => openRazorpay(orderId, amount),
+          });
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        showErrorModal({
+          title: 'Payment Failed',
+          message: 'Unable to initialize payment. Please try again.',
+          retryCallback: () => openRazorpay(orderId, amount),
+        });
+      });
+  };
+
+  // ─── Order success ────────────────────────────────────────────────────────
+
+  const onOrderSuccess = async (orderId) => {
+    // Read fresh state so we capture the actual order contents
+    const freshState = store.getState().GlobalReducer;
+    const freshCart = freshState.cart;
+    const freshSubTotal = freshCart?.items?.length
+      ? freshCart.items.reduce((sum, o) => sum + Math.abs(o.price) * o.cartqty, 0)
+      : subTotal;
+
+    // Save locally so My Orders screen shows it even if server list is slow
+    await CommonService.saveLocalOrder({
+      order_id: orderId,
+      order_date: new Date().toISOString(),
+      order_status: '1',
+      order_status_name: 'Placed',
+      final_amount: freshSubTotal,
+      order_total: freshSubTotal,
+      products: freshCart?.items || [],
+    });
+
+    showSuccessModal({
+      title: 'Order Placed! 🎉',
+      message: 'Your order has been confirmed and will be delivered soon.',
+      orderId: orderId,
+    });
+  };
+
+  // ─── Place order ──────────────────────────────────────────────────────────
+
+  const handlePlaceOrder = () => {
+    // Always read fresh state at submission time (mirrors grocery app behaviour)
+    const freshState = store.getState().GlobalReducer;
+    const freshAuthuser = freshState.authuser;
+    const freshCart = freshState.cart;
+    const freshPincode = freshState.chosencity?.tempaddress?.postalcode || '';
+    const freshPlaceId = freshState.chosencity?.tempaddress?.place_id || '';
+    const freshAddress = freshState.chosencity?.tempaddress?.address || '';
+    const freshHasAddress = Boolean(freshAddress && (freshPincode || freshPlaceId));
+
+    if (!freshAuthuser?.member_id) {
+      showErrorModal({
+        title: 'Session Expired',
+        message: 'Please sign in again to continue placing your order.',
+        retryCallback: () => navigation.navigate('Login'),
+      });
+      return;
+    }
+
+    if (!paymentMethod) {
+      showErrorModal({
+        title: 'Select Payment Method',
+        message: 'Please choose a payment method to continue.',
+        retryCallback: hideStatusModal,
+      });
+      return;
+    }
+
+    if (!freshCart?.items?.length) {
+      showErrorModal({
+        title: 'Cart is Empty',
+        message: 'Please add items to your cart before placing an order.',
+        retryCallback: hideStatusModal,
+      });
+      return;
+    }
+
+    if (!freshHasAddress || !freshPlaceId) {
+      showErrorModal({
+        title: 'Address Required',
+        message: 'Please select a delivery address before placing your order.',
+        retryCallback: () => navigation.navigate('MyAddress'),
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    // Backend expects a JSON body (not FormData) with items as [{product_id, qty}].
+    // The server prices items live from the DB — we only need product_id + qty.
+    const orderBody = {
+      items: freshCart.items.map(item => ({
+        product_id: item.product_id,
+        qty: item.cartqty,
+      })),
+      place_id: parseInt(freshPlaceId, 10),
+      pincode: freshPincode,
+      payment_method: paymentMethod === 'ONLINE' ? 'razorpay' : 'cod',
+      coupon: freshCart.coupon || '',
+      delivery_date: freshCart.slot || '',
+    };
+
+    console.log('PLACE ORDER BODY:', JSON.stringify(orderBody));
+
+    CommonService._callApi({
+      api: '/cart/place_order',
+      method: 'POST',
+      body: JSON.stringify(orderBody),
+    })
+      .then(async r => {
+        const text = await r.text();
+        console.log('PLACE ORDER RAW:', text);
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}');
+        if (jsonStart === -1 || jsonEnd === -1) throw new Error('Invalid response');
+        return JSON.parse(text.substring(jsonStart, jsonEnd + 1));
+      })
+      .then(resp => {
+        setLoading(false);
+        console.log('PLACE ORDER PARSED:', JSON.stringify(resp));
+
+        if (resp.status == 1 && (resp.response?.data?.order_id || resp.response?.order_id)) {
+          const orderId = resp.response?.data?.order_id || resp.response?.order_id;
+          const billAmount = resp.response?.data?.total || resp.response?.total
+            || freshCart.items.reduce((s, o) => s + Math.abs(o.price) * o.cartqty, 0);
+          if (paymentMethod === 'ONLINE') {
+            openRazorpay(orderId, billAmount);
+          } else {
+            onOrderSuccess(orderId);
+          }
+        } else {
+          // If server says no valid items, the cart has stale/invalid product IDs.
+          // Clear the cart so the user starts fresh with real products.
+          const msg = resp.response?.message || '';
+          if (msg.toLowerCase().includes('no valid items')) {
+            CommonService.clearCart();
+          }
+          showErrorModal({
+            title: 'Order Failed',
+            message: msg || 'Unable to place your order right now. Please try again.',
+            retryCallback: handlePlaceOrder,
+          });
+        }
+      })
+      .catch(err => {
+        setLoading(false);
+        console.log('PLACE ORDER ERROR:', err?.message);
+        showErrorModal({
+          title: 'Order Failed',
+          message: 'Unable to place your order right now. Please try again.',
+          retryCallback: handlePlaceOrder,
+        });
+      });
+  };
+
+  // ─── UI ───────────────────────────────────────────────────────────────────
+
+  const getButtonText = () => {
+    if (paymentMethod === 'ONLINE') return 'Pay Now';
+    if (paymentMethod === 'COD') return 'Place Order';
+    return 'Select Payment Method';
   };
 
   return (
@@ -109,8 +444,7 @@ const PaymentMethodScreen = ({ navigation }) => {
         colors={['#F4F5FF', '#FFFFFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={styles.header}
-      >
+        style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <ArrowLeft size={22} color="#043250" />
         </TouchableOpacity>
@@ -118,21 +452,29 @@ const PaymentMethodScreen = ({ navigation }) => {
       </LinearGradient>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
         {/* ADDRESS CARD */}
-        <View style={styles.card}>
+        <TouchableOpacity
+          style={[styles.card, !hasAddress && styles.cardWarning]}
+          onPress={() => navigation.navigate('MyAddress')}
+          activeOpacity={0.85}>
           <View style={styles.cardHeaderRow}>
-            <MapPin size={18} color="#263077" style={{ marginRight: 6 }} />
-            <Text style={styles.cardTitle}>Delivery Address</Text>
+            <MapPin size={18} color={hasAddress ? '#263077' : '#EF4444'} style={{ marginRight: 6 }} />
+            <Text style={[styles.cardTitle, { marginBottom: 0, flex: 1 }]}>Delivery Address</Text>
+            <Text style={styles.changeText}>{hasAddress ? 'Change' : 'Select'}</Text>
           </View>
-          <Text style={styles.addressText}>{address}</Text>
-        </View>
+          <Text style={[styles.addressText, !hasAddress && { color: '#EF4444', marginTop: 6 }]}>
+            {hasAddress ? address : '⚠️  No address selected — tap to select'}
+          </Text>
+          {pincode ? <Text style={styles.pincodeText}>Pincode: {pincode}</Text> : null}
+        </TouchableOpacity>
 
         {/* ORDER SUMMARY */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Order Summary</Text>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Total Items ({cart?.items?.length || 0})</Text>
-            <Text style={styles.rowValue}>₹{calculateSubTotal()}</Text>
+            <Text style={styles.rowValue}>₹{subTotal}</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Delivery Fee</Text>
@@ -140,7 +482,7 @@ const PaymentMethodScreen = ({ navigation }) => {
           </View>
           <View style={[styles.row, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total Payable</Text>
-            <Text style={styles.totalValue}>₹{calculateSubTotal()}</Text>
+            <Text style={styles.totalValue}>₹{subTotal}</Text>
           </View>
         </View>
 
@@ -148,81 +490,82 @@ const PaymentMethodScreen = ({ navigation }) => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Select Payment Method</Text>
 
-          {/* COD */}
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              selectedMethod === 'cod' && styles.paymentOptionSelected,
-            ]}
-            onPress={() => setSelectedMethod('cod')}
-          >
-            <Banknote size={22} color={selectedMethod === 'cod' ? '#2CB7DF' : '#787887'} />
+          {/* Razorpay — UPI / Cards / Net Banking */}
+          <Pressable
+            style={[styles.paymentOption, paymentMethod === 'ONLINE' && styles.paymentOptionSelected]}
+            onPress={() => setPaymentMethod('ONLINE')}>
+            <Smartphone size={22} color={paymentMethod === 'ONLINE' ? '#2CB7DF' : '#787887'} />
             <View style={styles.optionTextCol}>
-              <Text style={styles.optionTitle}>Cash on Delivery (COD)</Text>
+              <Text style={[styles.optionTitle, paymentMethod === 'ONLINE' && styles.optionTitleActive]}>
+                UPI / Cards / Net Banking
+              </Text>
+              <Text style={styles.optionSub}>Google Pay, PhonePe, Razorpay</Text>
+            </View>
+            {paymentMethod === 'ONLINE' && (
+              <View style={styles.radioSelected} />
+            )}
+          </Pressable>
+
+          {/* COD */}
+          <Pressable
+            style={[styles.paymentOption, paymentMethod === 'COD' && styles.paymentOptionSelected]}
+            onPress={() => setPaymentMethod('COD')}>
+            <Banknote size={22} color={paymentMethod === 'COD' ? '#2CB7DF' : '#787887'} />
+            <View style={styles.optionTextCol}>
+              <Text style={[styles.optionTitle, paymentMethod === 'COD' && styles.optionTitleActive]}>
+                Cash on Delivery
+              </Text>
               <Text style={styles.optionSub}>Pay with cash upon delivery</Text>
             </View>
-            {selectedMethod === 'cod' && <CheckCircle2 size={20} color="#2CB7DF" />}
-          </TouchableOpacity>
-
-          {/* UPI */}
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              selectedMethod === 'upi' && styles.paymentOptionSelected,
-            ]}
-            onPress={() => setSelectedMethod('upi')}
-          >
-            <Smartphone size={22} color={selectedMethod === 'upi' ? '#2CB7DF' : '#787887'} />
-            <View style={styles.optionTextCol}>
-              <Text style={styles.optionTitle}>UPI / Google Pay / PhonePe</Text>
-              <Text style={styles.optionSub}>Instant online payment</Text>
-            </View>
-            {selectedMethod === 'upi' && <CheckCircle2 size={20} color="#2CB7DF" />}
-          </TouchableOpacity>
-
-          {/* CARD */}
-          <TouchableOpacity
-            style={[
-              styles.paymentOption,
-              selectedMethod === 'card' && styles.paymentOptionSelected,
-            ]}
-            onPress={() => setSelectedMethod('card')}
-          >
-            <CreditCard size={22} color={selectedMethod === 'card' ? '#2CB7DF' : '#787887'} />
-            <View style={styles.optionTextCol}>
-              <Text style={styles.optionTitle}>Credit / Debit Card</Text>
-              <Text style={styles.optionSub}>Visa, MasterCard, RuPay</Text>
-            </View>
-            {selectedMethod === 'card' && <CheckCircle2 size={20} color="#2CB7DF" />}
-          </TouchableOpacity>
+            {paymentMethod === 'COD' && (
+              <View style={styles.radioSelected} />
+            )}
+          </Pressable>
         </View>
 
         {/* TRUST BADGE */}
         <View style={styles.trustRow}>
-          <ShieldCheck size={18} color="#709D2A" />
+          <ShieldCheck size={16} color="#709D2A" />
           <Text style={styles.trustText}>100% Safe & Secure Payments</Text>
         </View>
+
       </ScrollView>
 
-      {/* BOTTOM PLACE ORDER BAR */}
+      {/* BOTTOM BAR */}
       <View style={styles.bottomBar}>
         <View>
           <Text style={styles.bottomTotalLabel}>Total Amount</Text>
-          <Text style={styles.bottomTotalVal}>₹{calculateSubTotal()}</Text>
+          <Text style={styles.bottomTotalVal}>₹{subTotal}</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.placeOrderBtn}
+          style={[styles.placeOrderBtn, !paymentMethod && styles.placeOrderBtnDisabled]}
           onPress={handlePlaceOrder}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
-          ) : (
-            <Text style={styles.placeOrderText}>PLACE ORDER</Text>
-          )}
+          disabled={!paymentMethod || loading}>
+          <Text style={styles.placeOrderText}>{getButtonText()}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* LOADER OVERLAY */}
+      {loading && (
+        <View style={styles.loaderOverlay}>
+          <ActivityIndicator size="large" color="#2CB7DF" />
+        </View>
+      )}
+
+      {/* STATUS MODAL */}
+      <StatusModal
+        visible={statusModalConfig.visible}
+        type={statusModalConfig.type}
+        title={statusModalConfig.title}
+        message={statusModalConfig.message}
+        orderId={statusModalConfig.orderId}
+        onClose={hideStatusModal}
+        onPrimaryPress={statusModalConfig.onPrimaryPress}
+        onSecondaryPress={statusModalConfig.onSecondaryPress}
+        primaryButtonText={statusModalConfig.primaryButtonText}
+        secondaryButtonText={statusModalConfig.secondaryButtonText}
+      />
     </View>
   );
 };
@@ -236,7 +579,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 48,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 12 : 48,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#EAEAEA',
@@ -252,7 +595,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -277,6 +620,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#787887',
     lineHeight: 18,
+  },
+  pincodeText: {
+    fontSize: 12,
+    color: '#263077',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  cardWarning: {
+    borderColor: '#EF4444',
+    backgroundColor: '#FFF5F5',
+  },
+  changeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#2CB7DF',
   },
   row: {
     flexDirection: 'row',
@@ -337,16 +695,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#043250',
   },
+  optionTitleActive: {
+    color: '#2CB7DF',
+  },
   optionSub: {
     fontSize: 11,
     color: '#787887',
     marginTop: 2,
   },
+  radioSelected: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#2CB7DF',
+    borderWidth: 3,
+    borderColor: '#fff',
+    shadowColor: '#2CB7DF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   trustRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 4,
   },
   trustText: {
     fontSize: 12,
@@ -386,11 +760,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  placeOrderBtnDisabled: {
+    backgroundColor: '#B0D9E8',
+  },
   placeOrderText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  loaderOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

@@ -6,18 +6,22 @@ import StaticConst from './StaticConst';
 
 export default CommonService = {
   citystore: null,
+
   serializeJSON: (data) => {
     return Object.keys(data).map(function (keyName) {
       return encodeURIComponent(keyName) + '=' + encodeURIComponent(data[keyName]);
     }).join('&');
   },
+
   _callApi: (args) => {
-    let apiEndpoint = (args.hasOwnProperty('overwriteEndpoint') && args.overwriteEndpoint) ? args.api : (StaticConst.api.endpoint + args.api);
+    let apiEndpoint = (args.hasOwnProperty('overwriteEndpoint') && args.overwriteEndpoint)
+      ? args.api
+      : (StaticConst.api.endpoint + args.api);
+
     const urlParams = [];
-    let headers = new Headers({
-      'Accept': 'application/json'
-    });
+    let headers = new Headers({ 'Accept': 'application/json' });
     let axiosheaders = { 'Accept': 'application/json' };
+
     let sessionuser = store.getState().GlobalReducer.authuser;
     if (sessionuser) {
       headers = new Headers({
@@ -26,16 +30,20 @@ export default CommonService = {
       });
       axiosheaders['loginkey'] = sessionuser.token;
     }
-    // urlParams.push('is_app=1');
+
+    urlParams.push('is_app=1');
+
     if (args.hasOwnProperty('urlParams') && Object.keys(args.urlParams).length > 0) {
       for (const ikey in args.urlParams)
         urlParams.push(ikey + '=' + args.urlParams[ikey]);
     }
+
     if (args.hasOwnProperty('readyUrlParams') && args.readyUrlParams) {
       apiEndpoint = apiEndpoint + '?' + args.readyUrlParams;
     } else {
       apiEndpoint = apiEndpoint + '?' + urlParams.join('&');
     }
+
     switch (args.method.toUpperCase()) {
       case 'POST':
         headers.append('Content-Type', 'application/json');
@@ -62,17 +70,16 @@ export default CommonService = {
           for (var xkey in args.extendheader)
             axiosheaders[xkey] = args.extendheader[xkey];
         }
-        return axios.get(apiEndpoint, {
-          headers: axiosheaders
-        });
+        return axios.get(apiEndpoint, { headers: axiosheaders });
     }
   },
+
   axios_get: (args) => {
-    let apiEndpoint = (args.hasOwnProperty('overwriteEndpoint') && args.overwriteEndpoint) ? args.api : (StaticConst.api.endpoint + args.api);
+    let apiEndpoint = (args.hasOwnProperty('overwriteEndpoint') && args.overwriteEndpoint)
+      ? args.api
+      : (StaticConst.api.endpoint + args.api);
     const urlParams = [];
-    let headers = new Headers({
-      'Accept': 'application/json'
-    });
+    let headers = new Headers({ 'Accept': 'application/json' });
     let sessionuser = store.getState().GlobalReducer.authuser;
     if (sessionuser) {
       headers = {
@@ -80,7 +87,7 @@ export default CommonService = {
         'loginkey': sessionuser.token
       };
     }
-    // urlParams.push('is_app=1');
+    urlParams.push('is_app=1');
     if (args.hasOwnProperty('urlParams') && Object.keys(args.urlParams).length > 0) {
       for (const ikey in args.urlParams)
         urlParams.push(ikey + '=' + args.urlParams[ikey]);
@@ -90,43 +97,37 @@ export default CommonService = {
     } else {
       apiEndpoint = apiEndpoint + '?' + urlParams.join('&');
     }
-    return axios.get(apiEndpoint, {
-      headers: headers
-    });
+    return axios.get(apiEndpoint, { headers: headers });
   },
+
   getGoogleLocationwithoutBound: (args) => {
     let apiEndpoint = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
     const urlParams = [];
-    headers = {
-      'Accept': 'application/json'
-    };
+    const headers = { 'Accept': 'application/json' };
     if (args.hasOwnProperty('urlParams') && Object.keys(args.urlParams).length > 0) {
       for (const ikey in args.urlParams)
         urlParams.push(ikey + '=' + args.urlParams[ikey]);
     }
     apiEndpoint = apiEndpoint + '?' + urlParams.join('&');
-    return axios.get(apiEndpoint, {
-      headers: headers,
-      cancelToken: args.cancelToken
-    });
+    return axios.get(apiEndpoint, { headers: headers, cancelToken: args.cancelToken });
   },
+
   getLatLngFromPlaceID: (args) => {
-    let headers = {
-      'Accept': 'application/json'
-    };
-    return axios.get('https://maps.googleapis.com/maps/api/place/details/json?placeid=' + args.placeid + '&key=' + args.key, {
-      headers: headers
-    });
+    const headers = { 'Accept': 'application/json' };
+    return axios.get(
+      'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + args.placeid + '&key=' + args.key,
+      { headers: headers }
+    );
   },
+
   getAddressFromLatLng: (args) => {
-    let headers = {
-      'Accept': 'application/json'
-    };
-    return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + args.lat + ',' + args.lng + '&key=' + args.key, {
-      headers: headers,
-      cancelToken: args.cancelToken
-    });
+    const headers = { 'Accept': 'application/json' };
+    return axios.get(
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + args.lat + ',' + args.lng + '&key=' + args.key,
+      { headers: headers, cancelToken: args.cancelToken }
+    );
   },
+
   addToCart: (data) => {
     const stockQty = Number(data?.qty);
     const isOutOfStock =
@@ -166,6 +167,7 @@ export default CommonService = {
           product_id: data.product_id,
           product_name: data.product_name,
           price: data.product_sell_price,
+          sell_price: data.product_sell_price,
           mrp: data.product_mrp,
           qty: data.qty,
           cartqty: 1,
@@ -176,13 +178,12 @@ export default CommonService = {
         });
       }
     } else {
-      cart = {
-        items: []
-      };
+      cart = { items: [] };
       cart.items.push({
         product_id: data.product_id,
         product_name: data.product_name,
         price: data.product_sell_price,
+        sell_price: data.product_sell_price,
         mrp: data.product_mrp,
         qty: data.qty,
         cartqty: 1,
@@ -196,6 +197,7 @@ export default CommonService = {
     store.dispatch({ type: 'SETCART', payload: cart });
     return true;
   },
+
   decreaseCart: (id) => {
     let cart = store.getState().GlobalReducer.cart;
     if (cart && Array.isArray(cart.items)) {
@@ -212,6 +214,7 @@ export default CommonService = {
       store.dispatch({ type: 'SETCART', payload: cart });
     }
   },
+
   removeCart: (id) => {
     let cart = store.getState().GlobalReducer.cart;
     if (cart && Array.isArray(cart.items)) {
@@ -224,40 +227,42 @@ export default CommonService = {
     AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));
     store.dispatch({ type: 'SETCART', payload: cart });
   },
+
   clearCart: () => {
-    let cart = store.getState().GlobalReducer.cart;
-    cart = {
-      items: []
-    };
+    let cart = { items: [] };
     AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));
     store.dispatch({ type: 'SETCART', payload: cart });
   },
+
   setCart: (cart) => {
     const nextCart = (cart && Array.isArray(cart.items)) ? cart : { items: [] };
     AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(nextCart)));
     store.dispatch({ type: 'SETCART', payload: nextCart });
   },
+
   IsAddedInCart: (id) => {
     let cart = store.getState().GlobalReducer.cart;
     if (cart && Array.isArray(cart.items)) {
       const cartkey = cart.items.map(o => Math.abs(o.product_id)).indexOf(Math.abs(id));
       return (cartkey > -1);
-    } else {
-      return false;
     }
+    return false;
   },
+
   setCoupon: (value) => {
     let cart = store.getState().GlobalReducer.cart;
     cart['coupon'] = value;
     AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));
     store.dispatch({ type: 'SETCART', payload: cart });
   },
+
   setCartSlot: (value) => {
     let cart = store.getState().GlobalReducer.cart;
     cart['slot'] = value;
     AsyncStorage.setItem(StaticConst.sessionkey.cart, base64.encode(JSON.stringify(cart)));
     store.dispatch({ type: 'SETCART', payload: cart });
   },
+
   setPlaceOrderNotification: (id) => {
     const inputdata = new FormData();
     inputdata.append('order_id', id);
@@ -271,18 +276,19 @@ export default CommonService = {
       if (__DEV__) console.log('Notification send error:', error.message);
     });
   },
+
   saveLocalOrder: async (order) => {
     try {
-      console.log('SAVING LOCAL ORDER:', JSON.stringify(order));
       const existing = await AsyncStorage.getItem('@user_local_orders');
       let orders = existing ? JSON.parse(existing) : [];
       orders.unshift(order);
       await AsyncStorage.setItem('@user_local_orders', JSON.stringify(orders));
-      console.log('LOCAL ORDER SAVED. Total local orders now:', orders.length);
+      console.log('LOCAL ORDER SAVED. Total:', orders.length);
     } catch (e) {
       console.log('Error saving local order:', e);
     }
   },
+
   getLocalOrders: async () => {
     try {
       const existing = await AsyncStorage.getItem('@user_local_orders');
@@ -293,6 +299,5 @@ export default CommonService = {
       console.log('getLocalOrders error:', e);
       return [];
     }
-  }
+  },
 };
-

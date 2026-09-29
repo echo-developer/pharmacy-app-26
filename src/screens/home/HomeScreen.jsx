@@ -53,56 +53,9 @@ const defaultHealthConcerns = [
   { id: 6, label: 'Bone & Joint', name: 'Bone & Joint' },
 ];
 
-const defaultVitamins = [
-  {
-    product_id: 301,
-    product_name: 'Revital H Daily Multivitamin',
-    product_sell_price: 310,
-    product_mrp: 350,
-    unit: '30 Capsules',
-    image: 'https://via.placeholder.com/150',
-  },
-  {
-    product_id: 302,
-    product_name: 'Seven Seas Omega-3 Fish Oil',
-    product_sell_price: 499,
-    product_mrp: 580,
-    unit: '100 Capsules',
-    image: 'https://via.placeholder.com/150',
-  },
-  {
-    product_id: 303,
-    product_name: 'Limcee Vitamin C 500mg',
-    product_sell_price: 105,
-    product_mrp: 120,
-    unit: '15 Chewable Tablets',
-    image: 'https://via.placeholder.com/150',
-  },
-];
+const defaultVitamins = [];
 
-const defaultDeals = [
-  {
-    product_id: 401,
-    product_name: 'Dettol Antiseptic Liquid 500ml',
-    product_sell_price: 185,
-    product_mrp: 210,
-    unit: '500 ml Bottle',
-  },
-  {
-    product_id: 402,
-    product_name: 'Volini Pain Relief Spray 100g',
-    product_sell_price: 245,
-    product_mrp: 299,
-    unit: '100g Spray',
-  },
-  {
-    product_id: 403,
-    product_name: 'Accu-Chek Active 50 Test Strips',
-    product_sell_price: 975,
-    product_mrp: 1049,
-    unit: '50 Strips Box',
-  },
-];
+const defaultDeals = [];
 
 const defaultPetCareBrands = [
   { id: 1, name: 'Pedigree' },

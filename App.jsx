@@ -65,6 +65,32 @@ const App = () => {
       }
       dispatch({ type: 'RETRIEVE_TOKEN', token: LoggedinUser });
       store.dispatch({ type: 'SETAUTHUSER', payload: LoggedinUser });
+
+      // Load saved city/address
+      try {
+        const savedCity = await AsyncStorage.getItem(StaticConst.sessionkey.city);
+        if (savedCity) {
+          const parsedCity = safeParseStored(savedCity);
+          if (parsedCity) {
+            store.dispatch({ type: 'SETCITY', payload: parsedCity });
+          }
+        }
+      } catch (e) {
+        console.log('City load error:', e);
+      }
+
+      // Load saved cart
+      try {
+        const savedCart = await AsyncStorage.getItem(StaticConst.sessionkey.cart);
+        if (savedCart) {
+          const parsedCart = safeParseStored(savedCart);
+          if (parsedCart) {
+            store.dispatch({ type: 'SETCART', payload: parsedCart });
+          }
+        }
+      } catch (e) {
+        console.log('Cart load error:', e);
+      }
     };
     onBootStartApp();
   }, []);

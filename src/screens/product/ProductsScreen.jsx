@@ -49,25 +49,7 @@ const ProductsScreen = ({ navigation }) => {
         if (resp.status == 1) {
           setProducts(resp.response.data || []);
         } else {
-          // Fallback demo data if API returns empty
-          setProducts([
-            {
-              product_id: 101,
-              product_name: 'Dettol Antiseptic Liquid',
-              product_sell_price: 185,
-              product_mrp: 210,
-              unit: '500 ml',
-              image: 'https://via.placeholder.com/150',
-            },
-            {
-              product_id: 102,
-              product_name: 'Revital H Daily Multivitamin',
-              product_sell_price: 310,
-              product_mrp: 350,
-              unit: '30 Capsules',
-              image: 'https://via.placeholder.com/150',
-            },
-          ]);
+          setProducts([]);
         }
       })
       .catch((err) => {
@@ -96,7 +78,7 @@ const ProductsScreen = ({ navigation }) => {
         {item.product_name}
       </Text>
       <Text style={styles.unitText}>{item.unit || '1 Unit'}</Text>
-      
+
       <View style={styles.cardFooter}>
         <View>
           <Text style={styles.priceText}>₹{item.product_sell_price || item.price}</Text>
