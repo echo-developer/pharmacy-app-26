@@ -9,8 +9,9 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { ArrowLeft, Search, ShoppingBag, SlidersHorizontal } from 'lucide-react-native';
+import { ArrowLeft, Search, ShoppingBag, SlidersHorizontal, Minus, Plus } from 'lucide-react-native';
 import { useRoute } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
@@ -21,17 +22,20 @@ const ProductsScreen = ({ navigation }) => {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cartCount, setCartCount] = useState(0);
+
+  // Live cart from Redux — causes re-render when cart changes
+  const cart = useSelector(state => state.GlobalReducer.cart);
+  const cartCount = cart?.items?.length || 0;
+
+  const getCartQty = (product_id) => {
+    if (!cart?.items) return 0;
+    const item = cart.items.find(o => Math.abs(o.product_id) === Math.abs(product_id));
+    return item ? item.cartqty : 0;
+  };
 
   useEffect(() => {
     fetchProducts();
-    updateCartCount();
   }, [category_id]);
-
-  const updateCartCount = () => {
-    const cart = store.getState().GlobalReducer.cart;
-    setCartCount(cart?.items?.length || 0);
-  };
 
   const fetchProducts = () => {
     setLoading(true);
@@ -58,44 +62,75 @@ const ProductsScreen = ({ navigation }) => {
       });
   };
 
-  const handleAddToCart = (product) => {
-    CommonService.addToCart(product);
-    updateCartCount();
-  };
+  const renderProductCard = ({ item }) => {
+    const qty = getCartQty(item.product_id);
 
-  const renderProductCard = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
-    >
-      <Image
-        source={{ uri: item.image || 'https://via.placeholder.com/120' }}
-        style={styles.cardImage}
-        resizeMode="contain"
-      />
-      <Text style={styles.productName} numberOfLines={2}>
-        {item.product_name}
-      </Text>
-      <Text style={styles.unitText}>{item.unit || '1 Unit'}</Text>
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
+      >
+        <Image
+          source={{ uri: item.image || 'https://via.placeholder.com/120' }}
+          style={styles.cardImage}
+          resizeMode="contain"
+        />
+        <Text style={styles.productName} numberOfLines={2}>
+          {item.product_name}
+        </Text>
+        <Text style={styles.unitText}>{item.unit || '1 Unit'}</Text>
 
-      <View style={styles.cardFooter}>
-        <View>
-          <Text style={styles.priceText}>₹{item.product_sell_price || item.price}</Text>
-          {item.product_mrp && item.product_mrp > (item.product_sell_price || item.price) && (
-            <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
+        <View style={styles.cardFooter}>
+          <View>
+            <Text style={styles.priceText}>₹{item.product_sell_price || item.price}</Text>
+            {item.product_mrp && item.product_mrp > (item.product_sell_price || item.price) && (
+              <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
+            )}
+          </View>
+
+          {qty > 0 ? (
+            // Stepper — stop card navigation on press
+            <TouchableOpacity activeOpacity={1} onPress={e => e.stopPropagation?.()}>
+              <View style={styles.stepper}>
+                <TouchableOpacity
+                  style={styles.stepBtn}
+                  activeOpacity={0.8}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    CommonService.decreaseCart(item.product_id);
+                  }}
+                >
+                  <Minus size={12} color="#263077" strokeWidth={2.5} />
+                </TouchableOpacity>
+                <Text style={styles.stepQty}>{qty}</Text>
+                <TouchableOpacity
+                  style={styles.stepBtn}
+                  activeOpacity={0.8}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    CommonService.addToCart(item);
+                  }}
+                >
+                  <Plus size={12} color="#263077" strokeWidth={2.5} />
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.addBtn}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                CommonService.addToCart(item);
+              }}
+            >
+              <Text style={styles.addBtnText}>ADD</Text>
+            </TouchableOpacity>
           )}
         </View>
-
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => handleAddToCart(item)}
-        >
-          <Text style={styles.addBtnText}>ADD</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -162,6 +197,7 @@ const ProductsScreen = ({ navigation }) => {
           renderItem={renderProductCard}
           contentContainerStyle={styles.gridContent}
           columnWrapperStyle={styles.columnWrapper}
+          extraData={cart}
         />
       )}
       <CartFloatingBar />
@@ -309,6 +345,33 @@ const styles = StyleSheet.create({
     color: '#2CB7DF',
     fontSize: 11,
     fontWeight: '700',
+  },
+  // Stepper
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#263077',
+    borderRadius: 6,
+    paddingHorizontal: 4,
+    paddingVertical: 3,
+    backgroundColor: '#FFFFFF',
+    gap: 4,
+  },
+  stepBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#EEF0F8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepQty: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#263077',
+    minWidth: 18,
+    textAlign: 'center',
   },
 });
 

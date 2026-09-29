@@ -102,16 +102,19 @@ const ProductDetailsScreen = ({ navigation }) => {
   };
 
   const handleAddToCart = () => {
-    if (productData && productData.product_sell_price != null) {
-      CommonService.addToCart(productData);
+    // Use productData if available, fallback to previewProduct
+    const product = productData || previewProduct;
+    if (product) {
+      CommonService.addToCart(product);
     }
   };
 
   const handleBuyNow = () => {
-    if (productData && productData.product_sell_price != null) {
-      CommonService.addToCart(productData);
+    const product = productData || previewProduct;
+    if (product) {
+      CommonService.addToCart(product);
+      navigation.navigate('Cart');
     }
-    navigation.navigate('Cart');
   };
 
   return (
@@ -122,68 +125,66 @@ const ProductDetailsScreen = ({ navigation }) => {
         barStyle="dark-content"
       />
 
+      <ProductDetailsHeader
+        cartCount={cartCount}
+        onBackPress={() => navigation.goBack()}
+        onSearchPress={() => navigation.navigate('Search')}
+        onSharePress={() => console.log('Share')}
+        onCartPress={() => navigation.navigate('Cart')}
+      />
+
       {loader ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#2CB7DF" />
         </View>
       ) : (
-        <>
-          <ProductDetailsHeader
-            cartCount={cartCount}
-            onBackPress={() => navigation.goBack()}
-            onSearchPress={() => navigation.navigate('Search')}
-            onSharePress={() => console.log('Share')}
-            onCartPress={() => navigation.navigate('Cart')}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <ProductSummaryBar onPress={() => console.log('Summary pressed')} />
+          <ProductImageGallery
+            images={
+              productData?.gallery?.length
+                ? productData.gallery
+                : productData?.image
+                  ? [productData.image]
+                  : []
+            }
+            isFavorite={isFavorite}
+            favLoading={favLoading}
+            onFavPress={handleFavPress}
+            onExpandPress={() => console.log('Expand pressed')}
           />
-
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-          >
-            <ProductSummaryBar onPress={() => console.log('Summary pressed')} />
-            <ProductImageGallery
-              images={
-                productData?.gallery?.length
-                  ? productData.gallery
-                  : productData?.image
-                    ? [productData.image]
-                    : []
-              }
-              isFavorite={isFavorite}
-              favLoading={favLoading}
-              onFavPress={handleFavPress}
-              onExpandPress={() => console.log('Expand pressed')}
-            />
-            <ProductInfoCard
-              product={productData}
-              onLocationPress={() => navigation.navigate('MyAddress')}
-              onDeliveryPress={() => console.log('Delivery pressed')}
-              onPackPress={(pack) => {
-                // Navigate to the selected pack's product details
-                if (pack?.product_id) {
-                  navigation.push('ProductDetails', { id: pack.product_id });
-                }
-              }}
-              onAgePress={(age) => console.log('Age selected', age)}
-            />
-            <ProductTabs onTabPress={(tab) => console.log('Tab selected:', tab)} />
-            <ProductDescription description={productData?.product_descriptions || ''} />
-            <RelatedProducts
-              products={productData?.similar || []}
-              onArrowPress={() => navigation.navigate('Products', { title: 'Related Products' })}
-              onProductPress={(item) => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
-              onAddPress={(item) => CommonService.addToCart(item)}
-            />
-            <ProductPaymentSection />
-          </ScrollView>
-
-          <ProductBottomBar
+          <ProductInfoCard
             product={productData}
-            onAddToCart={handleAddToCart}
-            onBuyNow={handleBuyNow}
+            onLocationPress={() => navigation.navigate('MyAddress')}
+            onDeliveryPress={() => console.log('Delivery pressed')}
+            onPackPress={(pack) => {
+              if (pack?.product_id) {
+                navigation.push('ProductDetails', { id: pack.product_id });
+              }
+            }}
+            onAgePress={(age) => console.log('Age selected', age)}
           />
-        </>
+          <ProductTabs onTabPress={(tab) => console.log('Tab selected:', tab)} />
+          <ProductDescription description={productData?.product_descriptions || ''} />
+          <RelatedProducts
+            products={productData?.similar || []}
+            onArrowPress={() => navigation.navigate('Products', { title: 'Related Products' })}
+            onProductPress={(item) => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
+            onAddPress={(item) => CommonService.addToCart(item)}
+          />
+          <ProductPaymentSection />
+        </ScrollView>
       )}
+
+      {/* Always show bottom bar so Add to Cart / Buy Now are always accessible */}
+      <ProductBottomBar
+        product={productData || previewProduct}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
+      />
     </View>
   );
 };

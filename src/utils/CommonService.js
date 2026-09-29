@@ -129,15 +129,15 @@ export default CommonService = {
   },
 
   addToCart: (data) => {
-    const stockQty = Number(data?.qty);
+    // Only block if explicitly marked unavailable — ignore qty:0 from detail API
+    // because backend returns qty:0 inconsistently on product details endpoint
     const isOutOfStock =
       data?.is_available === false ||
       data?.is_available === 0 ||
       data?.is_available === '0' ||
       data?.is_stock_available === false ||
       data?.is_stock_available === 0 ||
-      data?.is_stock_available === '0' ||
-      (Number.isFinite(stockQty) && stockQty <= 0);
+      data?.is_stock_available === '0';
 
     if (isOutOfStock) {
       store.dispatch({
