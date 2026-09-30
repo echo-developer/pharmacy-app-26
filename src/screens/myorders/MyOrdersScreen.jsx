@@ -43,10 +43,35 @@ const MyOrdersScreen = ({ navigation }) => {
   const [loader, setLoader] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [infiniteLoader, setInfiniteLoader] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const currentPageRef = useRef(1);
   const isFetchingRef = useRef(false);
   const hasMoreRef = useRef(true);
+
+  const filteredOrders = React.useMemo(() => {
+    if (!searchQuery || searchQuery.trim() === '') return allOrders;
+    const q = searchQuery.toLowerCase().trim();
+    return allOrders.filter(order => {
+      const orderIdMatch = String(order.order_id || order.id || order.order_number || '').toLowerCase().includes(q);
+      const statusMatch = String(order.order_status || order.status || '').toLowerCase().includes(q);
+      const amountMatch = String(order.total_amount || order.amount || order.grand_total || '').includes(q);
+      const dateMatch = String(order.order_date_formatted || order.order_date || '').toLowerCase().includes(q);
+
+      const items = order.products || order.items || [];
+      const itemMatch = Array.isArray(items) && items.some(item => {
+        if (typeof item === 'string') return item.toLowerCase().includes(q);
+        if (typeof item === 'object' && item !== null) {
+          const name = item.product_name || item.name || item.title || '';
+          return String(name).toLowerCase().includes(q);
+        }
+        return false;
+      });
+
+      return orderIdMatch || statusMatch || amountMatch || dateMatch || itemMatch;
+    });
+  }, [allOrders, searchQuery]);
 
   const loadOrder = useCallback(async (page = 1, append = false) => {
     if (isFetchingRef.current) return;
@@ -167,7 +192,14 @@ const MyOrdersScreen = ({ navigation }) => {
       <OrderHistoryHeader
         title="Order History"
         onBackPress={() => navigation.goBack()}
-        onSearchPress={() => { }}
+        onSearchPress={() => setIsSearching(true)}
+        isSearching={isSearching}
+        searchQuery={searchQuery}
+        onChangeSearchQuery={setSearchQuery}
+        onCloseSearch={() => {
+          setIsSearching(false);
+          setSearchQuery('');
+        }}
       />
 
       {loader ? (
@@ -181,12 +213,14 @@ const MyOrdersScreen = ({ navigation }) => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0D7998']} />
           }
         >
-          {allOrders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No orders found</Text>
+              <Text style={styles.emptyText}>
+                {searchQuery ? `No orders matching "${searchQuery}"` : 'No orders found'}
+              </Text>
             </View>
           ) : (
-            allOrders.map((item, idx) => {
+            filteredOrders.map((item, idx) => {
               const status = getCardStatus(item.order_status);
               const headerText = getHeaderText(item);
               // products/items can be array of objects (with image) or just numbers

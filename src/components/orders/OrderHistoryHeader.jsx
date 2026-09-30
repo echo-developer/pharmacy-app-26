@@ -1,12 +1,47 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ChevronLeft, Search } from 'lucide-react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { ChevronLeft, Search, X } from 'lucide-react-native';
 
 const OrderHistoryHeader = ({
   title = 'Order History',
   onBackPress,
   onSearchPress,
+  isSearching = false,
+  searchQuery = '',
+  onChangeSearchQuery,
+  onCloseSearch,
 }) => {
+  if (isSearching) {
+    return (
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={onCloseSearch}
+          activeOpacity={0.7}
+        >
+          <ChevronLeft size={24} color="#25485B" />
+        </TouchableOpacity>
+
+        <View style={styles.searchInputWrapper}>
+          <Search size={18} color="#787C77" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search orders..."
+            placeholderTextColor="#787C77"
+            value={searchQuery}
+            onChangeText={onChangeSearchQuery}
+            autoFocus
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => onChangeSearchQuery?.('')}>
+              <X size={18} color="#787C77" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.header}>
       {/* LEFT: Back Arrow + Title */}
@@ -69,11 +104,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.05,
-    // shadowRadius: 4,
-    // elevation: 2,
+  },
+  searchInputWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    height: 40,
+    marginLeft: 4,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#043250',
+    paddingVertical: 0,
   },
 });
 

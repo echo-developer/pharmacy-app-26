@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,13 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { ArrowLeft, Search, X, ShoppingBag } from 'lucide-react-native';
+import { ArrowLeft, Search, X } from 'lucide-react-native';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 
-const SearchScreen = ({ navigation }) => {
-  const [query, setQuery] = useState('');
+const SearchScreen = ({ navigation, route }) => {
+  const initialKeyword = route?.params?.keyword || route?.params?.query || route?.params?.search || '';
+  const [query, setQuery] = useState(initialKeyword);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState([
@@ -27,73 +28,145 @@ const SearchScreen = ({ navigation }) => {
   ]);
 
   useEffect(() => {
-    if (query.trim().length > 1) {
-      performSearch(query);
-    } else {
-      setResults([]);
+    const paramKw = route?.params?.keyword || route?.params?.query || route?.params?.search;
+    if (paramKw && paramKw !== query) {
+      setQuery(paramKw);
     }
-  }, [query]);
+  }, [route?.params]);
 
-  const performSearch = (keyword) => {
+  const performSearch = useCallback((keyword) => {
+    if (!keyword || keyword.trim().length === 0) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
+    const cleanKw = keyword.trim();
     CommonService._callApi({
       api: '/product/search',
       method: 'GET',
       urlParams: {
-        keyword: keyword,
+        title: cleanKw,
+        keyword: cleanKw,
+        query: cleanKw,
+        search: cleanKw,
         pincode: store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '',
       },
     })
       .then((resp) => resp.data)
       .then((resp) => {
-        setLoading(false);
-        if (resp.status == 1) {
-          setResults(resp.response.data || []);
-        } else {
-          setResults([]);
+        if (resp && (resp.status == 1 || resp.status == 200 || resp.response)) {
+          const list = Array.isArray(resp.response?.data)
+            ? resp.response.data
+            : Array.isArray(resp.response)
+              ? resp.response
+              : Array.isArray(resp.data)
+                ? resp.data
+                : Array.isArray(resp.products)
+                  ? resp.products
+                  : [];
+          if (list.length > 0) {
+            setResults(list);
+            setLoading(false);
+            return;
+          }
         }
+        
+        // Fallback to /product/list if /product/search returns no items
+        return CommonService._callApi({
+          api: '/product/list',
+          method: 'GET',
+          urlParams: {
+            title: cleanKw,
+            keyword: cleanKw,
+            pincode: store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '',
+          },
+        })
+          .then((res2) => res2.data)
+          .then((res2) => {
+            setLoading(false);
+            const list2 = Array.isArray(res2?.response?.data)
+              ? res2.response.data
+              : Array.isArray(res2?.response)
+                ? res2.response
+                : Array.isArray(res2?.data)
+                  ? res2.data
+                  : [];
+            setResults(list2);
+          });
       })
       .catch((err) => {
         setLoading(false);
         console.log('Search Error:', err);
+        setResults([]);
       });
-  };
+  }, []);
+
+  useEffect(() => {
+    if (query.trim().length >= 1) {
+      const timer = setTimeout(() => {
+        performSearch(query);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setResults([]);
+      setLoading(false);
+    }
+  }, [query, performSearch]);
 
   const handleAddToCart = (product) => {
     CommonService.addToCart(product);
   };
 
-  const renderProductItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      activeOpacity={0.8}
-      onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
-    >
-      <Image
-        source={{ uri: item.image || 'https://via.placeholder.com/80' }}
-        style={styles.productImage}
-        resizeMode="contain"
-      />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={2}>
-          {item.product_name}
-        </Text>
-        <Text style={styles.productUnit}>{item.unit || item.pack_size || '1 Unit'}</Text>
-        <View style={styles.priceRow}>
-          <Text style={styles.sellPrice}>₹{item.product_sell_price || item.price}</Text>
-          {item.product_mrp && item.product_mrp > (item.product_sell_price || item.price) && (
-            <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
-          )}
-        </View>
-      </View>
+  const handleChipPress = (term) => {
+    setQuery(term);
+    performSearch(term);
+  };
+
+  const renderProductItem = ({ item }) => {
+    const productId = item.product_id || item.id;
+    const productName = item.product_name || item.name || item.title || 'Product';
+    const productImage = item.image || item.product_image || item.img;
+    const unitText = item.unit || item.pack_size || item.tablets || '1 Unit';
+    const sellPrice = item.product_sell_price || item.sell_price || item.price || 0;
+    const mrpPrice = item.product_mrp || item.mrp;
+
+    return (
       <TouchableOpacity
-        style={styles.addBtn}
-        onPress={() => handleAddToCart(item)}
+        style={styles.productCard}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('ProductDetails', { id: productId, product: item })}
       >
-        <Text style={styles.addBtnText}>ADD</Text>
+        <Image
+          source={
+            productImage && typeof productImage === 'string'
+              ? { uri: productImage }
+              : productImage || require('../../assets/images/products.png')
+          }
+          style={styles.productImage}
+          resizeMode="contain"
+        />
+        <View style={styles.productInfo}>
+          <Text style={styles.productName} numberOfLines={2}>
+            {productName}
+          </Text>
+          <Text style={styles.productUnit}>{unitText}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.sellPrice}>₹{sellPrice}</Text>
+            {mrpPrice && parseFloat(mrpPrice) > parseFloat(sellPrice) && (
+              <Text style={styles.mrpText}>₹{mrpPrice}</Text>
+            )}
+          </View>
+        </View>
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={() => handleAddToCart(item)}
+        >
+          <Text style={styles.addBtnText}>ADD</Text>
+        </TouchableOpacity>
       </TouchableOpacity>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -128,11 +201,11 @@ const SearchScreen = ({ navigation }) => {
         <View style={styles.loaderCenter}>
           <ActivityIndicator size="large" color="#2CB7DF" />
         </View>
-      ) : query.length > 1 ? (
+      ) : query.length >= 1 ? (
         results.length > 0 ? (
           <FlatList
             data={results}
-            keyExtractor={(item, index) => item.product_id?.toString() || index.toString()}
+            keyExtractor={(item, index) => (item.product_id || item.id || index).toString()}
             renderItem={renderProductItem}
             contentContainerStyle={styles.listContent}
           />
@@ -150,7 +223,7 @@ const SearchScreen = ({ navigation }) => {
               <TouchableOpacity
                 key={i}
                 style={styles.chip}
-                onPress={() => setQuery(term)}
+                onPress={() => handleChipPress(term)}
               >
                 <Search size={14} color="#2CB7DF" style={{ marginRight: 6 }} />
                 <Text style={styles.chipText}>{term}</Text>
