@@ -43,53 +43,49 @@ const PetCareBrands = ({ brands = [], onBrandPress }) => {
       >
         {brands.map((item) => {
           const itemId = item.id || item.brand_id;
-          // Cipla / Sun Pharma — no card, just image with overlays
-          if (item.logo) {
-            return (
-              <TouchableOpacity
-                key={itemId}
-                activeOpacity={0.9}
-                style={styles.imageCard}
-                onPress={() => onBrandPress?.(item)}
-              >
-                <ImageBackground
-                  source={item.logo}
-                  style={styles.imageBackground}
-                  imageStyle={styles.imageStyle}
-                  resizeMode="cover"
-                />
-              </TouchableOpacity>
-            );
-          }
+          const bgImage = item.logo || item.image || item.brand_image || item.banner;
 
-          // Default brand card with name label
           return (
             <TouchableOpacity
               key={itemId}
               activeOpacity={0.9}
-              style={styles.card}
+              style={styles.imageCard}
               onPress={() => onBrandPress?.(item)}
             >
-              {item.available && (
-                <View style={styles.availablePill}>
-                  <Text style={styles.availableText}>{item.available}</Text>
+              {bgImage ? (
+                <View style={styles.fullCardWrapper}>
+                  <ImageBackground
+                    source={typeof bgImage === 'string' ? { uri: bgImage } : bgImage}
+                    style={styles.imageBackground}
+                    imageStyle={styles.imageStyle}
+                    resizeMode="cover"
+                  />
+                  {item.available && (
+                    <View style={styles.availablePill}>
+                      <Text style={styles.availableText}>{item.available}</Text>
+                    </View>
+                  )}
+                  <View style={styles.arrowButton}>
+                    <ArrowUpRight size={18} color="#FFFFFF" />
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.fallbackCard}>
+                  {item.available && (
+                    <View style={styles.availablePill}>
+                      <Text style={styles.availableText}>{item.available}</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.brandNameWrapper}>
+                    <Text style={styles.brandNameText}>{item.name || item.brand_name}</Text>
+                  </View>
+
+                  <View style={styles.arrowButton}>
+                    <ArrowUpRight size={18} color="#FFFFFF" />
+                  </View>
                 </View>
               )}
-              <View style={styles.logoContainer}>
-                {item.image ? (
-                  <ImageBackground
-                    source={{ uri: item.image }}
-                    style={styles.brandImageBg}
-                    imageStyle={styles.brandImageStyle}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <Text style={styles.brandNameText}>{item.name || item.brand_name}</Text>
-                )}
-              </View>
-              <View style={styles.arrowButton}>
-                <ArrowUpRight size={18} color="#FFFFFF" />
-              </View>
             </TouchableOpacity>
           );
         })}
@@ -112,46 +108,45 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 4,
   },
-  // Image-only card (Cipla / Sun Pharma) — no white background, no shadow
   imageCard: {
     width: CARD_WIDTH,
-    height: IMAGE_CARD_HEIGHT,
+    height: 180,
     borderRadius: 16,
     overflow: 'hidden',
-  },
-
-  // White card (Abbott)
-  card: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 4 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 8,
+    // elevation: 4,
   },
-
-  // Full-cover image for Cipla / Sun Pharma
+  fullCardWrapper: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
   imageBackground: {
     width: '100%',
     height: '100%',
-    justifyContent: 'space-between',
-    padding: 12,
   },
   imageStyle: {
     borderRadius: 16,
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
-
-  // Abbott logo centered
-  logoContainer: {
+  fallbackCard: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 16,
+  },
+  brandNameWrapper: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 10,
   },
 
   availablePill: {
