@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import CategoryProductCard from './CategoryProductCard';
 
-const CategoryProductList = ({ products = [], onAddPress, onFavPress, favoriteIds = {} }) => {
+const CategoryProductList = ({ products = [], onProductPress, onAddPress, onFavPress, favoriteIds = {} }) => {
   // Read favoriteOverrides from redux so heart state syncs across screens
   const favoriteOverrides = useSelector(state => state.GlobalReducer.favoriteOverrides);
 
