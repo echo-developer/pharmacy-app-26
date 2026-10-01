@@ -2,7 +2,11 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const CategoryItem = ({ label = 'All', isActive, onPress }) => {
+const CategoryItem = ({ label = 'All', image, isActive, onPress }) => {
+  const imageSource = typeof image === 'string' && image.trim() !== '' && !/no-image|placeholder/i.test(image)
+    ? { uri: image }
+    : require('../../assets/images/petsupplements.png');
+
   return (
     <TouchableOpacity
       style={[styles.item, isActive && styles.itemActive]}
@@ -18,7 +22,7 @@ const CategoryItem = ({ label = 'All', isActive, onPress }) => {
         style={styles.circle}
       >
         <Image
-          source={require('../../assets/images/petsupplements.png')}
+          source={imageSource}
           style={styles.image}
           resizeMode="contain"
         />

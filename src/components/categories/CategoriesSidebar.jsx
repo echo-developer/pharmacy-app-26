@@ -13,6 +13,7 @@ const CategoriesSidebar = ({ categories = [], activeCategory = 'all', onCategory
         <CategoryItem
           key={cat.category_id || cat.id}
           label={cat.category_name || cat.label}
+          image={cat.image || cat.category_image}
           isActive={activeCategory === (cat.category_id || cat.id)}
           onPress={() => onCategoryPress?.(cat.category_id || cat.id)}
         />
