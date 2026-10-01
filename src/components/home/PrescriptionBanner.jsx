@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FileText, Upload, Phone } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -8,6 +8,7 @@ const PrescriptionBanner = ({
   onUploadPress,
   onWhatsAppPress,
   onCallPress,
+  uploading = false,
 }) => {
   return (
     <View style={styles.container}>
@@ -26,9 +27,17 @@ const PrescriptionBanner = ({
         </View>
 
         {/* Upload Button */}
-        <TouchableOpacity style={styles.uploadButton} onPress={onUploadPress}>
-          <Upload size={16} color="#273179" />
-          <Text style={styles.uploadText}>Upload</Text>
+        <TouchableOpacity
+          style={styles.uploadButton}
+          onPress={onUploadPress}
+          disabled={uploading}
+          accessibilityRole="button"
+          accessibilityLabel={uploading ? 'Uploading prescription' : 'Upload prescription'}
+        >
+          {uploading
+            ? <ActivityIndicator size="small" color="#273179" />
+            : <Upload size={16} color="#273179" />}
+          <Text style={styles.uploadText}>{uploading ? 'Uploading...' : 'Upload'}</Text>
         </TouchableOpacity>
       </View>
 

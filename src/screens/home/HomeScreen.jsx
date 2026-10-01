@@ -1,5 +1,6 @@
-import React, { useEffect, useReducer } from 'react';
-import { Alert, Linking, View, StyleSheet, ScrollView, ActivityIndicator, StatusBar, Platform } from 'react-native';
+import React, { useEffect, useReducer, useState } from 'react';
+import { ActivityIndicator, Alert, Linking, View, StyleSheet, ScrollView, StatusBar, Platform } from 'react-native';
+import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
@@ -56,6 +57,7 @@ const fallbackHealthConcerns = [
 ];
 
 const HomeScreen = ({ navigation }) => {
+  const [uploadingPrescription, setUploadingPrescription] = useState(false);
   const [homeState, dispatch] = useReducer(homeReducer, {
     data: null,
     loader: true,
@@ -131,6 +133,48 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const handlePrescriptionUpload = async () => {
+    if (uploadingPrescription) return;
+    try {
+      const [file] = await pick({ type: [types.pdf, types.images] });
+      if (!file?.uri) {
+        Alert.alert('File unavailable', 'Please choose a prescription file and try again.');
+        return;
+      }
+
+      setUploadingPrescription(true);
+      const form = new FormData();
+      form.append('file', {
+        uri: file.uri,
+        type: file.type || 'application/octet-stream',
+        name: file.name || 'prescription',
+      });
+      form.append('patient_name', '');
+      form.append('notes', '');
+      form.append('call_before_order', '');
+      form.append('pincode', '');
+
+      const response = await CommonService._callApi({
+        api: 'prescription/upload',
+        method: 'CONVERT',
+        body: form,
+      }).then(result => result.json());
+
+      const responseData = response.response?.data;
+      if (response.status !== 1 || responseData?.status === 0 || responseData?.status === '0') {
+        const dataMessage = responseData && !Array.isArray(responseData) ? responseData.message : '';
+        throw new Error(dataMessage || response.response?.message || response.message || 'Upload failed. Please try again.');
+      }
+
+      Alert.alert('Prescription uploaded', responseData?.message || response.response?.message || 'Your prescription was uploaded successfully.');
+    } catch (error) {
+      if (isErrorWithCode(error) && error.code === errorCodes.OPERATION_CANCELED) return;
+      Alert.alert('Upload failed', error?.message || 'Please try again later.');
+    } finally {
+      setUploadingPrescription(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -174,7 +218,8 @@ const HomeScreen = ({ navigation }) => {
           </>}
           <PrescriptionBanner
             phoneNumber="1800-123-456"
-            onUploadPress={() => openExternalUrl('https://pharmacy-shop.echodeveloper.com/upload-prescription')}
+            onUploadPress={handlePrescriptionUpload}
+            uploading={uploadingPrescription}
             onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
             onCallPress={() => openExternalUrl('tel:1800123456')}
           />
