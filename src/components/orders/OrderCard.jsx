@@ -27,6 +27,7 @@ const HEADER_CONFIG = {
 
 const OrderCard = ({
   status = 'ontime',
+  statusLabel,
   headerText = 'Arriving by 10th Jun',
   images = [],
   orderId,
@@ -48,7 +49,7 @@ const OrderCard = ({
         style={styles.headerRow}
       >
         <View style={styles.headerLeft}>
-          <OrderStatusBadge status={status} />
+          <OrderStatusBadge status={status} label={statusLabel} />
           <Text style={[styles.headerText, { color: config.headerTextColor }]}>
             {headerText}
           </Text>

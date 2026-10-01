@@ -1,11 +1,13 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
+const NO_IMAGE_URL = 'https://pharmacy-shop.echodeveloper.com/useruploads/default/no-image-150x150.jpg';
+
 const CategoryItem = ({ label = 'All', image, isActive, onPress }) => {
-  const imageSource = typeof image === 'string' && image.trim() !== '' && !/no-image|placeholder/i.test(image)
-    ? { uri: image }
-    : require('../../assets/images/petsupplements.png');
+  const imageUrl = typeof image === 'string' ? image.trim() : '';
+  const normalizedImageUrl = imageUrl.replace(/^http:\/\/localhost(?::\d+)?/i, 'https://pharmacy-shop.echodeveloper.com');
+  const imageSource = { uri: normalizedImageUrl || NO_IMAGE_URL };
 
   return (
     <TouchableOpacity

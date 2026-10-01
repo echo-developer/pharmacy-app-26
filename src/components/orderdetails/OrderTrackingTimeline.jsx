@@ -2,89 +2,32 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Check } from 'lucide-react-native';
 
-const SECTIONS = [
-  {
-    id: 1,
-    title: 'Order Confirmed',
-    date: 'Mon. 14th Jun, 2026',
-    isCompleted: true,
-    events: [
-      { id: 1, label: 'Your order has been placed', time: 'Sat. 15th Jun, 2026 - 10:21 am' },
-      { id: 2, label: 'Seller has processed your order', time: 'Sun. 16th Jun, 2026 - 10:21 am' },
-      { id: 3, label: 'Shipped', time: 'Your item has been shipped' },
-    ],
-  },
-  {
-    id: 2,
-    title: 'Out for Delivery',
-    date: 'Mon. 14th Jun, 2026',
-    isCompleted: true,
-    events: [
-      { id: 1, label: 'Your item is out for delivery', time: 'Your item has been shipped' },
-    ],
-  },
-  {
-    id: 3,
-    title: 'Delivered',
-    date: 'Mon. 14th Jun, 2026',
-    isCompleted: false,
-    events: [
-      { id: 1, label: 'Your item has been delivered', time: 'Your item has been shipped' },
-    ],
-  },
-];
+const OrderTrackingTimeline = ({ statusdetails = [], orderId }) => {
+  const events = Array.isArray(statusdetails) ? statusdetails : [];
 
-const OrderTrackingTimeline = ({ sections = SECTIONS }) => {
   return (
     <View style={styles.container}>
-      {sections.map((section, sIndex) => {
-        const isLastSection = sIndex === sections.length - 1;
-
-        // ✅ Line color = next section ke isCompleted pe depend
-        const nextSection = !isLastSection ? sections[sIndex + 1] : null;
-        const lineColor =
-          nextSection && nextSection.isCompleted ? '#00A06B' : '#E4E3E2';
+      {!!orderId && <Text style={styles.orderId}>Order #{orderId}</Text>}
+      {events.length === 0 ? (
+        <Text style={styles.emptyText}>Tracking updates are not available yet.</Text>
+      ) : events.map((event, index) => {
+        const isLast = index === events.length - 1;
+        const completeValue = event.isComplete ?? event.is_complete ?? '1';
+        const isCompleted = completeValue === true || completeValue === 1 || String(completeValue) === '1';
+        const label = event.note || event.status_name || event.status || 'Order update';
+        const date = [event.bind_date, event.bind_time].filter(Boolean).join(' · ');
 
         return (
-          <View key={section.id} style={styles.sectionBlock}>
-            {/* ===== Section Header ===== */}
-            <View style={styles.sectionHeader}>
-              <View
-                style={[
-                  styles.tickCircle,
-                  section.isCompleted ? styles.tickActive : styles.tickInactive,
-                ]}
-              >
+          <View key={event.status_id || event.id || index} style={styles.timelineRow}>
+            <View style={styles.timelineMarkerColumn}>
+              <View style={[styles.tickCircle, isCompleted ? styles.tickActive : styles.tickInactive]}>
                 <Check size={12} color="#FFFFFF" strokeWidth={3} />
               </View>
-
-              <View style={styles.titleRow}>
-                <Text style={styles.sectionTitle}>{section.title}</Text>
-                <Text style={styles.sectionDate}>{section.date}</Text>
-              </View>
+              {!isLast && <View style={styles.verticalLine} />}
             </View>
-
-            {/* ===== Events + Vertical Line ===== */}
-            <View style={styles.eventsWrapper}>
-              {/* Vertical line (only if not last section) */}
-              {!isLastSection && (
-                <View
-                  style={[
-                    styles.verticalLine,
-                    { backgroundColor: lineColor },
-                  ]}
-                />
-              )}
-
-              {/* Events */}
-              <View style={styles.eventsContent}>
-                {section.events.map((event) => (
-                  <View key={event.id} style={styles.eventRow}>
-                    <Text style={styles.eventLabel}>{event.label}</Text>
-                    <Text style={styles.eventTime}>{event.time}</Text>
-                  </View>
-                ))}
-              </View>
+            <View style={styles.eventContent}>
+              <Text style={styles.eventLabel}>{label}</Text>
+              {!!date && <Text style={styles.eventTime}>{date}</Text>}
             </View>
           </View>
         );
@@ -99,13 +42,15 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 20,
   },
-  sectionBlock: {
-    marginBottom: 4,
-  },
-  sectionHeader: {
+  timelineRow: {
     flexDirection: 'row',
+    alignItems: 'stretch',
+    minHeight: 54,
+  },
+  timelineMarkerColumn: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginRight: 12,
+    width: 22,
   },
   tickCircle: {
     width: 22,
@@ -121,48 +66,36 @@ const styles = StyleSheet.create({
   tickInactive: {
     backgroundColor: '#E4E3E2',
   },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    flexWrap: 'wrap',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#333333',
-    marginRight: 8,
-  },
-  sectionDate: {
-    fontSize: 11,
-    color: '#787C77',
-    fontWeight: '500',
-  },
-  eventsWrapper: {
-    flexDirection: 'row',
-    paddingLeft: 10,
-  },
   verticalLine: {
-    width: 2,
-    marginRight: 12,
-    borderRadius: 1,
-  },
-  eventsContent: {
     flex: 1,
-    paddingBottom: 8,
+    width: 2,
+    marginVertical: 3,
+    backgroundColor: '#E4E3E2',
   },
-  eventRow: {
-    marginBottom: 16,
+  eventContent: {
+    flex: 1,
+    paddingBottom: 16,
   },
   eventLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#333333',
   },
   eventTime: {
     fontSize: 11,
     color: '#787C77',
     marginTop: 3,
+  },
+  emptyText: {
+    color: '#787887',
+    fontSize: 13,
+    paddingVertical: 12,
+  },
+  orderId: {
+    color: '#263077',
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 12,
   },
 });
 

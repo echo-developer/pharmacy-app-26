@@ -3,6 +3,7 @@ import { View, StyleSheet, StatusBar, ActivityIndicator, Modal, TouchableOpacity
 import { useSelector } from 'react-redux';
 import CategoryHeader from '../../components/categories/CategoryHeader';
 import CategoriesSidebar from '../../components/categories/CategoriesSidebar';
+import SubcategorySelector from '../../components/categories/SubcategorySelector';
 import FilterSortBar from '../../components/categories/FilterSortBar';
 import CategoryProductList from '../../components/categories/CategoryProductList';
 import CommonService from '../../utils/CommonService';
@@ -14,7 +15,9 @@ const CategoriesScreen = ({ navigation }) => {
   const [loader, setLoader] = useState(false);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
+  const [activeSubcategory, setActiveSubcategory] = useState(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [selectedSort, setSelectedSort] = useState('relevance');
@@ -39,6 +42,7 @@ const CategoriesScreen = ({ navigation }) => {
           if (cats.length > 0) {
             const firstCatId = cats[0].category_id;
             setActiveCategory(firstCatId);
+            setActiveSubcategory(null);
             getProductsApi(firstCatId, selectedSort, selectedDiscount, priceRange);
           } else {
             getProductsApi(null, selectedSort, selectedDiscount, priceRange);
@@ -56,15 +60,21 @@ const CategoriesScreen = ({ navigation }) => {
     categoryId = activeCategory,
     sort = selectedSort,
     discount = selectedDiscount,
-    range = priceRange
+    range = priceRange,
+    subcategoryId = activeSubcategory,
   ) => {
-    const urlParams = { 
+    const urlParams = {
       category_id: categoryId || '',
       sort_by: sort,
       min_discount: discount > 0 ? discount : '',
       min: range.min > 0 ? range.min : '',
       max: range.max > 0 ? range.max : '',
     };
+    // Omitting sub_category_id means "Shop all" within the selected parent category.
+    if (subcategoryId != null && subcategoryId !== '') {
+      urlParams.sub_category_id = subcategoryId;
+    }
+    setProductsLoading(true);
     CommonService._callApi({
       api: 'product/list',
       method: 'GET',
@@ -73,16 +83,29 @@ const CategoriesScreen = ({ navigation }) => {
       .then(resp => {
         if (resp.data?.status == 1) {
           setProducts(resp.data.response.data || []);
+        } else {
+          setProducts([]);
         }
       })
       .catch(error => {
+        setProducts([]);
         console.log('Products API Error:', error);
+      })
+      .finally(() => {
+        setProductsLoading(false);
       });
   };
 
   const handleCategoryPress = (categoryId) => {
     setActiveCategory(categoryId);
-    getProductsApi(categoryId, selectedSort, selectedDiscount, priceRange);
+    setActiveSubcategory(null);
+    getProductsApi(categoryId, selectedSort, selectedDiscount, priceRange, null);
+  };
+
+  const handleSubcategoryPress = (subcategory) => {
+    const subcategoryId = subcategory.sub_category_id || subcategory.category_id || subcategory.id;
+    setActiveSubcategory(subcategoryId);
+    getProductsApi(activeCategory, selectedSort, selectedDiscount, priceRange, subcategoryId);
   };
 
   const handleFilterPress = () => {
@@ -211,6 +234,12 @@ const CategoriesScreen = ({ navigation }) => {
 
   const cart = useSelector(state => state.GlobalReducer.cart);
   const cartCount = cart?.items?.length || 0;
+  const activeCategoryData = categories.find(category =>
+    String(category.category_id || category.id) === String(activeCategory),
+  );
+  const activeSubcategories = Array.isArray(activeCategoryData?.subcategories)
+    ? activeCategoryData.subcategories
+    : [];
 
   return (
     <View style={styles.container}>
@@ -245,8 +274,20 @@ const CategoriesScreen = ({ navigation }) => {
                 onInStockToggle={handleInStockToggle}
                 hasActiveFilters={selectedDiscount > 0 || priceRange.min > 0 || priceRange.max > 0}
               />
+              <SubcategorySelector
+                categoryName={activeCategoryData?.category_name || activeCategoryData?.name}
+                subcategories={activeSubcategories}
+                selectedSubcategoryId={activeSubcategory}
+                isShopAllSelected={!activeSubcategory}
+                onSubcategoryPress={handleSubcategoryPress}
+                onShopAllPress={() => {
+                  setActiveSubcategory(null);
+                  getProductsApi(activeCategory, selectedSort, selectedDiscount, priceRange, null);
+                }}
+              />
               <CategoryProductList
                 products={getProcessedProducts()}
+                loading={productsLoading}
                 onProductPress={(item) => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
                 onAddPress={(item) => CommonService.addToCart(item)}
                 onFavPress={handleFavPress}

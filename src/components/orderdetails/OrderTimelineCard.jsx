@@ -2,24 +2,22 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Check, ChevronRight } from 'lucide-react-native';
 
-const EVENTS = [
-  { id: 1, label: 'Delivered, Jun 17, 2026', isCompleted: true },
-  { id: 2, label: 'Delivered, Jun 17, 2026', isCompleted: false },
-];
-
-const OrderTimelineCard = ({ events = EVENTS, onSeeAllUpdates, statusdetails }) => {
-  // Use real statusdetails if available, otherwise fallback to events prop
-  const timelineEvents = statusdetails && statusdetails.length > 0 
-    ? statusdetails.map((sd, index) => ({
+const OrderTimelineCard = ({ events = [], onSeeAllUpdates, statusdetails }) => {
+  // Use real order updates; do not show a sample timeline as if it belonged to this order.
+  const updates = Array.isArray(statusdetails) ? statusdetails : [];
+  const timelineEvents = updates.length > 0
+    ? updates.map((sd, index) => ({
         id: index,
         label: `${sd.note || 'Order Update'}, ${sd.bind_date || ''} ${sd.bind_time || ''}`,
-        isCompleted: String(sd.isComplete) === '1',
+        isCompleted: sd.isComplete === true || sd.isComplete === 1 || String(sd.isComplete) === '1',
       }))
     : events;
   return (
     <View style={styles.card}>
       {/* ===== Timeline Events ===== */}
-      {timelineEvents.map((event, index) => {
+      {timelineEvents.length === 0 ? (
+        <Text style={styles.emptyText}>Tracking updates are not available yet.</Text>
+      ) : timelineEvents.map((event, index) => {
         const isLast = index === timelineEvents.length - 1;
         return (
           <View key={event.id} style={styles.eventRow}>
@@ -59,14 +57,14 @@ const OrderTimelineCard = ({ events = EVENTS, onSeeAllUpdates, statusdetails }) 
       })}
 
       {/* ===== See All Updates Button ===== */}
-      <TouchableOpacity
+      {timelineEvents.length > 0 && <TouchableOpacity
         style={styles.seeAllBtn}
         onPress={onSeeAllUpdates}
         activeOpacity={0.85}
       >
         <Text style={styles.seeAllText}>See all updates</Text>
         <ChevronRight size={18} color="#787C77" />
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </View>
   );
 };
@@ -146,6 +144,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#787C77',                 // Text
+  },
+  emptyText: {
+    color: '#787887',
+    fontSize: 13,
+    paddingVertical: 8,
   },
 });
 

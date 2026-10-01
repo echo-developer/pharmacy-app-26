@@ -22,7 +22,7 @@ import FilterSortBar from '../../components/categories/FilterSortBar';
 
 const ProductsScreen = ({ navigation }) => {
   const route = useRoute();
-  const { title = 'Products', category_id, brand_id } = route.params || {};
+  const { title = 'Products', category_id, sub_category_id, brand_id } = route.params || {};
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ const ProductsScreen = ({ navigation }) => {
 
   useEffect(() => {
     fetchProducts(selectedSort, selectedDiscount, priceRange);
-  }, [category_id, brand_id]);
+  }, [category_id, sub_category_id, brand_id]);
 
   const fetchProducts = (
     sort = selectedSort,
@@ -58,6 +58,7 @@ const ProductsScreen = ({ navigation }) => {
       method: 'GET',
       urlParams: {
         category_id: category_id || '',
+        sub_category_id: sub_category_id || '',
         brand_id: brand_id || '',
         sort_by: sort,
         min_discount: discount > 0 ? discount : '',

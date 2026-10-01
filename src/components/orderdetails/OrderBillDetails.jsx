@@ -7,6 +7,7 @@ const OrderBillDetails = ({
   itemsCutPrice = '456',
   deliveryCharge = 'FREE',
   handlingCharge = '456',
+  taxAmount,
   grandTotal = '456',
   onDownloadInvoice,
 }) => {
@@ -30,11 +31,18 @@ const OrderBillDetails = ({
         <Text style={styles.free}>{deliveryCharge}</Text>
       </View>
 
-      {/* ===== Row: Handling Charge ===== */}
-      <View style={styles.row}>
-        <Text style={styles.label}>Handling Charge</Text>
-        <Text style={styles.price}>₹{handlingCharge}</Text>
-      </View>
+      {Number(handlingCharge) > 0 && (
+        <View style={styles.row}>
+          <Text style={styles.label}>Handling Charge</Text>
+          <Text style={styles.price}>₹{handlingCharge}</Text>
+        </View>
+      )}
+      {taxAmount != null && (
+        <View style={styles.row}>
+          <Text style={styles.label}>GST (included)</Text>
+          <Text style={styles.price}>₹{taxAmount}</Text>
+        </View>
+      )}
 
       {/* ===== Divider ===== */}
       <View style={styles.divider} />

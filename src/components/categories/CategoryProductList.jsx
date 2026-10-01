@@ -1,9 +1,9 @@
 import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import CategoryProductCard from './CategoryProductCard';
 
-const CategoryProductList = ({ products = [], onProductPress, onAddPress, onFavPress, favoriteIds = {} }) => {
+const CategoryProductList = ({ products = [], loading = false, onProductPress, onAddPress, onFavPress, favoriteIds = {} }) => {
   // Read favoriteOverrides from redux so heart state syncs across screens
   const favoriteOverrides = useSelector(state => state.GlobalReducer.favoriteOverrides);
 
@@ -13,7 +13,16 @@ const CategoryProductList = ({ products = [], onProductPress, onAddPress, onFavP
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {products.map((item) => {
+      {loading ? (
+        <View style={styles.messageContainer}>
+          <ActivityIndicator size="small" color="#0D7998" />
+        </View>
+      ) : products.length === 0 ? (
+        <View style={styles.messageContainer}>
+          <Text style={styles.emptyText}>No products found in this category.</Text>
+        </View>
+      ) : null}
+      {!loading && products.map((item) => {
         const pid = Math.abs(item.product_id || item.id);
         // Check redux override first, fallback to API-supplied is_favorite
         const isFav =
@@ -53,6 +62,15 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 12,
+  },
+  messageContainer: {
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#787887',
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
 

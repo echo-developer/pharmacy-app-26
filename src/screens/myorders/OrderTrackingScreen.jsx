@@ -3,7 +3,9 @@ import { View, StyleSheet, StatusBar } from 'react-native';
 import BottomSheetModal from '../../components/orderdetails/BottomSheetModal';
 import OrderTrackingTimeline from '../../components/orderdetails/OrderTrackingTimeline';
 
-const OrderTrackingScreen = ({ navigation }) => {
+const OrderTrackingScreen = ({ navigation, route }) => {
+  const statusdetails = route?.params?.statusdetails || [];
+  const orderId = route?.params?.orderId;
   return (
     <View style={styles.container}>
       <StatusBar
@@ -13,7 +15,7 @@ const OrderTrackingScreen = ({ navigation }) => {
       />
 
       <BottomSheetModal visible={true} onClose={() => navigation.goBack()}>
-        <OrderTrackingTimeline />
+        <OrderTrackingTimeline statusdetails={statusdetails} orderId={orderId} />
       </BottomSheetModal>
     </View>
   );

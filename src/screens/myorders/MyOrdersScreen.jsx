@@ -22,20 +22,30 @@ const formatDate = (dateString, options = {}) => {
   const day = date.getDate();
   const month = monthNames[date.getMonth()];
   const year = date.getFullYear();
+  const ordinal = day % 100 >= 11 && day % 100 <= 13
+    ? 'th'
+    : ({ 1: 'st', 2: 'nd', 3: 'rd' }[day % 10] || 'th');
 
   if (options.shortDate) {
-    return `${day}th ${month}`;
+    return `${day}${ordinal} ${month}`;
   }
-  return `${day}th ${month} ${year}`;
+  return `${day}${ordinal} ${month} ${year}`;
 };
 
-const addDaysToDate = (dateString, days) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
-  date.setDate(date.getDate() + days);
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${date.getDate()}th ${monthNames[date.getMonth()]}`;
+const orderKey = order => {
+  const id = order.order_id || order.id || order.order_number;
+  return id == null || id === '' ? null : String(id);
+};
+
+const mergeUniqueOrders = orders => {
+  const seen = new Set();
+  return orders.filter(order => {
+    const key = orderKey(order);
+    if (key == null) return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 };
 
 const MyOrdersScreen = ({ navigation }) => {
@@ -56,7 +66,7 @@ const MyOrdersScreen = ({ navigation }) => {
     return allOrders.filter(order => {
       const orderIdMatch = String(order.order_id || order.id || order.order_number || '').toLowerCase().includes(q);
       const statusMatch = String(order.order_status || order.status || '').toLowerCase().includes(q);
-      const amountMatch = String(order.total_amount || order.amount || order.grand_total || '').includes(q);
+      const amountMatch = String(order.order_total ?? order.final_amount ?? order.total_amount ?? order.amount ?? order.grand_total ?? '').includes(q);
       const dateMatch = String(order.order_date_formatted || order.order_date || '').toLowerCase().includes(q);
 
       const items = order.products || order.items || [];
@@ -83,75 +93,56 @@ const MyOrdersScreen = ({ navigation }) => {
       setInfiniteLoader(true);
     }
 
-    const localOrders = await CommonService.getLocalOrders();
-    console.log('LOCAL ORDERS:', localOrders.length, JSON.stringify(localOrders[0]));
+    let localOrders = [];
+    try {
+      if (page === 1) localOrders = await CommonService.getLocalOrders();
+      const resp = await CommonService._callApi({
+        // The backend's app order-list endpoint is /api/app/orders/list.
+        api: '/orders/list',
+        method: 'GET',
+        urlParams: { page, status: '' },
+      });
+      const dataRes = resp.data;
+      let serverOrders = [];
+      if (dataRes.status === 1 && dataRes.response) {
+        serverOrders = Array.isArray(dataRes.response.data)
+          ? dataRes.response.data
+          : Array.isArray(dataRes.response)
+            ? dataRes.response
+            : [];
+        const totalPages = parseInt(dataRes.response.total_page || dataRes.response.total_pages, 10) || 1;
+        const fetchedPage = parseInt(dataRes.response.current_page, 10) || page;
+        currentPageRef.current = fetchedPage;
+        hasMoreRef.current = fetchedPage < totalPages;
+      } else {
+        hasMoreRef.current = false;
+      }
 
-    CommonService._callApi({
-      api: '/order/list',
-      method: 'GET',
-      urlParams: { page: page, status: '' },
-    })
-      .then(resp => {
-        const dataRes = resp.data;
-        console.log('ORDER LIST RAW RESPONSE:', JSON.stringify(dataRes));
-        setLoader(false);
-        setRefreshing(false);
-        setInfiniteLoader(false);
-        isFetchingRef.current = false;
-
-        let serverOrders = [];
-        if (dataRes.status === 1 && dataRes.response) {
-          // Handle both array directly and nested .data
-          const rawData = Array.isArray(dataRes.response.data)
-            ? dataRes.response.data
-            : Array.isArray(dataRes.response)
-              ? dataRes.response
-              : [];
-          console.log('PARSED SERVER ORDERS:', rawData.length, JSON.stringify(rawData[0]));
-          serverOrders = rawData;
-          const totalPages = parseInt(dataRes.response.total_page, 10) || 1;
-          const fetchedPage = parseInt(dataRes.response.current_page, 10) || page;
-          currentPageRef.current = fetchedPage;
-          hasMoreRef.current = fetchedPage < totalPages;
-        } else {
-          console.log('ORDER API status not 1 or no response. status:', dataRes.status);
-          hasMoreRef.current = false;
-        }
-
-        const taggedLocal = localOrders.map((o, i) => ({
-          ...o,
-          _uniqueKey: `local_${o.order_id || i}`,
-        }));
-        const taggedServer = serverOrders.map((o, i) => ({
-          ...o,
-          _uniqueKey: `server_${o.order_id || i}`,
-        }));
-        const combined = page === 1 ? [...taggedLocal, ...taggedServer] : taggedServer;
-        console.log('COMBINED ORDERS:', combined.length);
-        const mapped = combined.map(o => ({
-          ...o,
-          order_date_formatted: formatDate(o.order_date),
-        }));
-        console.log('MAPPED ORDERS:', mapped.length);
-        if (append) {
-          setAllOrders(prev => [...prev, ...mapped]);
-        } else {
-          setAllOrders(mapped);
-        }
-      })
-      .catch(err => {
-        console.log('ORDER API ERROR:', err?.message || err);
-        setLoader(false);
-        setRefreshing(false);
-        setInfiniteLoader(false);
-        isFetchingRef.current = false;
-        const mapped = localOrders.map((o, i) => ({
-          ...o,
-          _uniqueKey: `local_${o.order_id || i}`,
-          order_date_formatted: formatDate(o.order_date),
+      // Prefer the server copy when a locally saved order has synced.
+      const combined = page === 1 ? mergeUniqueOrders([...serverOrders, ...localOrders]) : serverOrders;
+      const mapped = combined.map((order, index) => ({
+        ...order,
+        _uniqueKey: orderKey(order) || `order_${page}_${index}`,
+        order_date_formatted: formatDate(order.order_date),
+      }));
+      setAllOrders(prev => append ? mergeUniqueOrders([...prev, ...mapped]) : mapped);
+    } catch (err) {
+      console.log('ORDER API ERROR:', err?.message || err);
+      hasMoreRef.current = false;
+      if (page === 1) {
+        const mapped = mergeUniqueOrders(localOrders).map((order, index) => ({
+          ...order,
+          _uniqueKey: orderKey(order) || `local_${index}`,
+          order_date_formatted: formatDate(order.order_date),
         }));
         setAllOrders(mapped);
-      });
+      }
+    } finally {
+      setLoader(false);
+      setRefreshing(false);
+      setInfiniteLoader(false);
+      isFetchingRef.current = false;
+    }
   }, []);
 
   useEffect(() => {
@@ -165,6 +156,10 @@ const MyOrdersScreen = ({ navigation }) => {
   }, [navigation, loadOrder]);
 
   const onRefresh = () => {
+    if (isFetchingRef.current) {
+      setRefreshing(false);
+      return;
+    }
     setRefreshing(true);
     currentPageRef.current = 1;
     hasMoreRef.current = true;
@@ -173,16 +168,47 @@ const MyOrdersScreen = ({ navigation }) => {
 
   const getCardStatus = (statusStr) => {
     // 1: Placed, 2: Shipped, 3: Out for Delivery, 4: Delivered, 7: Cancelled
-    if (statusStr === '7' || statusStr === 'Cancelled') return 'cancelled';
-    if (statusStr === '4' || statusStr === 'Delivered') return 'completed';
+    const status = String(statusStr || '').toLowerCase();
+    if (status === '7' || status.includes('cancel')) return 'cancelled';
+    if (status === '4' || status.includes('delivered') || status === 'completed') return 'completed';
     return 'ontime';
   };
 
+  const getStatusLabel = statusStr => {
+    const status = String(statusStr || '').toLowerCase();
+    if (status === '3' || status.includes('out for delivery')) return 'OUT FOR DELIVERY';
+    if (status === '1' || status.includes('place') || status.includes('confirm')) return 'PLACED';
+    if (status === '2' || status.includes('ship')) return 'SHIPPED';
+    if (status === '4' || status.includes('delivered') || status === 'completed') return 'DELIVERED';
+    if (status === '7' || status.includes('cancel')) return 'CANCELLED';
+    return 'IN PROGRESS';
+  };
+
   const getHeaderText = (item) => {
-    const status = getCardStatus(item.order_status);
-    if (status === 'completed') return `Delivered on ${formatDate(item.order_date, { shortDate: true })}`;
-    if (status === 'cancelled') return `Cancelled on ${formatDate(item.order_date, { shortDate: true })}`;
-    return `Arriving by ${addDaysToDate(item.order_date, 3)}`;
+    const status = getCardStatus(item.order_status_name || item.status_label || item.order_status || item.status);
+    const deliveredDate = item.delivered_date || item.delivered_at;
+    const cancelledDate = item.cancelled_date || item.cancelled_at;
+    const expectedDate = item.expected_delivery_date || item.delivery_date || item.estimated_delivery_date;
+    if (status === 'completed') return deliveredDate ? `Delivered on ${formatDate(deliveredDate, { shortDate: true })}` : 'Delivered';
+    if (status === 'cancelled') return cancelledDate ? `Cancelled on ${formatDate(cancelledDate, { shortDate: true })}` : 'Cancelled';
+    return expectedDate ? `Arriving by ${formatDate(expectedDate, { shortDate: true })}` : 'Order in progress';
+  };
+
+  const getTimelineSteps = item => {
+    const labelStatus = item.order_status_name || item.status_label;
+    const rawStatus = String(labelStatus || item.order_status || item.status || '').toLowerCase();
+    const statusCode = parseInt(rawStatus, 10);
+    const isCancelled = statusCode === 7 || rawStatus.includes('cancel');
+    const isShipped = [2, 3, 4].includes(statusCode)
+      || rawStatus.includes('ship')
+      || rawStatus.includes('out for delivery')
+      || rawStatus.includes('delivered');
+    const isDelivered = statusCode === 4 || rawStatus.includes('delivered') || rawStatus === 'completed';
+    return [
+      { label: 'Placed', isCompleted: true },
+      { label: 'Shipped', isCompleted: !isCancelled && isShipped },
+      { label: 'Delivered', isCompleted: !isCancelled && isDelivered },
+    ];
   };
 
   return (
@@ -209,6 +235,14 @@ const MyOrdersScreen = ({ navigation }) => {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
+          scrollEventThrottle={300}
+          onScroll={({ nativeEvent }) => {
+            const nearBottom = nativeEvent.layoutMeasurement.height + nativeEvent.contentOffset.y
+              >= nativeEvent.contentSize.height - 160;
+            if (nearBottom && hasMoreRef.current && !isFetchingRef.current) {
+              loadOrder(currentPageRef.current + 1, true);
+            }
+          }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0D7998']} />
           }
@@ -221,12 +255,13 @@ const MyOrdersScreen = ({ navigation }) => {
             </View>
           ) : (
             filteredOrders.map((item, idx) => {
-              const status = getCardStatus(item.order_status);
+              const itemStatus = item.order_status_name || item.status_label || item.order_status || item.status;
+              const status = getCardStatus(itemStatus);
               const headerText = getHeaderText(item);
-              // products/items can be array of objects (with image) or just numbers
-              const imagesList = (item.products || item.items || []).filter(
-                p => p && typeof p === 'object'
-              );
+              // New API returns gallery as URL strings; older responses return item objects.
+              const imagesList = Array.isArray(item.gallery) && item.gallery.length
+                ? item.gallery.map(image => typeof image === 'string' ? { image } : image)
+                : (item.products || item.items || []).filter(p => p && typeof p === 'object');
 
               return (
                 <TouchableOpacity
@@ -242,14 +277,13 @@ const MyOrdersScreen = ({ navigation }) => {
 
                   <OrderCard
                     status={status}
+                    statusLabel={item.status_label || item.order_status_name || getStatusLabel(itemStatus)}
                     headerText={headerText}
+                    orderId={item.order_number || item.order_id}
+                    amount={item.order_total ?? item.final_amount ?? item.total_amount ?? item.grand_total ?? item.amount}
                     images={imagesList}
                     onPress={() => navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id })}
-                    timelineSteps={[
-                      { label: 'Placed', isCompleted: true },
-                      { label: 'Shipped', isCompleted: status === 'completed' || status === 'ontime' },
-                      { label: 'Delivered', isCompleted: status === 'completed' },
-                    ]}
+                    timelineSteps={getTimelineSteps(item)}
                     actions={
                       status === 'ontime'
                         ? [
