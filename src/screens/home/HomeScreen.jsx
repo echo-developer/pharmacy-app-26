@@ -156,11 +156,17 @@ const HomeScreen = ({ navigation }) => {
           />
           <ConcernPills
             concerns={healthConcerns}
-            onPillPress={(item) => navigation.navigate('Products', { title: item.category_name || item.label || item.name || 'Health Concern' })}
+            onPillPress={(item) => navigation.navigate('Products', {
+              title: item.category_name || item.label || item.name || 'Health Concern',
+              category_id: item.category_id || item.id,
+            })}
           />
           <HealthConcernList
             concerns={healthConcerns}
-            onCardPress={(item) => navigation.navigate('Products', { title: item.category_name || item.label || item.name || 'Health Concern' })}
+            onCardPress={(item) => navigation.navigate('Products', {
+              title: item.category_name || item.label || item.name || 'Health Concern',
+              category_id: item.category_id || item.id,
+            })}
           />
           <VitaminsHeader
             subtitle="Nourish their growth with"
