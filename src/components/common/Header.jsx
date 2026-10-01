@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { ChevronDown, ShoppingBag, MapPin, Navigation } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import store from '../../store/store';
 
@@ -12,6 +13,7 @@ const Header = ({
   onLocationPress,
   onCartPress 
 }) => {
+  const insets = useSafeAreaInsets();
   const [storeState, setStoreState] = React.useState(store.getState().GlobalReducer);
 
   React.useEffect(() => {
@@ -30,7 +32,7 @@ const Header = ({
       colors={['#E3FCE4', '#FEFCFD']} 
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={styles.container}
+      style={[styles.container, { paddingTop: insets.top + 8 }]}
     >
       {/* LEFT SIDE */}
       <TouchableOpacity style={styles.leftContainer} onPress={onLocationPress} activeOpacity={0.8}>
@@ -73,8 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    // Yahan status bar ki height add karein
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 44,
   },
   // ... baaki styles same rahenge
   leftContainer: { flexDirection: 'row', alignItems: 'center', flex: 1 },

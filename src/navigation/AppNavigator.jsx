@@ -20,6 +20,12 @@ import PaymentMethodScreen from '../screens/cart/PaymentMethodScreen';
 import AddressManageScreen from '../screens/account/AddressManageScreen';
 import WishlistScreen from '../screens/account/WishlistScreen';
 import WebScreen from '../screens/account/WebScreen';
+import OffersScreen from '../screens/discovery/OffersScreen';
+import BuyAgainScreen from '../screens/discovery/BuyAgainScreen';
+import ProfileEditScreen from '../screens/account/ProfileEditScreen';
+import ReferralScreen from '../screens/account/ReferralScreen';
+import NotificationPreferencesScreen from '../screens/account/NotificationPreferencesScreen';
+import OrderReviewScreen from '../screens/myorders/OrderReviewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,9 +50,16 @@ const AppNavigator = () => {
         <Stack.Screen name="ConfirmLocation" component={AddressManageScreen} />
         <Stack.Screen name="Wishlist" component={WishlistScreen} />
         <Stack.Screen name="WebScreen" component={WebScreen} />
+        <Stack.Screen name="Offers" component={OffersScreen} />
+        <Stack.Screen name="BuyAgain" component={BuyAgainScreen} />
+        <Stack.Screen name="EditProfile" component={ProfileEditScreen} />
+        <Stack.Screen name="Referral" component={ReferralScreen} />
+        <Stack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
+        <Stack.Screen name="OrderReview" component={OrderReviewScreen} />
         <Stack.Screen name="AboutUs" component={WebScreen} />
         <Stack.Screen name="Faq" component={WebScreen} />
         <Stack.Screen name="ReturnPolicy" component={WebScreen} />
+        <Stack.Screen name="CancellationPolicy" component={WebScreen} />
         <Stack.Screen name="My Orders" component={MyOrdersScreen} />
         <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
         <Stack.Screen

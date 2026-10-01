@@ -6,7 +6,7 @@ import AccountHeader from '../../components/account/AccountHeader';
 import ProfileCard from '../../components/account/ProfileCard';
 import QuickActions from '../../components/account/QuickActions';
 import AppUpdateBanner from '../../components/account/AppUpdateBanner';
-import { Heart, Map, Share2,Info,ShieldCheck,Bell,MessageSquare,RotateCcw, } from 'lucide-react-native';
+import { Heart, Map, Share2, Info, ShieldCheck, Bell, MessageSquare, RotateCcw, Tag, RotateCw, Gift } from 'lucide-react-native';
 import SettingsSection from '../../components/account/SettingsSection';
 import SettingsRow from '../../components/account/SettingsRow';
 import LogoutButton from '../../components/account/LogoutButton';
@@ -69,13 +69,7 @@ const AccountScreen = ({ navigation }) => {
   };
 
   const handleNotifications = () => {
-    Alert.alert(
-      'Notifications',
-      'You can manage your notification preferences in device settings.',
-      [
-        { text: 'OK', onPress: () => {} }
-      ]
-    );
+    navigation.navigate('NotificationPreferences');
   };
 
   const handleHelpPress = () => {
@@ -101,13 +95,7 @@ const AccountScreen = ({ navigation }) => {
   };
 
   const handleEditProfile = () => {
-    Alert.alert(
-      'Edit Profile',
-      'Profile editing feature coming soon!',
-      [
-        { text: 'OK', onPress: () => {} }
-      ]
-    );
+    navigation.navigate('EditProfile');
   };
 
   const handleEmailPress = () => {
@@ -153,8 +141,8 @@ const AccountScreen = ({ navigation }) => {
           onWalletPress={handleWalletPress}
         />
         <ProfileCard
-          phone={loginState?.userToken?.mobile || loginState?.userToken?.phone || '+91 9812345678'}
-          email={loginState?.userToken?.email || 'Add your email'}
+          phone={loginState?.userToken?.member_phone || loginState?.userToken?.mobile || loginState?.userToken?.phone || 'Add your mobile number'}
+          email={loginState?.userToken?.member_email || loginState?.userToken?.email || 'Add your email'}
           onEditPress={handleEditProfile}
           onEmailPress={handleEmailPress}
         />
@@ -176,6 +164,8 @@ const AccountScreen = ({ navigation }) => {
           onPress={handleAppUpdate}
         />
         <SettingsSection title="Information">
+          <SettingsRow Icon={Tag} label="Offers" onPress={() => navigation.navigate('Offers')} showDivider />
+          <SettingsRow Icon={RotateCw} label="Buy Again" onPress={() => navigation.navigate('BuyAgain')} showDivider />
           <SettingsRow
             Icon={Heart}
             label="Wishlist"
@@ -186,6 +176,12 @@ const AccountScreen = ({ navigation }) => {
             Icon={Map}
             label="Address"
             onPress={() => navigation.navigate('MyAddress')}
+            showDivider
+          />
+          <SettingsRow
+            Icon={Gift}
+            label="Referral program"
+            onPress={() => navigation.navigate('Referral')}
           />
         </SettingsSection>
         <SettingsSection title="About">
@@ -223,6 +219,12 @@ const AccountScreen = ({ navigation }) => {
             Icon={RotateCcw}
             label="Return Policy"
             onPress={() => navigation.navigate('ReturnPolicy', { title: 'Return Policy', type: 'return' })}
+            showDivider
+          />
+          <SettingsRow
+            Icon={RotateCcw}
+            label="Cancellation Policy"
+            onPress={() => navigation.navigate('CancellationPolicy', { title: 'Cancellation Policy', type: 'cancellation' })}
           />
         </SettingsSection>
         <LogoutButton onPress={handleLogout} />

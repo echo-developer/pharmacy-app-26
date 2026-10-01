@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, ActivityIndicator, StatusBar, Platform } from 'react-native';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
@@ -122,6 +122,11 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={Platform.OS === 'android'}
+      />
       <Header
         onLocationPress={() => navigation.navigate('MyAddress')}
         onCartPress={() => navigation.navigate('Cart')}
@@ -168,7 +173,7 @@ const HomeScreen = ({ navigation }) => {
           <DealsHeader
             title="Deals you'll love"
             subtitle="Buy now to get the best deals"
-            onArrowPress={() => navigation.navigate('Products', { title: "Deals You'll Love" })}
+            onArrowPress={() => navigation.navigate('Offers')}
           />
           <DealsProducts
             products={deals}

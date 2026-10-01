@@ -67,6 +67,21 @@ const WebScreen = ({ navigation }) => {
             </Text>
           </View>
         );
+      case 'cancellation':
+        return (
+          <View>
+            <View style={styles.iconCenterHeader}>
+              <FileText size={40} color="#263077" />
+              <Text style={styles.contentHeading}>Cancellation Policy</Text>
+            </View>
+            <Text style={styles.paragraph}>
+              You may request cancellation while an order is still being prepared. Once dispatched, cancellation may no longer be available.
+            </Text>
+            <Text style={styles.paragraph}>
+              For prescription medicines and temperature-sensitive healthcare products, cancellation and refund eligibility may depend on applicable pharmacy and product safety requirements. Contact support from your order details for help.
+            </Text>
+          </View>
+        );
       default:
         return (
           <View>

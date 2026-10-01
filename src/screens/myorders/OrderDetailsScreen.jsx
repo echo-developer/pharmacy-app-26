@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import OrderDetailsHeader from '../../components/orderdetails/OrderDetailsHeader';
 import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBanner';
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
@@ -358,6 +358,14 @@ const OrderDetailsScreen = ({ route, navigation }) => {
         </ScrollView>
       )}
 
+      {orderData && (String(orderData.order_status) === '4' || String(orderData.order_status).toLowerCase() === 'delivered') && (
+        <TouchableOpacity
+          style={styles.reviewButton}
+          onPress={() => navigation.navigate('OrderReview', { id: orderData.order_id || orderIdParam })}
+        >
+          <Text style={styles.reviewButtonText}>Rate and review this order</Text>
+        </TouchableOpacity>
+      )}
       {orderData && (
         <RepeatOrderButton
           label="Repeat Order"
@@ -382,6 +390,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#787887',
   },
+  reviewButton: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 13,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#263077',
+    alignItems: 'center',
+  },
+  reviewButtonText: { color: '#263077', fontSize: 14, fontWeight: '700' },
   scrollContent: {
     paddingBottom: 100,                 
   },
