@@ -6,13 +6,14 @@ const DealsHeader = ({
   title = "Deals you'll love",
   subtitle = 'Buy now to get the best deals',
   onArrowPress,
+  showHeart = true,
 }) => {
   return (
     <View style={styles.container}>
       {/* LEFT SIDE: Title + Subtitle */}
       <View style={styles.textColumn}>
         <Text style={styles.title}>
-          {title} <Text style={styles.heart}>❤️</Text>
+          {title}{showHeart && <Text style={styles.heart}> ❤️</Text>}
         </Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>

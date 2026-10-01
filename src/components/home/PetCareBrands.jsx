@@ -15,6 +15,13 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CARD_WIDTH = SCREEN_WIDTH * 0.52;
 const CARD_HEIGHT = 180;
 const IMAGE_CARD_HEIGHT = 220;
+const noImagePlaceholder = {
+  uri: 'https://pharmacy-shop.echodeveloper.com/useruploads/default/no-image-150x150.jpg',
+};
+const localBrandImages = {
+  cipla: require('../../assets/images/cipla.png'),
+  'sun pharma': require('../../assets/images/sunpharma.png'),
+};
 
 const AbbottLogo = () => (
   <View style={styles.abbottWrapper}>
@@ -44,6 +51,15 @@ const PetCareBrands = ({ brands = [], onBrandPress }) => {
         {brands.map((item) => {
           const itemId = item.id || item.brand_id;
           const bgImage = item.logo || item.image || item.brand_image || item.banner;
+          const hasBrandImage = typeof bgImage === 'string'
+            ? bgImage.trim() !== '' && !/no-image|placeholder/i.test(bgImage)
+            : Boolean(bgImage);
+          const brandName = item.name || item.brand_name || '';
+          const localBrandImage = localBrandImages[brandName.trim().toLowerCase()];
+          const isPlaceholderImage = !hasBrandImage && !localBrandImage;
+          const imageSource = hasBrandImage
+            ? (typeof bgImage === 'string' ? { uri: bgImage } : bgImage)
+            : (localBrandImage || noImagePlaceholder);
 
           return (
             <TouchableOpacity
@@ -52,40 +68,28 @@ const PetCareBrands = ({ brands = [], onBrandPress }) => {
               style={styles.imageCard}
               onPress={() => onBrandPress?.(item)}
             >
-              {bgImage ? (
-                <View style={styles.fullCardWrapper}>
-                  <ImageBackground
-                    source={typeof bgImage === 'string' ? { uri: bgImage } : bgImage}
-                    style={styles.imageBackground}
-                    imageStyle={styles.imageStyle}
-                    resizeMode="cover"
-                  />
-                  {item.available && (
-                    <View style={styles.availablePill}>
-                      <Text style={styles.availableText}>{item.available}</Text>
-                    </View>
-                  )}
-                  <View style={styles.arrowButton}>
-                    <ArrowUpRight size={18} color="#FFFFFF" />
+              <View style={styles.fullCardWrapper}>
+                <ImageBackground
+                  source={imageSource}
+                  style={styles.imageBackground}
+                  imageStyle={[styles.imageStyle, isPlaceholderImage && styles.placeholderImageStyle]}
+                  resizeMode="cover"
+                >
+                  {isPlaceholderImage && brandName ? (
+                    <Text style={styles.placeholderBrandName} numberOfLines={1}>
+                      {brandName}
+                    </Text>
+                  ) : null}
+                </ImageBackground>
+                {item.available && (
+                  <View style={styles.availablePill}>
+                    <Text style={styles.availableText}>{item.available}</Text>
                   </View>
+                )}
+                <View style={styles.arrowButton}>
+                  <ArrowUpRight size={18} color="#FFFFFF" />
                 </View>
-              ) : (
-                <View style={styles.fallbackCard}>
-                  {item.available && (
-                    <View style={styles.availablePill}>
-                      <Text style={styles.availableText}>{item.available}</Text>
-                    </View>
-                  )}
-
-                  <View style={styles.brandNameWrapper}>
-                    <Text style={styles.brandNameText}>{item.name || item.brand_name}</Text>
-                  </View>
-
-                  <View style={styles.arrowButton}>
-                    <ArrowUpRight size={18} color="#FFFFFF" />
-                  </View>
-                </View>
-              )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -134,6 +138,21 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  placeholderImageStyle: {
+    width: '100%',
+    height: '100%',
+    alignSelf: 'center',
+  },
+  placeholderBrandName: {
+    position: 'absolute',
+    bottom: 14,
+    left: 12,
+    right: 48,
+    color: '#263077',
+    fontSize: 15,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   fallbackCard: {
     width: '100%',

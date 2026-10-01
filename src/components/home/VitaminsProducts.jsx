@@ -37,7 +37,7 @@ const VitaminsProducts = ({ products = [], onCardPress }) => {
           </LinearGradient>
 
           {/* Image */}
-          {item.image && !item.image.includes('via.placeholder') ? (
+          {typeof item.image === 'string' && item.image && !item.image.includes('via.placeholder') ? (
             <Image
               source={{ uri: item.image }}
               style={styles.cardImage}

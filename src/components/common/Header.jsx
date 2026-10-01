@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import store from '../../store/store';
 
 const Header = ({ 
-  userName = "Rubi, Rajdanga", 
+  userName,
   location, 
   cartCount,
   onLocationPress,
@@ -24,7 +24,10 @@ const Header = ({
   }, []);
 
   const activeCity = storeState.chosencity;
-  const displayLocation = location || activeCity?.tempaddress?.address || "Pincode 721401, Contai";
+  const memberName = storeState.authuser?.member_name || storeState.authuser?.name;
+  const displayName = userName || (memberName ? `Hi, ${String(memberName).trim().split(/\s+/)[0]}` : 'Welcome');
+  const displayLocation = location || activeCity?.tempaddress?.address ||
+    (activeCity?.tempaddress?.postalcode ? `Pincode ${activeCity.tempaddress.postalcode}` : 'Select delivery location');
   const displayCartCount = cartCount !== undefined ? cartCount : (storeState.cart?.items?.length || 0);
 
   return (
@@ -42,7 +45,7 @@ const Header = ({
 
         <View style={styles.textColumn}>
           <View style={styles.nameRow}>
-            <Text style={styles.userName}>{userName}</Text>
+            <Text style={styles.userName}>{displayName}</Text>
             <ChevronDown size={16} color="#043250" style={styles.dropdownArrow} />
           </View>
           

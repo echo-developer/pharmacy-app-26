@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Search } from 'lucide-react-native';
 
 const SearchBar = ({ 
-  placeholder = 'Search "Medicine Scroll"', 
+  placeholder = 'Search medicines and health products',
   onSearch,
   onPress,
 }) => {

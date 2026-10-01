@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,22 +9,15 @@ import {
   Dimensions,
 } from 'react-native';
 import { Star, Minus, Plus } from 'lucide-react-native';
+import { useSelector } from 'react-redux';
+import CommonService from '../../utils/CommonService';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.5;
 
-const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
-  const [cart, setCart] = useState(
-    products.reduce((acc, p) => ({ ...acc, [p.product_id || p.id]: 0 }), {})
-  );
-
-  const updateQty = (id, delta) => {
-    setCart((prev) => {
-      const newQty = Math.max(0, (prev[id] || 0) + delta);
-      onQtyChange?.(id, newQty);
-      return { ...prev, [id]: newQty };
-    });
-  };
+const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
+  const cartItems = useSelector(state => state.GlobalReducer.cart?.items || []);
+  const getCartQty = id => cartItems.find(item => Math.abs(item.product_id) === Math.abs(id))?.cartqty || 0;
 
   return (
     <ScrollView
@@ -34,7 +27,7 @@ const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
     >
       {products.map((item, index) => {
         const itemId = item.product_id || item.id || index;
-        const qty = cart[itemId] || 0;
+        const qty = getCartQty(itemId);
         // Support both API field names and legacy field names
         const title = item.product_name || item.title;
         const mrp = item.product_mrp || item.mrp;
@@ -44,14 +37,22 @@ const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
         const ratingCount = item.product_total_rating || item.ratingCount || 0;
         const discount = item.discount || '';
         const delivery = item.delivery || '';
+        const imageUri = typeof item.image === 'string' ? item.image : '';
         return (
           <View key={itemId.toString()} style={styles.card}>
             {/* ===== IMAGE AREA ===== */}
-            <View style={styles.imageArea}>
+            <TouchableOpacity
+              style={styles.imageArea}
+              activeOpacity={onProductPress ? 0.85 : 1}
+              onPress={() => onProductPress?.(item)}
+              disabled={!onProductPress}
+              accessibilityRole={onProductPress ? 'button' : undefined}
+              accessibilityLabel={onProductPress ? `View ${title}` : undefined}
+            >
               <Image
                 source={
-                  item.image && !item.image.includes('via.placeholder')
-                    ? { uri: item.image }
+                  imageUri && !imageUri.includes('via.placeholder')
+                    ? { uri: imageUri }
                     : require('../../assets/images/deals.png')
                 }
                 style={styles.productImage}
@@ -67,12 +68,19 @@ const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
                   </Text>
                 </View>
               )}
-            </View>
+            </TouchableOpacity>
 
             {/* ===== DETAILS ===== */}
-            <Text style={styles.title} numberOfLines={2}>
-              {title}
-            </Text>
+            <TouchableOpacity
+              onPress={() => onProductPress?.(item)}
+              disabled={!onProductPress}
+              activeOpacity={onProductPress ? 0.85 : 1}
+              accessibilityRole={onProductPress ? 'button' : undefined}
+            >
+              <Text style={styles.title} numberOfLines={2}>
+                {title}
+              </Text>
+            </TouchableOpacity>
 
             {unit ? <Text style={styles.tablets}>{unit}</Text> : null}
 
@@ -90,8 +98,8 @@ const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
-                  updateQty(itemId, 1);
-                  onAddPress?.(item);
+                  if (onAddPress) onAddPress(item);
+                  else CommonService.addToCart(item);
                 }}
               >
                 <Text style={styles.addText}>ADD</Text>
@@ -100,7 +108,9 @@ const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
               <View style={styles.qtyContainer}>
                 <TouchableOpacity
                   style={styles.qtyBtn}
-                  onPress={() => updateQty(itemId, -1)}
+                  onPress={() => {
+                    CommonService.decreaseCart(itemId);
+                  }}
                 >
                   <Minus size={16} color="#FFFFFF" />
                 </TouchableOpacity>
@@ -109,7 +119,9 @@ const DealsProducts = ({ products = [], onAddPress, onQtyChange }) => {
 
                 <TouchableOpacity
                   style={styles.qtyBtn}
-                  onPress={() => updateQty(itemId, 1)}
+                  onPress={() => {
+                    CommonService.addToCart(item);
+                  }}
                 >
                   <Plus size={16} color="#FFFFFF" />
                 </TouchableOpacity>

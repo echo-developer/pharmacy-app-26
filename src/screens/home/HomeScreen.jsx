@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useReducer } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator, StatusBar, Platform } from 'react-native';
+import React, { useEffect, useReducer } from 'react';
+import { Alert, Linking, View, StyleSheet, ScrollView, ActivityIndicator, StatusBar, Platform } from 'react-native';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
@@ -12,6 +12,7 @@ import VitaminsHeader from '../../components/home/VitaminsHeader';
 import VitaminsProducts from '../../components/home/VitaminsProducts';
 import DealsHeader from '../../components/home/DealsHeader';
 import DealsProducts from '../../components/home/DealsProducts';
+import PopularMedicineSection from '../../components/home/PopularMedicineSection';
 import PetCareHeader from '../../components/home/PetCareHeader';
 import PetCareBrands from '../../components/home/PetCareBrands';
 import CommonService from '../../utils/CommonService';
@@ -39,29 +40,19 @@ const homeReducer = (prevState, action) => {
   }
 };
 
-const defaultBanners = [
-  { id: 1, category: 'Up to 50% Off on Medicines', discount: '50% OFF', image: 'https://via.placeholder.com/350x150' },
-  { id: 2, category: 'Free Delivery on First Order', discount: 'FREE DELIVERY', image: 'https://via.placeholder.com/350x150' },
+// Keep the previous on-screen content until the corresponding API data is ready.
+const fallbackBanners = [
+  { id: 1, category: 'Up to 50% Off on Medicines', discount: '50% OFF' },
+  { id: 2, category: 'Free Delivery on First Order', discount: 'FREE DELIVERY' },
 ];
 
-const defaultHealthConcerns = [
+const fallbackHealthConcerns = [
   { id: 1, label: 'Diabetes Care', name: 'Diabetes Care' },
   { id: 2, label: 'Cardiac Care', name: 'Cardiac Care' },
   { id: 3, label: 'Stomach Care', name: 'Stomach Care' },
   { id: 4, label: 'Skin Care', name: 'Skin Care' },
   { id: 5, label: 'Eye Care', name: 'Eye Care' },
   { id: 6, label: 'Bone & Joint', name: 'Bone & Joint' },
-];
-
-const defaultVitamins = [];
-
-const defaultDeals = [];
-
-const defaultPetCareBrands = [
-  { id: 1, name: 'Pedigree' },
-  { id: 2, name: 'Whiskas' },
-  { id: 3, name: 'Royal Canin' },
-  { id: 4, name: 'Drools' },
 ];
 
 const HomeScreen = ({ navigation }) => {
@@ -99,26 +90,46 @@ const HomeScreen = ({ navigation }) => {
     CommonService.addToCart(product);
   };
 
-  // API keys: banner, category, popular_category, deals_of_the_day, popular_brand, promo_offer
-  const banners = homeState.data?.banner?.length ? homeState.data.banner : defaultBanners;
-  const healthConcerns = homeState.data?.category?.length ? homeState.data.category : defaultHealthConcerns;
-  // popular_category has { category_id, category_name, image, items[] }
-  // flatten all items across popular categories for vitamins section
-  const popularCategories = homeState.data?.popular_category || [];
-  const vitamins = popularCategories.length
-    ? popularCategories.map(cat => ({
-      ...cat,
-      label: cat.category_name,
-      image: cat.image,
-      // first product in the category for display
-      product_id: cat.items?.[0]?.product_id ?? cat.category_id,
-    }))
-    : defaultVitamins;
-  const deals = homeState.data?.deals_of_the_day?.length ? homeState.data.deals_of_the_day : defaultDeals;
+  // API keys include banner, category, popular_category, popular_medicines,
+  // most_ordered, deals_of_the_day, popular_brand, and promo_offer.
+  const apiBanners = Array.isArray(homeState.data?.banner) ? homeState.data.banner : [];
+  const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
+  const browseCategories = Array.isArray(homeState.data?.category) ? homeState.data.category : [];
+  // Health concerns (e.g. heart/stomach care) are distinct from medicine categories.
+  // Render that section only when the API supplies its own health_concerns array.
+  const apiHealthConcerns = Array.isArray(homeState.data?.health_concerns)
+    ? homeState.data.health_concerns
+    : [];
+  const healthConcerns = apiHealthConcerns.length > 0
+    ? apiHealthConcerns
+    : fallbackHealthConcerns;
+  const popularMedicines = Array.isArray(homeState.data?.popular_medicines)
+    ? homeState.data.popular_medicines
+    : [];
+  const mostOrderedMedicines = Array.isArray(homeState.data?.most_ordered)
+    ? homeState.data.most_ordered
+    : [];
+  // popular_category is the data source for the Popular Medicine category tabs.
+  const popularCategories = Array.isArray(homeState.data?.popular_category)
+    ? homeState.data.popular_category
+    : [];
+  const vitaminCategory = popularCategories.find(cat =>
+    /vitamins?\s*(?:&|and)?\s*supplements/i.test(cat.category_name || ''),
+  );
+  const vitamins = Array.isArray(vitaminCategory?.items) ? vitaminCategory.items : [];
+  const deals = Array.isArray(homeState.data?.deals_of_the_day) ? homeState.data.deals_of_the_day : [];
   // popular_brand: { brand_id, brand_name, image }
-  const petBrands = homeState.data?.popular_brand?.length
-    ? homeState.data.popular_brand.map(b => ({ ...b, id: b.brand_id, name: b.brand_name }))
-    : defaultPetCareBrands;
+  const popularBrands = Array.isArray(homeState.data?.popular_brand)
+    ? homeState.data.popular_brand.map(b => ({ ...b, id: b.brand_id || b.id, name: b.brand_name || b.name }))
+    : [];
+
+  const openExternalUrl = async (url) => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Unable to open link', 'Please try again or contact customer support.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -140,62 +151,108 @@ const HomeScreen = ({ navigation }) => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <SearchBar onPress={() => navigation.navigate('Search')} />
 
-          <PrescriptionBanner
-            onUploadPress={() => navigation.navigate('Products', { title: 'Upload Prescription' })}
-            onWhatsAppPress={() => console.log('WhatsApp pressed')}
-            onCallPress={() => console.log('Call pressed')}
-          />
-
-          <OfferCarousel
+          {banners.length > 0 && <OfferCarousel
             offers={banners}
-            onCardPress={(item) => navigation.navigate('Products', { title: item.category_name || item.category || 'Special Offers' })}
-          />
-          <TrustBadges />
-          <HealthConcernHeader
-            onArrowPress={() => navigation.navigate('Products', { title: 'Health Concerns' })}
-          />
-          <ConcernPills
-            concerns={healthConcerns}
-            onPillPress={(item) => navigation.navigate('Products', {
-              title: item.category_name || item.label || item.name || 'Health Concern',
-              category_id: item.category_id || item.id,
-            })}
-          />
-          <HealthConcernList
-            concerns={healthConcerns}
             onCardPress={(item) => navigation.navigate('Products', {
-              title: item.category_name || item.label || item.name || 'Health Concern',
+              title: item.category_name || item.category || 'Special Offers',
               category_id: item.category_id || item.id,
             })}
+          />}
+          {browseCategories.length > 0 && <>
+            <HealthConcernHeader
+              title="Browse Categories"
+              subtitle="Browse medicines by category"
+              onArrowPress={() => navigation.navigate('Categories')}
+            />
+            <ConcernPills
+              concerns={browseCategories}
+              onPillPress={(item) => navigation.navigate('Products', {
+                title: item.category_name || item.label || item.name || 'Products',
+                category_id: item.category_id || item.id,
+              })}
+            />
+          </>}
+          <PrescriptionBanner
+            phoneNumber="1800-123-456"
+            onUploadPress={() => openExternalUrl('https://pharmacy-shop.echodeveloper.com/upload-prescription')}
+            onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
+            onCallPress={() => openExternalUrl('tel:1800123456')}
           />
-          <VitaminsHeader
-            subtitle="Nourish their growth with"
-            title="Vitamins & Supplements"
-          />
-          <VitaminsProducts
-            products={vitamins}
-            onCardPress={(item) => navigation.navigate('Products', { title: item.category_name || item.label || item.product_name || 'Products', category_id: item.category_id })}
-          />
-          <DealsHeader
+          {(popularMedicines.length > 0 || popularCategories.length > 0) &&
+            <PopularMedicineSection
+              popularMedicines={popularMedicines}
+              categories={popularCategories}
+              onAddPress={handleAddToCart}
+              onProductPress={(item) => navigation.navigate('ProductDetails', {
+                id: item.product_id,
+                product: item,
+              })}
+              onArrowPress={() => navigation.navigate('Products', { title: 'Popular Medicines' })}
+            />}
+          <TrustBadges />
+          {healthConcerns.length > 0 && <>
+            <HealthConcernHeader
+              onArrowPress={() => navigation.navigate('Categories')}
+            />
+            <HealthConcernList
+              concerns={healthConcerns}
+              onCardPress={(item) => navigation.navigate('Products', {
+                title: item.category_name || item.label || item.name || 'Health Concern',
+                category_id: item.category_id || item.id,
+              })}
+            />
+          </>}
+          {mostOrderedMedicines.length > 0 && <>
+            <DealsHeader
+              title="Most Ordered Medicines"
+              subtitle="Frequently ordered pharmacy essentials"
+              showHeart={false}
+              onArrowPress={() => navigation.navigate('Products', { title: 'Most Ordered Medicines' })}
+            />
+            <DealsProducts
+              products={mostOrderedMedicines}
+              onAddPress={handleAddToCart}
+              onProductPress={(item) => navigation.navigate('ProductDetails', {
+                id: item.product_id,
+                product: item,
+              })}
+            />
+          </>}
+          {vitamins.length > 0 && <>
+            <VitaminsHeader
+              subtitle="Nourish their growth with"
+              title="Vitamins & Supplements"
+            />
+            <VitaminsProducts
+              products={vitamins}
+              onCardPress={(item) => navigation.navigate('ProductDetails', {
+                id: item.product_id,
+                product: item,
+              })}
+            />
+          </>}
+          {deals.length > 0 && <DealsHeader
             title="Deals you'll love"
             subtitle="Buy now to get the best deals"
             onArrowPress={() => navigation.navigate('Offers')}
-          />
-          <DealsProducts
+          />}
+          {deals.length > 0 && <DealsProducts
             products={deals}
             onAddPress={handleAddToCart}
-            onQtyChange={(id, newQty) => console.log(`Quantity changed for product ID ${id}: ${newQty}`)}
-          />
-          <View style={styles.petCareSection}>
+          />}
+          {popularBrands.length > 0 && <View style={styles.petCareSection}>
             <PetCareHeader
-              title="Pet Care Top Brands"
-              subtitle="Everyday care for a healthier you"
+              title="Most Popular Brands"
+              subtitle="Trusted healthcare brands"
             />
             <PetCareBrands
-              brands={petBrands}
-              onBrandPress={(item) => navigation.navigate('Products', { title: item.name || 'Pet Care' })}
+              brands={popularBrands}
+              onBrandPress={(item) => navigation.navigate('Products', {
+                title: item.name || item.brand_name || 'Brand products',
+                brand_id: item.brand_id || item.id,
+              })}
             />
-          </View>
+          </View>}
         </ScrollView>
       )}
       <CartFloatingBar />
