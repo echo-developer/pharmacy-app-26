@@ -17,6 +17,7 @@ import PopularMedicineSection from '../../components/home/PopularMedicineSection
 import PetCareHeader from '../../components/home/PetCareHeader';
 import PetCareBrands from '../../components/home/PetCareBrands';
 import CommonService from '../../utils/CommonService';
+import StaticConst from '../../utils/StaticConst';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 
 const homeReducer = (prevState, action) => {
@@ -55,6 +56,12 @@ const fallbackHealthConcerns = [
   { id: 5, label: 'Eye Care', name: 'Eye Care' },
   { id: 6, label: 'Bone & Joint', name: 'Bone & Joint' },
 ];
+
+const normalizeHomeImage = image => {
+  if (typeof image !== 'string' || !image) return image;
+  const apiOrigin = StaticConst.api.endpoint.replace(/\/api\/app\/?$/i, '');
+  return image.replace(/^http:\/\/localhost:8081(?=\/)/i, apiOrigin);
+};
 
 const HomeScreen = ({ navigation }) => {
   const [uploadingPrescription, setUploadingPrescription] = useState(false);
@@ -97,11 +104,20 @@ const HomeScreen = ({ navigation }) => {
   const apiBanners = Array.isArray(homeState.data?.banner) ? homeState.data.banner : [];
   const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
   const browseCategories = Array.isArray(homeState.data?.category) ? homeState.data.category : [];
-  // Health concerns (e.g. heart/stomach care) are distinct from medicine categories.
-  // Render that section only when the API supplies its own health_concerns array.
-  const apiHealthConcerns = Array.isArray(homeState.data?.health_concerns)
-    ? homeState.data.health_concerns
-    : [];
+  // The backend supplies the Shop by Health Concern cards under
+  // browse_health_category, with legacy health_concerns supported as fallback.
+  const sourceHealthConcerns = Array.isArray(homeState.data?.browse_health_category)
+    ? homeState.data.browse_health_category
+    : Array.isArray(homeState.data?.health_concerns)
+      ? homeState.data.health_concerns
+      : [];
+  const apiHealthConcerns = sourceHealthConcerns.map(item => ({
+    ...item,
+    label: item.category_name || item.name || item.label,
+    image: normalizeHomeImage(
+      item.image || item.subcategories?.find(subcategory => subcategory.image)?.image,
+    ),
+  }));
   const healthConcerns = apiHealthConcerns.length > 0
     ? apiHealthConcerns
     : fallbackHealthConcerns;

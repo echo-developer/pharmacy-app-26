@@ -1,19 +1,35 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { User, Pencil, ChevronRight } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { User, Pencil, ChevronRight, Camera } from 'lucide-react-native';
 
 const ProfileCard = ({
   phone = '+91 9812345678',
   email = 'Add your email',
+  avatarUri,
+  uploadingAvatar = false,
+  onAvatarPress,
   onEditPress,
   onEmailPress,
 }) => {
   return (
     <View style={styles.container}>
       {/* LEFT: Avatar Circle */}
-      <View style={styles.avatarCircle}>
-        <User size={36} color="#333333" fill="#333333" />
-      </View>
+      <TouchableOpacity
+        style={styles.avatarCircle}
+        onPress={onAvatarPress}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Change profile photo"
+      >
+        {uploadingAvatar ? (
+          <ActivityIndicator color="#263077" />
+        ) : avatarUri ? (
+          <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+        ) : (
+          <User size={36} color="#333333" fill="#333333" />
+        )}
+        {!uploadingAvatar && <View style={styles.cameraBadge}><Camera size={13} color="#263077" /></View>}
+      </TouchableOpacity>
 
       {/* CENTER: Phone + Email */}
       <View style={styles.textColumn}>
@@ -52,6 +68,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 36,
+  },
+  cameraBadge: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E5EF',
   },
   textColumn: {
     flex: 1,
