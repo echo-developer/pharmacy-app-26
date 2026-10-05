@@ -25,6 +25,7 @@ import BuyAgainScreen from '../screens/discovery/BuyAgainScreen';
 import ProfileEditScreen from '../screens/account/ProfileEditScreen';
 import ReferralScreen from '../screens/account/ReferralScreen';
 import NotificationPreferencesScreen from '../screens/account/NotificationPreferencesScreen';
+import ContactSupportScreen from '../screens/account/ContactSupportScreen';
 import OrderReviewScreen from '../screens/myorders/OrderReviewScreen';
 
 const Stack = createNativeStackNavigator();
@@ -55,6 +56,7 @@ const AppNavigator = () => {
         <Stack.Screen name="EditProfile" component={ProfileEditScreen} />
         <Stack.Screen name="Referral" component={ReferralScreen} />
         <Stack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
+        <Stack.Screen name="ContactSupport" component={ContactSupportScreen} />
         <Stack.Screen name="OrderReview" component={OrderReviewScreen} />
         <Stack.Screen name="AboutUs" component={WebScreen} />
         <Stack.Screen name="Faq" component={WebScreen} />

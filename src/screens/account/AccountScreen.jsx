@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, Alert, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -13,19 +13,25 @@ import LogoutButton from '../../components/account/LogoutButton';
 import { AuthContext } from '../../authcontext';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
+import { useFocusEffect } from '@react-navigation/native';
 
 const AccountScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const { signOut, loginState } = useContext(AuthContext);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [profile, setProfile] = useState(() => store.getState().GlobalReducer.authuser || loginState?.userToken || {});
 
   useEffect(() => {
     loadWalletBalance();
   }, []);
 
+  useFocusEffect(useCallback(() => {
+    setProfile(store.getState().GlobalReducer.authuser || loginState?.userToken || {});
+  }, [loginState?.userToken]));
+
   const loadWalletBalance = () => {
     CommonService._callApi({
-      api: '/member/balance',
+      api: '/member/wallet',
       method: 'GET',
     })
       .then(resp => {
@@ -73,15 +79,7 @@ const AccountScreen = ({ navigation }) => {
   };
 
   const handleHelpPress = () => {
-    Alert.alert(
-      'Help & Support',
-      'For help and support, please contact us at support@pharmacyapp.com or call our helpline.',
-      [
-        { text: 'Call Support', onPress: () => console.log('Call support') },
-        { text: 'Email Support', onPress: () => console.log('Email support') },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+    navigation.navigate('ContactSupport');
   };
 
   const handleAppUpdate = () => {
@@ -99,7 +97,7 @@ const AccountScreen = ({ navigation }) => {
   };
 
   const handleEmailPress = () => {
-    const email = loginState?.userToken?.email;
+    const email = profile?.member_email || profile?.email;
     if (email && email !== 'Add your email') {
       Alert.alert(
         'Email Address',
@@ -141,8 +139,8 @@ const AccountScreen = ({ navigation }) => {
           onWalletPress={handleWalletPress}
         />
         <ProfileCard
-          phone={loginState?.userToken?.member_phone || loginState?.userToken?.mobile || loginState?.userToken?.phone || 'Add your mobile number'}
-          email={loginState?.userToken?.member_email || loginState?.userToken?.email || 'Add your email'}
+          phone={profile?.member_phone || profile?.mobile || profile?.phone || 'Add your mobile number'}
+          email={profile?.member_email || profile?.email || 'Add your email'}
           onEditPress={handleEditProfile}
           onEmailPress={handleEmailPress}
         />
