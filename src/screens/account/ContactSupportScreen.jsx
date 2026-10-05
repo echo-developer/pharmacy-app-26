@@ -5,6 +5,18 @@ import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { AuthContext } from '../../authcontext';
 
+const getApiErrorMessage = response => {
+  const detail = response?.detail || response?.response?.detail;
+  const validationMessage = Array.isArray(detail)
+    ? detail.map(error => error?.msg).filter(Boolean).join('\n')
+    : typeof detail === 'string' ? detail : '';
+  return response?.response?.message
+    || response?.response?.data?.message
+    || response?.message
+    || validationMessage
+    || 'Could not send your message. Please try again.';
+};
+
 const ContactSupportScreen = ({ navigation }) => {
   const { loginState } = useContext(AuthContext);
   const user = store.getState().GlobalReducer.authuser || loginState?.userToken || {};
@@ -27,10 +39,14 @@ const ContactSupportScreen = ({ navigation }) => {
     form.append('inquiry', inquiry.trim());
     form.append('subject', subject.trim());
     form.append('description', description.trim());
-    form.append('attachment', '');
+    // attachment is an optional UploadFile; omitting it is valid, while an
+    // empty string is sent as text and fails backend file validation.
     try {
       const response = await CommonService._callApi({ api: '/cms/contact', method: 'CONVERT', body: form }).then(r => r.json());
-      if (response.status !== 1) throw new Error(response.response?.message || response.message || 'Could not send your message.');
+      const result = response?.response?.data;
+      const succeeded = Number(response?.status ?? response?.response?.status) === 1
+        || Number(result?.ok) === 1;
+      if (!succeeded) throw new Error(getApiErrorMessage(response));
       Alert.alert('Message sent', response.response?.message || 'Thanks! Our team will get back to you soon.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (error) {
       Alert.alert('Could not send', error.message || 'Please try again.');

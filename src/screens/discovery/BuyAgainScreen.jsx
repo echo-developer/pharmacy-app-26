@@ -11,7 +11,7 @@ const BuyAgainScreen = ({ navigation }) => {
   const load = useCallback(async () => {
     try {
       const [remote, local] = await Promise.all([
-        CommonService._callApi({ api: '/order/list', method: 'GET', urlParams: { page: 1, status: '' } }).then(r => r.data).catch(() => null),
+        CommonService._callApi({ api: '/orders/list', method: 'GET' }).then(r => r.data).catch(() => null),
         CommonService.getLocalOrders(),
       ]);
       const remoteOrders = remote?.status === 1 ? (Array.isArray(remote.response?.data) ? remote.response.data : Array.isArray(remote.response) ? remote.response : []) : [];

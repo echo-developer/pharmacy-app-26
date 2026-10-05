@@ -9,19 +9,37 @@ const OffersScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const loadOffers = useCallback(() => {
+  const loadOffers = useCallback((requestedPage = 1, append = false) => {
     CommonService._callApi({
       api: '/product/list', method: 'GET',
-      urlParams: { sort_by: 'relevance', min_discount: -1, pincode: store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '' },
+      urlParams: { page: requestedPage, sort_by: 'relevance', min_discount: -1, pincode: store.getState().GlobalReducer.chosencity?.tempaddress?.postalcode || '' },
     }).then(resp => {
       const body = resp.data;
-      const data = body?.response?.data || body?.response || [];
-      setProducts(Array.isArray(data) ? data.filter(item => Number(item.discount || 0) > 0 || Number(item.product_mrp || 0) > Number(item.product_sell_price || 0)) : []);
-    }).catch(() => setProducts([])).finally(() => { setLoading(false); setRefreshing(false); });
+      const response = body?.response || {};
+      const data = Array.isArray(response.data) ? response.data : Array.isArray(response) ? response : [];
+      const availableOffers = data.filter(item => {
+        const mrp = Number(item.product_mrp || 0);
+        const price = Number(item.product_sell_price || 0);
+        const stock = Number(item.qty ?? item.stock ?? 0);
+        return stock > 0 && mrp > price && price > 0;
+      });
+      setProducts(current => append ? [...current, ...availableOffers] : availableOffers);
+      setPage(Number(response.current_page || requestedPage));
+      setTotalPages(Number(response.total_page || 1));
+    }).catch(() => { if (!append) setProducts([]); }).finally(() => { setLoading(false); setRefreshing(false); setLoadingMore(false); });
   }, []);
 
-  useFocusEffect(useCallback(() => { setLoading(true); loadOffers(); }, [loadOffers]));
+  useFocusEffect(useCallback(() => { setLoading(true); loadOffers(1); }, [loadOffers]));
+  const loadMore = () => {
+    if (!loading && !loadingMore && page < totalPages) {
+      setLoadingMore(true);
+      loadOffers(page + 1, true);
+    }
+  };
   const add = item => CommonService.addToCart({ ...item, qty: item.qty || 99 });
 
   return <View style={styles.page}>
@@ -30,11 +48,13 @@ const OffersScreen = ({ navigation }) => {
     {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#263077" /></View> : <FlatList
       data={products} keyExtractor={(item, i) => String(item.product_id || i)} numColumns={2}
       contentContainerStyle={styles.grid} columnWrapperStyle={styles.row}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadOffers(); }} />}
+      onEndReached={loadMore} onEndReachedThreshold={0.5}
+      ListFooterComponent={loadingMore ? <ActivityIndicator style={{ padding: 12 }} color="#263077" /> : null}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadOffers(1); }} />}
       ListEmptyComponent={<View style={styles.empty}><Tag size={34} color="#8B91B9"/><Text style={styles.emptyTitle}>No offers available right now</Text><Text style={styles.emptySub}>Check back soon for savings on your pharmacy essentials.</Text></View>}
       renderItem={({ item }) => <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}>
         <Image source={item.image ? { uri: item.image } : require('../../assets/images/products.png')} style={styles.image} resizeMode="contain" />
-        {Number(item.discount) > 0 && <Text style={styles.badge}>{item.discount}% OFF</Text>}
+        <Text style={styles.badge}>{Math.round((1 - Number(item.product_sell_price) / Number(item.product_mrp)) * 100)}% OFF</Text>
         <Text style={styles.name} numberOfLines={2}>{item.product_name}</Text><Text style={styles.unit}>{item.unit || 'Healthcare product'}</Text>
         <View style={styles.priceRow}><Text style={styles.price}>₹{item.product_sell_price}</Text>{item.product_mrp ? <Text style={styles.mrp}>₹{item.product_mrp}</Text> : null}</View>
         <TouchableOpacity style={styles.add} onPress={() => add(item)}><ShoppingBag size={15} color="#fff"/><Text style={styles.addText}>Add to cart</Text></TouchableOpacity>

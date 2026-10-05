@@ -14,19 +14,31 @@ import CommonService from '../../utils/CommonService';
 
 const NotificationPreferencesScreen = ({ navigation }) => {
   const [items, setItems] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
-    CommonService._callApi({
-      api: '/member/my_notifications',
-      method: 'GET',
-      urlParams: { page: 1 },
-    })
-      .then(response => {
-        const list = response.data?.response?.data;
-        setItems(Array.isArray(list) ? list : []);
+    Promise.allSettled([
+      CommonService._callApi({
+        api: '/member/my_notifications',
+        method: 'GET',
+        urlParams: { page: 1 },
+      }),
+      CommonService._callApi({
+        api: '/member/unread_notifications',
+        method: 'GET',
+      }),
+    ])
+      .then(([listResult, unreadResult]) => {
+        const listData = listResult.status === 'fulfilled'
+          ? listResult.value.data?.response?.data
+          : [];
+        const unreadData = unreadResult.status === 'fulfilled'
+          ? unreadResult.value.data?.response?.data
+          : null;
+        setItems(Array.isArray(listData) ? listData : []);
+        setUnreadCount(Number(unreadData?.count || 0));
       })
-      .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -37,9 +49,29 @@ const NotificationPreferencesScreen = ({ navigation }) => {
     }, [load]),
   );
 
-  const openNotification = item => {
-    const id = item.order_id || item.template_id;
-    if (id) navigation.navigate('OrderDetails', { id });
+  const openNotification = async item => {
+    const notificationId = item.notification_id || item.id;
+    const orderId = item.order_id;
+    if (notificationId && Number(item.is_read || item.read_status || 0) !== 1) {
+      try {
+        const response = await CommonService._callApi({
+          api: '/notification/seen',
+          method: 'POST',
+          urlParams: { notification_id: notificationId },
+        }).then(r => r.json());
+        if (response.status === 1) {
+          setItems(current => current.map(notification =>
+            String(notification.notification_id || notification.id) === String(notificationId)
+              ? { ...notification, is_read: 1, read_status: 1 }
+              : notification,
+          ));
+          setUnreadCount(count => Math.max(0, count - 1));
+        }
+      } catch (error) {
+        console.log('Error marking notification as seen:', error?.message);
+      }
+    }
+    if (orderId) navigation.navigate('OrderDetails', { id: orderId });
   };
 
   const renderNotification = ({ item }) => (
@@ -77,7 +109,10 @@ const NotificationPreferencesScreen = ({ navigation }) => {
         >
           <ArrowLeft size={22} color="#263077" />
         </TouchableOpacity>
-        <Text style={styles.title}>Notifications</Text>
+        <View style={styles.titleWrap}>
+          <Text style={styles.title}>Notifications</Text>
+          {unreadCount > 0 && <Text style={styles.unread}>{unreadCount} unread</Text>}
+        </View>
       </View>
 
       <View style={styles.info}>
@@ -128,6 +163,8 @@ const styles = StyleSheet.create({
   },
   back: { padding: 6, marginRight: 10 },
   title: { fontSize: 20, fontWeight: '700', color: '#18204F' },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  unread: { fontSize: 11, fontWeight: '700', color: '#263077', backgroundColor: '#EEF0FA', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
   info: {
     margin: 14,
     padding: 13,
