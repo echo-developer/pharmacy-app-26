@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Linking, View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { Alert, Linking, NativeModules, Platform, View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
 import OrderDetailsHeader from '../../components/orderdetails/OrderDetailsHeader';
 import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBanner';
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
@@ -58,6 +58,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
   const [cancelLoader, setCancelLoader] = useState(false);
   const [returningSubOrderId, setReturningSubOrderId] = useState(null);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
 
   useEffect(() => {
     if (orderIdParam) {
@@ -306,6 +307,43 @@ const OrderDetailsScreen = ({ route, navigation }) => {
       });
   };
 
+  const handleDownloadInvoice = async () => {
+    const id = orderData?.order_id || orderIdParam;
+    if (!id || invoiceLoading) return;
+    setInvoiceLoading(true);
+    try {
+      // This endpoint uses the singular route and the `oid` query parameter.
+      const response = await CommonService._callApi({
+        api: '/order/details',
+        method: 'GET',
+        urlParams: { oid: id },
+      });
+      const body = response.data;
+      if (Number(body?.status) !== 1) {
+        throw new Error(body?.response?.message || body?.message || 'Could not load the invoice.');
+      }
+      const invoiceUrl = body.response?.data?.invoice_url;
+      if (!invoiceUrl) {
+        Alert.alert('Invoice unavailable', 'The invoice is not available for this order yet.');
+        return;
+      }
+      if (Platform.OS === 'android') {
+        if (!NativeModules.InvoiceDownload?.downloadInvoice) {
+          throw new Error('Direct download is not available in this installed app build. Reinstall the latest Android build and try again.');
+        }
+        const filename = `Invoice_${orderData?.order_number || id}.pdf`;
+        await NativeModules.InvoiceDownload.downloadInvoice(invoiceUrl, filename);
+        Alert.alert('Download started', 'Your invoice is downloading. Check the notification or Downloads folder.');
+      } else {
+        await Linking.openURL(invoiceUrl);
+      }
+    } catch (error) {
+      Alert.alert('Unable to open invoice', error?.message || 'Please try again later.');
+    } finally {
+      setInvoiceLoading(false);
+    }
+  };
+
   const handleCancelOrder = async () => {
     if (!orderData?.order_id || cancelLoader) return;
     setCancelLoader(true);
@@ -496,16 +534,8 @@ const OrderDetailsScreen = ({ route, navigation }) => {
             handlingCharge={orderData.handling_charge ?? '0'}
             taxAmount={orderData.totals?.total_gst}
             grandTotal={orderData.totals?.final_amount ?? orderData.order_total ?? orderData.final_amount ?? orderData.net_amount ?? '0'}
-            onDownloadInvoice={() => {
-              const invoiceUrl = orderData.invoice_url;
-              if (!invoiceUrl) {
-                Alert.alert('Invoice unavailable', 'The invoice is not available for this order yet.');
-                return;
-              }
-              Linking.openURL(invoiceUrl).catch(() => {
-                Alert.alert('Unable to open invoice', 'Please try again later.');
-              });
-            }}
+            onDownloadInvoice={handleDownloadInvoice}
+            invoiceLoading={invoiceLoading}
           />
 
           <OrderInfoCard

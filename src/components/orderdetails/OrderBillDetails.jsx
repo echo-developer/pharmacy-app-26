@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Download } from 'lucide-react-native';
 
 const OrderBillDetails = ({
@@ -10,6 +10,7 @@ const OrderBillDetails = ({
   taxAmount,
   grandTotal = '456',
   onDownloadInvoice,
+  invoiceLoading = false,
 }) => {
   return (
     <View style={styles.card}>
@@ -58,9 +59,16 @@ const OrderBillDetails = ({
         style={styles.downloadBtn}
         onPress={onDownloadInvoice}
         activeOpacity={0.85}
+        disabled={invoiceLoading}
       >
-        <Download size={18} color="#333333" />
-        <Text style={styles.downloadText}>Download Invoice</Text>
+        {invoiceLoading ? (
+          <ActivityIndicator size="small" color="#263077" />
+        ) : (
+          <>
+            <Download size={18} color="#333333" />
+            <Text style={styles.downloadText}>Download Invoice</Text>
+          </>
+        )}
       </TouchableOpacity>
     </View>
   );
