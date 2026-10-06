@@ -103,6 +103,9 @@ const HomeScreen = ({ navigation }) => {
   // most_ordered, deals_of_the_day, popular_brand, and promo_offer.
   const apiBanners = Array.isArray(homeState.data?.banner) ? homeState.data.banner : [];
   const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
+  const lowerBanners = Array.isArray(homeState.data?.lower_banner)
+    ? homeState.data.lower_banner
+    : [];
   const browseCategories = Array.isArray(homeState.data?.category) ? homeState.data.category : [];
   // The backend supplies the Shop by Health Concern cards under
   // browse_health_category, with legacy health_concerns supported as fallback.
@@ -300,6 +303,26 @@ const HomeScreen = ({ navigation }) => {
           {deals.length > 0 && <DealsProducts
             products={deals}
             onAddPress={handleAddToCart}
+          />}
+          {lowerBanners.length > 0 && <OfferCarousel
+            offers={lowerBanners.map(item => ({
+              ...item,
+              image: normalizeHomeImage(item.image),
+            }))}
+            showCaption={false}
+            onCardPress={(item) => {
+              if (item.category_id) {
+                navigation.navigate('Products', {
+                  title: item.category_name || 'Products',
+                  category_id: item.category_id,
+                });
+              } else if (item.brand_id) {
+                navigation.navigate('Products', {
+                  title: item.category_name || 'Brand products',
+                  brand_id: item.brand_id,
+                });
+              }
+            }}
           />}
           {popularBrands.length > 0 && <View style={styles.petCareSection}>
             <PetCareHeader

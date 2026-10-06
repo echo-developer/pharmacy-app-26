@@ -45,7 +45,7 @@ const getImageSource = (img) => {
   return img;
 };
 
-const OfferCarousel = ({ offers = [], onCardPress }) => {
+const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleScroll = (event) => {
@@ -83,14 +83,15 @@ const OfferCarousel = ({ offers = [], onCardPress }) => {
                 resizeMode="cover"
               />
 
-              {/* Texts below image */}
-              <View style={styles.textContainer}>
-                <Text style={styles.categoryText}>{item.category_name || item.category || 'Special Offer'}</Text>
-                <GradientText
-                  text={item.offer || item.discount || 'FLAT DISCOUNT'}
-                  style={styles.offerText}
-                />
-              </View>
+              {showCaption && (
+                <View style={styles.textContainer}>
+                  <Text style={styles.categoryText}>{item.category_name || item.category || 'Special Offer'}</Text>
+                  <GradientText
+                    text={item.offer || item.discount || 'FLAT DISCOUNT'}
+                    style={styles.offerText}
+                  />
+                </View>
+              )}
             </TouchableOpacity>
           );
         })}
