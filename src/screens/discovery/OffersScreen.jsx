@@ -1,5 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ArrowLeft, ShoppingBag, Tag, Minus, Plus } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';

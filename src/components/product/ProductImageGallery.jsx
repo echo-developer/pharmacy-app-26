@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
-  Image,
   TouchableOpacity,
   StyleSheet,
   FlatList,
@@ -10,10 +9,20 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { Heart, ChevronUp, X } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const ImageLoader = ({ visible }) => {
+  if (!visible) return null;
+  return (
+    <View style={styles.imageLoader} pointerEvents="none">
+      <ActivityIndicator size="large" color="#263077" />
+    </View>
+  );
+};
 
 const ProductImageGallery = ({
   images,
@@ -26,6 +35,8 @@ const ProductImageGallery = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const [fullscreenIndex, setFullscreenIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState({});
+  const [failedImages, setFailedImages] = useState({});
 
   // Support both `images` array (from API) and legacy single `image`
   const gallery =
@@ -36,6 +47,21 @@ const ProductImageGallery = ({
         : [];
 
   const hasMultiple = gallery.length > 1;
+  const galleryKey = gallery.join('|');
+
+  useEffect(() => {
+    setActiveIndex(0);
+    setLoadedImages({});
+    setFailedImages({});
+  }, [galleryKey]);
+
+  const markImageLoaded = index => {
+    setLoadedImages(current => ({ ...current, [index]: true }));
+  };
+  const markImageFailed = index => {
+    setFailedImages(current => ({ ...current, [index]: true }));
+    markImageLoaded(index);
+  };
 
   const openFullscreen = (idx) => {
     setFullscreenIndex(idx);
@@ -65,6 +91,9 @@ const ProductImageGallery = ({
             data={gallery}
             horizontal
             pagingEnabled
+            initialNumToRender={1}
+            maxToRenderPerBatch={1}
+            windowSize={3}
             showsHorizontalScrollIndicator={false}
             initialScrollIndex={fullscreenIndex}
             getItemLayout={(_, index) => ({
@@ -115,9 +144,15 @@ const ProductImageGallery = ({
                 onPress={() => openFullscreen(index)}
               >
                 <Image
-                  source={{ uri: item }}
-                  style={[styles.image, { width: SCREEN_WIDTH }]}
+                  source={failedImages[index] ? require('../../assets/images/Subtract.png') : { uri: item }}
+                  style={[
+                    styles.image,
+                    styles.pageImage,
+                    loadedImages[index] ? styles.imageLoaded : styles.imageLoading,
+                  ]}
                   resizeMode="cover"
+                  onLoad={() => markImageLoaded(index)}
+                  onError={() => markImageFailed(index)}
                 />
               </TouchableOpacity>
             )}
@@ -126,11 +161,14 @@ const ProductImageGallery = ({
           <TouchableOpacity activeOpacity={0.95} onPress={() => openFullscreen(0)}>
             <Image
               source={require('../../assets/images/Subtract.png')}
-              style={styles.image}
+              style={[styles.image, loadedImages[0] ? styles.imageLoaded : styles.imageLoading]}
               resizeMode="cover"
+              onLoad={() => markImageLoaded(0)}
+              onError={() => markImageFailed(0)}
             />
           </TouchableOpacity>
         )}
+        <ImageLoader visible={!loadedImages[activeIndex]} />
 
         {/* Dot indicators */}
         {hasMultiple && (
@@ -229,13 +267,26 @@ const styles = StyleSheet.create({
   imageArea: {
     width: '100%',
     height: 380,
-    backgroundColor: '#B86E62',
+    backgroundColor: '#F5F5F5',
     position: 'relative',
     // No overflow:hidden — so wave can bleed out at bottom
   },
   image: {
-    width: SCREEN_WIDTH,
     height: 380,
+  },
+  pageImage: { width: SCREEN_WIDTH },
+  imageLoaded: { opacity: 1 },
+  imageLoading: { opacity: 0 },
+  imageLoader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 380,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+    zIndex: 2,
   },
   dotsContainer: {
     position: 'absolute',

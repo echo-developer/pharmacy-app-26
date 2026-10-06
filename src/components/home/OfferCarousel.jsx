@@ -6,8 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
-  ImageBackground,
 } from 'react-native';
+import { CachedImageBackground as ImageBackground } from '../common/CachedImage';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 

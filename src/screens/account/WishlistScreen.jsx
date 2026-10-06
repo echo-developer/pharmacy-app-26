@@ -6,9 +6,9 @@ import {
   FlatList,
   StyleSheet,
   StatusBar,
-  Image,
   ActivityIndicator,
 } from 'react-native';
+import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';

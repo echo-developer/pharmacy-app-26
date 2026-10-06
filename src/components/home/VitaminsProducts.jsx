@@ -2,11 +2,11 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width } = Dimensions.get('window');

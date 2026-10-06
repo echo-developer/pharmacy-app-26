@@ -1,5 +1,10 @@
 import React from 'react';
-import { Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import LinearGradient from 'react-native-linear-gradient';
 
 const NO_IMAGE_URL = 'https://pharmacy-shop.echodeveloper.com/useruploads/default/no-image-150x150.jpg';

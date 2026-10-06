@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { Minus, Plus } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 

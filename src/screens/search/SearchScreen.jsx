@@ -7,9 +7,9 @@ import {
   FlatList,
   StyleSheet,
   StatusBar,
-  Image,
   ActivityIndicator,
 } from 'react-native';
+import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';

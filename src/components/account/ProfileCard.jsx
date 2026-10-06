@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { User, Pencil, ChevronRight, Camera } from 'lucide-react-native';
 
 const ProfileCard = ({

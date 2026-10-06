@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
   SafeAreaView,
   StatusBar,
   Dimensions,
@@ -13,6 +12,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { CachedImage as Image } from '../../components/common/CachedImage';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { AuthContext } from '../../authcontext';
 import CommonService from '../../utils/CommonService';

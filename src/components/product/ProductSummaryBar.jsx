@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { Star, ChevronRight } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 

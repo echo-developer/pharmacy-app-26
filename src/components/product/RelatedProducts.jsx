@@ -2,12 +2,12 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { ChevronRight, Star, Zap } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 

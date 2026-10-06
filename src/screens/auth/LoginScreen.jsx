@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
   SafeAreaView,
   StatusBar,
   Dimensions,
@@ -15,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { CachedImage as Image } from '../../components/common/CachedImage';
 import LinearGradient from 'react-native-linear-gradient';
 import CommonService from '../../utils/CommonService';
 

@@ -5,9 +5,9 @@ import {
   StyleSheet,
   Animated,
   StatusBar,
-  ImageBackground,
-  useWindowDimensions,   
+  useWindowDimensions,
 } from 'react-native';
+import { CachedImageBackground as ImageBackground } from '../../components/common/CachedImage';
 
 const SplashScreen = ({ navigation }) => {
   const { width, height } = useWindowDimensions(); 

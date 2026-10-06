@@ -2,12 +2,12 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { Star, Minus, Plus } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';

@@ -6,12 +6,12 @@ import {
   FlatList,
   StyleSheet,
   StatusBar,
-  Image,
   ActivityIndicator,
   Modal,
   ScrollView,
   TextInput,
 } from 'react-native';
+import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ArrowLeft, Search, ShoppingBag, SlidersHorizontal, Minus, Plus, X } from 'lucide-react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';

@@ -2,10 +2,10 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { CachedImage as Image } from '../common/CachedImage';
 import { ChevronRight } from 'lucide-react-native';
 
 const OrderItemsStrip = ({

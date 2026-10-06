@@ -2,12 +2,12 @@ import React from 'react';
 import {
   View,
   Text,
-  ImageBackground,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
+import { CachedImageBackground as ImageBackground } from '../common/CachedImage';
 import { ArrowUpRight } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
