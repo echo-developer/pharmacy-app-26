@@ -11,6 +11,7 @@ import {
 import { Star, Minus, Plus } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.5;
@@ -28,6 +29,7 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
       {products.map((item, index) => {
         const itemId = item.product_id || item.id || index;
         const qty = getCartQty(itemId);
+        const outOfStock = isProductOutOfStock(item);
         // Support both API field names and legacy field names
         const title = item.product_name || item.title;
         const mrp = item.product_mrp || item.mrp;
@@ -58,6 +60,11 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
                 style={styles.productImage}
                 resizeMode="contain"
               />
+              {outOfStock && (
+                <View style={styles.stockBadge}>
+                  <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
+                </View>
+              )}
 
               {/* Rating Pill */}
               {(rating > 0 || ratingCount > 0) && (
@@ -94,7 +101,11 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
             {delivery ? <Text style={styles.delivery}>{delivery} ⚡</Text> : null}
 
             {/* ===== BUTTON AREA ===== */}
-            {qty === 0 ? (
+            {outOfStock ? (
+              <View style={[styles.addButton, styles.unavailableButton]}>
+                <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+              </View>
+            ) : qty === 0 ? (
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
@@ -242,6 +253,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#263077',
     letterSpacing: 0.5,
+  },
+  stockBadge: {
+    position: 'absolute',
+    left: 6,
+    right: 6,
+    bottom: 6,
+    alignItems: 'center',
+    backgroundColor: 'rgba(27, 34, 50, 0.82)',
+    borderRadius: 6,
+    paddingVertical: 4,
+  },
+  stockBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  unavailableButton: {
+    backgroundColor: '#F1F2F4',
+    borderColor: '#E1E3E6',
+  },
+  unavailableText: {
+    color: '#777C85',
+    fontSize: 11,
+    fontWeight: '800',
   },
 
   /* ===== QUANTITY SELECTOR ===== */

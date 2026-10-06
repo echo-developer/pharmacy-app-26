@@ -7,6 +7,7 @@ import SubcategorySelector from '../../components/categories/SubcategorySelector
 import FilterSortBar from '../../components/categories/FilterSortBar';
 import CategoryProductList from '../../components/categories/CategoryProductList';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import { X } from 'lucide-react-native';
@@ -144,7 +145,7 @@ const CategoriesScreen = ({ navigation }) => {
 
     // Filter in stock if enabled
     if (isInStockOnly) {
-      result = result.filter(p => p.in_stock !== 0 && p.stock !== 0 && p.is_out_of_stock !== 1);
+      result = result.filter(p => !isProductOutOfStock(p));
     }
 
     // Client-side sort fallback if API doesn't re-order

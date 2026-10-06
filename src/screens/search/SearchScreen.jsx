@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 
 const SearchScreen = ({ navigation, route }) => {
@@ -130,6 +131,7 @@ const SearchScreen = ({ navigation, route }) => {
     const unitText = item.unit || item.pack_size || item.tablets || '1 Unit';
     const sellPrice = item.product_sell_price || item.sell_price || item.price || 0;
     const mrpPrice = item.product_mrp || item.mrp;
+    const outOfStock = isProductOutOfStock(item);
 
     return (
       <TouchableOpacity
@@ -137,15 +139,22 @@ const SearchScreen = ({ navigation, route }) => {
         activeOpacity={0.8}
         onPress={() => navigation.navigate('ProductDetails', { id: productId, product: item })}
       >
-        <Image
-          source={
-            productImage && typeof productImage === 'string'
-              ? { uri: productImage }
-              : productImage || require('../../assets/images/products.png')
-          }
-          style={styles.productImage}
-          resizeMode="contain"
-        />
+        <View style={styles.productImageArea}>
+          <Image
+            source={
+              productImage && typeof productImage === 'string'
+                ? { uri: productImage }
+                : productImage || require('../../assets/images/products.png')
+            }
+            style={styles.productImage}
+            resizeMode="contain"
+          />
+          {outOfStock && (
+            <View style={styles.stockBadge}>
+              <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
+            </View>
+          )}
+        </View>
         <View style={styles.productInfo}>
           <Text style={styles.productName} numberOfLines={2}>
             {productName}
@@ -158,12 +167,18 @@ const SearchScreen = ({ navigation, route }) => {
             )}
           </View>
         </View>
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => handleAddToCart(item)}
-        >
-          <Text style={styles.addBtnText}>ADD</Text>
-        </TouchableOpacity>
+        {outOfStock ? (
+          <View style={[styles.addBtn, styles.unavailableBtn]}>
+            <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => handleAddToCart(item)}
+          >
+            <Text style={styles.addBtnText}>ADD</Text>
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     );
   };
@@ -297,6 +312,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 12,
   },
+  productImageArea: {
+    width: 84,
+    height: 84,
+    marginRight: 12,
+    position: 'relative',
+  },
+  stockBadge: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    backgroundColor: 'rgba(27, 34, 50, 0.82)',
+    borderRadius: 5,
+    paddingVertical: 3,
+  },
+  stockBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '800',
+  },
   productInfo: {
     flex: 1,
   },
@@ -338,6 +374,14 @@ const styles = StyleSheet.create({
     color: '#2CB7DF',
     fontSize: 12,
     fontWeight: '700',
+  },
+  unavailableBtn: {
+    backgroundColor: '#F1F2F4',
+  },
+  unavailableText: {
+    color: '#777C85',
+    fontSize: 9,
+    fontWeight: '800',
   },
   recentSection: {
     padding: 20,

@@ -16,6 +16,7 @@ import { ArrowLeft, Search, ShoppingBag, SlidersHorizontal, Minus, Plus, X } fro
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import FilterSortBar from '../../components/categories/FilterSortBar';
@@ -108,7 +109,7 @@ const ProductsScreen = ({ navigation }) => {
     let result = [...products];
 
     if (isInStockOnly) {
-      result = result.filter(p => p.in_stock !== 0 && p.stock !== 0 && p.is_out_of_stock !== 1);
+      result = result.filter(p => !isProductOutOfStock(p));
     }
 
     if (selectedSort === 'price_asc') {
@@ -143,6 +144,7 @@ const ProductsScreen = ({ navigation }) => {
 
   const renderProductCard = ({ item }) => {
     const qty = getCartQty(item.product_id);
+    const outOfStock = isProductOutOfStock(item);
 
     return (
       <TouchableOpacity
@@ -155,6 +157,11 @@ const ProductsScreen = ({ navigation }) => {
           style={styles.cardImage}
           resizeMode="contain"
         />
+        {outOfStock && (
+          <View style={styles.stockBadge}>
+            <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
+          </View>
+        )}
         <Text style={styles.productName} numberOfLines={2}>
           {item.product_name}
         </Text>
@@ -168,7 +175,11 @@ const ProductsScreen = ({ navigation }) => {
             )}
           </View>
 
-          {qty > 0 ? (
+          {outOfStock ? (
+            <View style={[styles.addBtn, styles.unavailableBtn]}>
+              <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+            </View>
+          ) : qty > 0 ? (
             // Stepper — stop card navigation on press
             <TouchableOpacity activeOpacity={1} onPress={e => e.stopPropagation?.()}>
               <View style={styles.stepper}>
@@ -501,6 +512,21 @@ const styles = StyleSheet.create({
     height: 100,
     marginBottom: 8,
   },
+  stockBadge: {
+    position: 'absolute',
+    left: 8,
+    right: 8,
+    top: 84,
+    alignItems: 'center',
+    backgroundColor: 'rgba(27, 34, 50, 0.82)',
+    borderRadius: 6,
+    paddingVertical: 4,
+  },
+  stockBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+  },
   productName: {
     fontSize: 13,
     fontWeight: '700',
@@ -540,6 +566,15 @@ const styles = StyleSheet.create({
     color: '#2CB7DF',
     fontSize: 11,
     fontWeight: '700',
+  },
+  unavailableBtn: {
+    backgroundColor: '#F1F2F4',
+  },
+  unavailableText: {
+    color: '#777C85',
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   // Stepper
   stepper: {

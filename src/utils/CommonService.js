@@ -3,6 +3,7 @@ import axios from 'axios';
 import base64 from 'react-native-base64';
 import store from '../store/store';
 import StaticConst from './StaticConst';
+import { isProductOutOfStock } from './productAvailability';
 
 export default CommonService = {
   citystore: null,
@@ -129,17 +130,8 @@ export default CommonService = {
   },
 
   addToCart: (data) => {
-    // Only block if explicitly marked unavailable — ignore qty:0 from detail API
-    // because backend returns qty:0 inconsistently on product details endpoint
-    const isOutOfStock =
-      data?.is_available === false ||
-      data?.is_available === 0 ||
-      data?.is_available === '0' ||
-      data?.is_stock_available === false ||
-      data?.is_stock_available === 0 ||
-      data?.is_stock_available === '0';
-
-    if (isOutOfStock) {
+    // Home/list APIs use qty as the available inventory count; zero means unavailable.
+    if (isProductOutOfStock(data)) {
       store.dispatch({
         type: 'TOAST',
         payload: {
@@ -174,6 +166,19 @@ export default CommonService = {
           discount: data.discount,
           unit: data.unit,
           image: data.image,
+          is_out_of_stock: data.is_out_of_stock,
+          out_of_stock: data.out_of_stock,
+          isOutOfStock: data.isOutOfStock,
+          in_stock: data.in_stock,
+          is_in_stock: data.is_in_stock,
+          stock: data.stock,
+          stock_quantity: data.stock_quantity,
+          available_quantity: data.available_quantity,
+          is_available: data.is_available,
+          is_stock_available: data.is_stock_available,
+          stock_status: data.stock_status,
+          availability: data.availability,
+          availability_status: data.availability_status,
           ...(data.is_package ? { is_package: data.is_package } : {}),
         });
       }
@@ -190,6 +195,19 @@ export default CommonService = {
         discount: data.discount,
         unit: data.unit,
         image: data.image,
+        is_out_of_stock: data.is_out_of_stock,
+        out_of_stock: data.out_of_stock,
+        isOutOfStock: data.isOutOfStock,
+        in_stock: data.in_stock,
+        is_in_stock: data.is_in_stock,
+        stock: data.stock,
+        stock_quantity: data.stock_quantity,
+        available_quantity: data.available_quantity,
+        is_available: data.is_available,
+        is_stock_available: data.is_stock_available,
+        stock_status: data.stock_status,
+        availability: data.availability,
+        availability_status: data.availability_status,
         ...(data.is_package ? { is_package: data.is_package } : {}),
       });
     }

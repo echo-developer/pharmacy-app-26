@@ -13,9 +13,8 @@ import {
 import { ArrowLeft, ShieldCheck, MapPin, CreditCard, Banknote, Smartphone, Wallet } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import RazorpayCheckout from 'react-native-razorpay';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import base64 from 'react-native-base64';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 import StaticConst from '../../utils/StaticConst';
 import StatusModal from '../../components/common/StatusModal';
 import store from '../../store/store';
@@ -37,61 +36,12 @@ const PaymentMethodScreen = ({ navigation }) => {
 
   const [screenState, setScreenState] = useState(store.getState().GlobalReducer);
 
-  // ─── Validate & sync address from backend on every screen focus ──────────
-  // The stored place_id may be stale or a random fallback number that the
-  // pharmacy backend will reject. Fetch real addresses and fix it silently.
-  const syncAddressFromBackend = () => {
-    const state = store.getState().GlobalReducer;
-    if (!state.authuser?.member_id) return; // not logged in, nothing to sync
-
-    CommonService._callApi({ api: '/member/address', method: 'GET' })
-      .then(resp => {
-        if (
-          resp.data?.status == 1 &&
-          Array.isArray(resp.data?.response?.data) &&
-          resp.data.response.data.length > 0
-        ) {
-          const list = resp.data.response.data;
-          const currentPlaceId = store.getState().GlobalReducer.chosencity?.tempaddress?.place_id;
-
-          // Check if stored place_id matches a real backend address
-          const validMatch = currentPlaceId
-            ? list.find(a => String(a.place_id) === String(currentPlaceId))
-            : null;
-
-          if (!validMatch) {
-            // Stale / random ID — silently fix to the first real backend address
-            const first = list[0];
-            const payloadData = {
-              tempaddress: {
-                address: first.place_address || first.address || '',
-                postalcode: first.place_pincode || first.pincode || '',
-                place_id: first.place_id || first.id,
-              },
-            };
-            store.dispatch({ type: 'SETCITY', payload: payloadData });
-            AsyncStorage.setItem(
-              StaticConst.sessionkey.city,
-              base64.encode(JSON.stringify(payloadData))
-            ).catch(() => { });
-            console.log('ADDRESS SYNCED:', payloadData.tempaddress.place_id, payloadData.tempaddress.address);
-          }
-        }
-      })
-      .catch(() => { });
-  };
-
   useEffect(() => {
-    // Sync on mount
-    syncAddressFromBackend();
-
     const unsubscribe = store.subscribe(() => {
       setScreenState(store.getState().GlobalReducer);
     });
     const focusSub = navigation.addListener('focus', () => {
       setScreenState(store.getState().GlobalReducer);
-      // Re-sync whenever user comes back to this screen (e.g. after adding address)
-      syncAddressFromBackend();
     });
     return () => {
       unsubscribe();
@@ -105,7 +55,8 @@ const PaymentMethodScreen = ({ navigation }) => {
   const pincode = screenState.chosencity?.tempaddress?.postalcode || '';
   const placeId = screenState.chosencity?.tempaddress?.place_id || '';
 
-  const hasAddress = Boolean(address && (pincode || placeId));
+  const hasValidPlaceId = Number.isInteger(Number(placeId)) && Number(placeId) > 0;
+  const hasAddress = Boolean(address && pincode && hasValidPlaceId);
 
   const calculateSubTotal = () => {
     if (cart?.items?.length > 0) {
@@ -320,7 +271,9 @@ const PaymentMethodScreen = ({ navigation }) => {
     const freshPincode = freshState.chosencity?.tempaddress?.postalcode || '';
     const freshPlaceId = freshState.chosencity?.tempaddress?.place_id || '';
     const freshAddress = freshState.chosencity?.tempaddress?.address || '';
-    const freshHasAddress = Boolean(freshAddress && (freshPincode || freshPlaceId));
+    const freshHasAddress = Boolean(
+      freshAddress && freshPincode && Number.isInteger(Number(freshPlaceId)) && Number(freshPlaceId) > 0,
+    );
 
     if (!freshAuthuser?.member_id) {
       showErrorModal({
@@ -349,7 +302,16 @@ const PaymentMethodScreen = ({ navigation }) => {
       return;
     }
 
-    if (!freshHasAddress || !freshPlaceId) {
+    if (freshCart.items.some(isProductOutOfStock)) {
+      showErrorModal({
+        title: 'Item Out of Stock',
+        message: 'Remove unavailable items from your cart before placing the order.',
+        retryCallback: hideStatusModal,
+      });
+      return;
+    }
+
+    if (!freshHasAddress) {
       showErrorModal({
         title: 'Address Required',
         message: 'Please select a delivery address before placing your order.',

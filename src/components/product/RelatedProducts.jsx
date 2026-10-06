@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { ChevronRight, Star, Zap } from 'lucide-react-native';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
@@ -40,6 +41,7 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
         {products.map((item, index) => {
+          const outOfStock = isProductOutOfStock(item);
           const hasDiscount =
             item.product_mrp && item.product_sell_price &&
             item.product_mrp > item.product_sell_price;
@@ -76,6 +78,7 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
                   style={styles.image}
                   resizeMode="contain"
                 />
+                {outOfStock && <View style={styles.stockBadge}><Text style={styles.stockBadgeText}>OUT OF STOCK</Text></View>}
                 {avgRating && (
                   <View style={styles.ratingPill}>
                     <Star size={10} color="#FF8D28" fill="#FF8D28" />
@@ -112,12 +115,11 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
               </View>
 
               {/* ADD Button */}
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => onAddPress?.(item)}
-                activeOpacity={0.85}>
-                <Text style={styles.addText}>ADD</Text>
-              </TouchableOpacity>
+              {outOfStock ? <View style={[styles.addButton, styles.unavailableButton]}><Text style={styles.unavailableText}>OUT OF STOCK</Text></View> : (
+                <TouchableOpacity style={styles.addButton} onPress={() => onAddPress?.(item)} activeOpacity={0.85}>
+                  <Text style={styles.addText}>ADD</Text>
+                </TouchableOpacity>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -202,6 +204,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
   },
+  stockBadge: { position: 'absolute', left: 4, right: 4, bottom: 4, alignItems: 'center', backgroundColor: 'rgba(38,48,119,0.88)', paddingVertical: 4, borderRadius: 5 },
+  stockBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
   ratingText: {
     fontSize: 9,
     fontWeight: '700',
@@ -277,6 +281,8 @@ const styles = StyleSheet.create({
     color: '#263077',
     letterSpacing: 0.5,
   },
+  unavailableButton: { backgroundColor: '#F1F1F3' },
+  unavailableText: { fontSize: 10, fontWeight: '800', color: '#777987', letterSpacing: 0.3 },
 });
 
 export default RelatedProducts;

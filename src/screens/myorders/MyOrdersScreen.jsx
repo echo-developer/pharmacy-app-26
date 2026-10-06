@@ -12,6 +12,7 @@ import {
 import OrderHistoryHeader from '../../components/orders/OrderHistoryHeader';
 import OrderCard from '../../components/orders/OrderCard';
 import CommonService from '../../utils/CommonService';
+import store from '../../store/store';
 
 // Helper date formatting function replacing moment
 const formatDate = (dateString, options = {}) => {
@@ -147,6 +148,12 @@ const MyOrdersScreen = ({ navigation }) => {
 
   useEffect(() => {
     const focusSub = navigation.addListener('focus', () => {
+      if (!store.getState().GlobalReducer.authuser) {
+        navigation.navigate('Login', {
+          returnTo: { name: 'Main', params: { screen: 'My Orders' } },
+        });
+        return;
+      }
       currentPageRef.current = 1;
       hasMoreRef.current = true;
       isFetchingRef.current = false;

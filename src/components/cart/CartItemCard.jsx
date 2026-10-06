@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Minus, Plus } from 'lucide-react-native';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const CartItemCard = ({
   item,
@@ -8,6 +9,7 @@ const CartItemCard = ({
   onDecrease,
   showDashedBorder = true,
 }) => {
+  const outOfStock = isProductOutOfStock(item);
   return (
     <View style={[styles.card, showDashedBorder && styles.cardDashed]}>
       <View style={styles.row}>
@@ -26,6 +28,7 @@ const CartItemCard = ({
             {item.title}
           </Text>
           <Text style={styles.pack}>{item.pack}</Text>
+          {outOfStock && <Text style={styles.outOfStockText}>OUT OF STOCK</Text>}
         </View>
 
         {/* ===== RIGHT: Qty + Price ===== */}
@@ -41,13 +44,19 @@ const CartItemCard = ({
 
             <Text style={styles.qtyText}>{item.qty}</Text>
 
-            <TouchableOpacity
-              style={styles.qtyBtn}
-              onPress={onIncrease}
-              activeOpacity={0.85}
-            >
-              <Plus size={14} color="#FFFFFF" strokeWidth={3} />
-            </TouchableOpacity>
+            {outOfStock ? (
+              <View style={styles.disabledQtyBtn}>
+                <Plus size={14} color="#A3A7AE" strokeWidth={3} />
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={onIncrease}
+                activeOpacity={0.85}
+              >
+                <Plus size={14} color="#FFFFFF" strokeWidth={3} />
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.priceRow}>
@@ -103,6 +112,12 @@ const styles = StyleSheet.create({
     color: '#1B1F22',
     lineHeight: 17,
   },
+  outOfStockText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D14343',
+    marginTop: 4,
+  },
   pack: {
     fontSize: 11,
     color: '#787C77',
@@ -125,6 +140,10 @@ const styles = StyleSheet.create({
   },
   qtyBtn: {
     padding: 2,
+  },
+  disabledQtyBtn: {
+    padding: 2,
+    opacity: 0.55,
   },
   qtyText: {
     fontSize: 13,

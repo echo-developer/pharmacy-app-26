@@ -2,6 +2,7 @@ import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import CategoryProductCard from './CategoryProductCard';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const CategoryProductList = ({ products = [], loading = false, onProductPress, onAddPress, onFavPress, favoriteIds = {} }) => {
   // Read favoriteOverrides from redux so heart state syncs across screens
@@ -34,6 +35,7 @@ const CategoryProductList = ({ products = [], loading = false, onProductPress, o
           <CategoryProductCard
             key={item.product_id || item.id}
             product={{
+              ...item,
               id: item.product_id || item.id,
               title: item.product_name || item.title,
               tablets: item.unit || item.tablets,
@@ -43,6 +45,7 @@ const CategoryProductList = ({ products = [], loading = false, onProductPress, o
               delivery: item.delivery || 'Get in 30 mins',
               discount: item.discount || '20% Off',
               image: item.image,
+              isOutOfStock: isProductOutOfStock(item),
             }}
             isFavorite={isFav}
             onProductPress={() => onProductPress?.(item)}

@@ -18,6 +18,8 @@ import { AuthContext } from '../../authcontext';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import StaticConst from '../../utils/StaticConst';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import base64 from 'react-native-base64';
 
 const { width } = Dimensions.get('window');
 
@@ -26,7 +28,7 @@ const OtpScreen = () => {
   const route = useRoute();
   const { signIn } = React.useContext(AuthContext);
 
-  const { phone, mobile, otp: initialOtp } = route.params || {};
+  const { phone, mobile, otp: initialOtp, returnTo } = route.params || {};
   const userPhone = phone || mobile || '';
   const mobileNumber = userPhone;
 
@@ -36,6 +38,60 @@ const OtpScreen = () => {
   const [otpTimer, setOtpTimer] = useState(30);
   const inputRefs = useRef([]);
   const timerRef = useRef(null);
+
+  const persistGuestCheckoutAddress = async () => {
+    const currentCity = store.getState().GlobalReducer.chosencity;
+    const currentAddress = currentCity?.tempaddress;
+    if (!currentAddress?.address || !currentAddress?.postalcode ||
+        !String(currentAddress.place_id || '').startsWith('guest-')) return;
+
+    const addressPayload = {
+      place_address: currentAddress.address,
+      place_pincode: currentAddress.postalcode,
+      place_type_name: 'Delivery address',
+      contact_phone: userPhone,
+      member_id: store.getState().GlobalReducer.authuser?.member_id || '',
+    };
+
+    try {
+      const addResponse = await CommonService._callApi({
+        api: '/member/addaddress',
+        method: 'POST',
+        body: JSON.stringify(addressPayload),
+      }).then(response => response.json());
+
+      let placeId = addResponse.response?.data?.place_id ||
+        addResponse.response?.data?.id || addResponse.response?.place_id ||
+        addResponse.response?.id;
+
+      if (!placeId) {
+        const addressResponse = await CommonService._callApi({
+          api: '/member/address',
+          method: 'GET',
+        });
+        const savedAddresses = addressResponse.data?.response?.data || [];
+        const normalizedAddress = currentAddress.address.trim().toLowerCase();
+        const match = savedAddresses.find(item =>
+          String(item.place_address || item.address || '').trim().toLowerCase() === normalizedAddress &&
+          String(item.place_pincode || item.pincode || '') === String(currentAddress.postalcode),
+        );
+        placeId = match?.place_id || match?.id;
+      }
+
+      if (placeId) {
+        const payloadData = {
+          tempaddress: { ...currentAddress, place_id: placeId },
+        };
+        store.dispatch({ type: 'SETCITY', payload: payloadData });
+        await AsyncStorage.setItem(
+          StaticConst.sessionkey.city,
+          base64.encode(JSON.stringify(payloadData)),
+        );
+      }
+    } catch (error) {
+      console.log('Guest address account sync failed:', error?.message);
+    }
+  };
 
   useEffect(() => {
     if (StaticConst.smsEnabled != 1 && initialOtp) {
@@ -48,7 +104,7 @@ const OtpScreen = () => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
+  }, [initialOtp]);
 
   const handleOtpChange = (value, index) => {
     const newOtp = [...otp];
@@ -128,14 +184,20 @@ const OtpScreen = () => {
       body: inputdata,
     })
       .then(r => r.json())
-      .then(json => {
+      .then(async json => {
         setOtploader(false);
         if (json.status == 1) {
           store.dispatch({ type: 'SETAUTHUSER', payload: json.response.data });
           signIn(json.response.data);
+          if (returnTo?.name === 'PaymentMethod') {
+            await persistGuestCheckoutAddress();
+          }
+          const routes = returnTo?.name === 'Main'
+            ? [returnTo]
+            : [{ name: 'Main' }, ...(returnTo?.name ? [returnTo] : [])];
           navigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
+            index: routes.length - 1,
+            routes,
           });
         } else {
           alert(

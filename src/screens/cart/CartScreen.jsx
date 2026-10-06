@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import React from 'react';
+import { View, ScrollView, StyleSheet, StatusBar, Text, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
+import { ShoppingBag } from 'lucide-react-native';
 import CartHeader from '../../components/cart/CartHeader';
 import SavingsBanner from '../../components/cart/SavingsBanner';
 import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
@@ -19,13 +20,6 @@ const CartScreen = ({ navigation }) => {
   const cart = useSelector(state => state.GlobalReducer.cart);
   const items = cart?.items || [];
   const hasItems = items.length > 0;
-
-  // Auto go back when cart becomes empty (last item removed via stepper)
-  useEffect(() => {
-    if (!hasItems) {
-      navigation.goBack();
-    }
-  }, [hasItems]);
 
   const isUserLoggedIn = Boolean(store.getState().GlobalReducer.authuser);
 
@@ -64,7 +58,7 @@ const CartScreen = ({ navigation }) => {
     if (isUserLoggedIn) {
       navigation.navigate('PaymentMethod');
     } else {
-      navigation.navigate('Login');
+      navigation.navigate('Login', { returnTo: { name: 'PaymentMethod' } });
     }
   };
 
@@ -72,10 +66,43 @@ const CartScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      {!hasItems ? (
+        <>
+          <LinearGradient
+            colors={['#F4F5FF', '#FFFFFF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.topGradient}
+          >
+            <CartHeader
+              title="Cart"
+              onBackPress={() => navigation.goBack()}
+              onSearchPress={() => navigation.navigate('Search')}
+            />
+          </LinearGradient>
+          <View style={styles.emptyCart}>
+            <View style={styles.emptyCartIcon}>
+              <ShoppingBag size={38} color="#2CB7DF" />
+            </View>
+            <Text style={styles.emptyCartTitle}>Your cart is empty</Text>
+            <Text style={styles.emptyCartMessage}>
+              Browse medicines and add the items you need.
+            </Text>
+            <TouchableOpacity
+              style={styles.shopButton}
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.shopButtonText}>Continue shopping</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+      <>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
         <LinearGradient
           colors={['#F4F5FF', '#FFFFFF']}
           start={{ x: 0, y: 0 }}
@@ -123,13 +150,13 @@ const CartScreen = ({ navigation }) => {
           }
           onEditPress={() => navigation.navigate('MyAddress')}
         />
-      </ScrollView>
+        </ScrollView>
 
-      {hasItems && (
         <GetOTPButton
           label={isUserLoggedIn ? 'Proceed to Checkout' : 'Login to Checkout'}
           onPress={handleCheckoutPress}
         />
+      </>
       )}
     </View>
   );
@@ -145,6 +172,46 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
+  },
+  emptyCart: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingBottom: 48,
+  },
+  emptyCartIcon: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(44, 183, 223, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  emptyCartTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#043250',
+  },
+  emptyCartMessage: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#787887',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  shopButton: {
+    marginTop: 24,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    backgroundColor: '#2CB7DF',
+  },
+  shopButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 

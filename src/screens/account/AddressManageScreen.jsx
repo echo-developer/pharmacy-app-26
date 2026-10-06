@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -28,18 +28,57 @@ const AddressManageScreen = ({ navigation }) => {
   const [newPincode, setNewPincode] = useState('');
   const [newPhone, setNewPhone] = useState('');
 
-  const fetchAddresses = async () => {
+  const readGuestAddresses = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(StaticConst.sessionkey.guestAddressList);
+      if (!stored) return [];
+      try {
+        const decoded = JSON.parse(base64.decode(stored));
+        return Array.isArray(decoded) ? decoded : [];
+      } catch {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const saveGuestAddresses = useCallback(async list => {
+    await AsyncStorage.setItem(
+      StaticConst.sessionkey.guestAddressList,
+      base64.encode(JSON.stringify(list)),
+    );
+  }, []);
+
+  const fetchAddresses = useCallback(async () => {
     setLoader(true);
 
     const currentCity = store.getState().GlobalReducer.chosencity;
     const currentPlaceId = currentCity?.tempaddress?.place_id;
+    const isLoggedIn = Boolean(store.getState().GlobalReducer.authuser);
+    const numericCurrentPlaceId = Number(currentPlaceId);
 
-    const localActive = currentPlaceId ? [{
+    const localActive = currentPlaceId && (!isLoggedIn || (Number.isInteger(numericCurrentPlaceId) && numericCurrentPlaceId > 0)) ? [{
       place_id: currentPlaceId,
       place_address: currentCity.tempaddress.address,
       place_pincode: currentCity.tempaddress.postalcode,
       place_type_name: 'Home',
     }] : [];
+
+    if (!isLoggedIn) {
+      const guestAddresses = await readGuestAddresses();
+      const merged = [...guestAddresses];
+      localActive.forEach(address => {
+        if (!merged.some(item => String(item.place_id || item.id) === String(address.place_id))) {
+          merged.unshift(address);
+        }
+      });
+      setAddresses(merged);
+      setSelectedId(null);
+      setLoader(false);
+      return;
+    }
 
     CommonService._callApi({
       api: '/member/address',
@@ -51,38 +90,24 @@ const AddressManageScreen = ({ navigation }) => {
           const list = resp.data.response.data;
           setAddresses(list);
 
-          // Check if the currently stored place_id matches any real backend address
-          const validMatch = currentPlaceId
-            ? list.find(a => String(a.place_id) === String(currentPlaceId))
-            : null;
-
-          if (validMatch) {
-            // Stored address is valid — keep it selected in UI
-            setSelectedId(currentPlaceId);
-          } else {
-            // Stored address_id is missing or stale (e.g. random fallback ID) —
-            // auto-select the first real address from the backend so placeorder works
-            handleSelectAddress(list[0]);
-          }
+          // Loading this screen must not select or apply an address. The user
+          // applies one only by tapping an address card.
+          setSelectedId(null);
         } else {
           setAddresses(localActive);
-          if (localActive.length > 0) {
-            setSelectedId(localActive[0].place_id);
-          }
+          setSelectedId(null);
         }
       })
-      .catch(err => {
+      .catch(() => {
         setLoader(false);
         setAddresses(localActive);
-        if (localActive.length > 0) {
-          setSelectedId(localActive[0].place_id);
-        }
+        setSelectedId(null);
       });
-  };
+  }, [readGuestAddresses]);
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+  }, [fetchAddresses]);
 
   const saveAddressToStore = async (item) => {
     const payloadData = {
@@ -107,6 +132,11 @@ const AddressManageScreen = ({ navigation }) => {
     const id = item.place_id || item.id;
     setSelectedId(id);
     await saveAddressToStore(item);
+    if (!store.getState().GlobalReducer.authuser && String(id).startsWith('guest-')) {
+      // Guest locations stay on this device until the user signs in at checkout.
+      if (navigation.canGoBack()) navigation.goBack();
+      return;
+    }
     if (navigation.canGoBack()) {
       navigation.goBack();
     }
@@ -117,10 +147,29 @@ const AddressManageScreen = ({ navigation }) => {
   };
 
   const handleSaveAddress = () => {
-    if (!newAddress.trim() || !newPincode.trim()) {
-      Alert.alert('Incomplete', 'Please fill address and pincode');
+    if (!newAddress.trim() || !/^\d{6}$/.test(newPincode.trim())) {
+      Alert.alert('Incomplete', 'Please enter a full address and a valid 6-digit pincode.');
       return;
     }
+
+    if (!store.getState().GlobalReducer.authuser) {
+      const guestAddress = {
+        place_id: `guest-${Date.now()}`,
+        place_address: newAddress.trim(),
+        place_pincode: newPincode.trim(),
+        place_type_name: newTitle.trim() || 'Delivery address',
+        contact_phone: newPhone.trim(),
+      };
+      readGuestAddresses().then(async existing => {
+        await saveGuestAddresses([guestAddress, ...existing]);
+        setAddresses(current => [guestAddress, ...current]);
+        setSelectedId(null);
+        setShowAddForm(false);
+        setNewTitle(''); setNewAddress(''); setNewPincode(''); setNewPhone('');
+      }).catch(() => Alert.alert('Unable to save', 'Please try again.'));
+      return;
+    }
+
     setSaving(true);
     const body = JSON.stringify({
       place_address: newAddress.trim(),
@@ -135,36 +184,13 @@ const AddressManageScreen = ({ navigation }) => {
       method: 'POST',
       body: body,
     })
-      .then(r => r.json())
-      .then(async resp => {
-        console.log('ADD ADDRESS RESP:', JSON.stringify(resp));
+      .then(() => {
         setSaving(false);
         setShowAddForm(false);
         setNewTitle(''); setNewAddress(''); setNewPincode(''); setNewPhone('');
 
-        // Try to get the real place_id from the API response
-        // Backend may return it at various paths — check all of them
-        const realPlaceId =
-          resp.response?.data?.place_id ||
-          resp.response?.data?.id ||
-          resp.response?.place_id ||
-          resp.response?.id ||
-          null;
-
-        if (realPlaceId) {
-          // We have a real DB id — save it directly and re-fetch to refresh the list
-          const createdItem = {
-            place_id: realPlaceId,
-            place_address: newAddress.trim(),
-            place_pincode: newPincode.trim(),
-            place_type_name: newTitle.trim() || 'Home',
-          };
-          await saveAddressToStore(createdItem);
-        }
-
-        // Always re-fetch so the list reflects the actual backend state.
-        // fetchAddresses will auto-select the first address if the stored
-        // place_id doesn't match any real backend address.
+        // Refresh the list after saving. Saving an address does not select it;
+        // the user can choose it explicitly from the list.
         fetchAddresses();
       })
       .catch(async err => {
@@ -185,8 +211,24 @@ const AddressManageScreen = ({ navigation }) => {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete', style: 'destructive',
-          onPress: () => {
-            const body = JSON.stringify({ id: item.place_id || item.id });
+          onPress: async () => {
+            const targetId = item.place_id || item.id;
+            if (!store.getState().GlobalReducer.authuser) {
+              const guestAddresses = await readGuestAddresses();
+              await saveGuestAddresses(guestAddresses.filter(
+                address => String(address.place_id || address.id) !== String(targetId),
+              ));
+              setAddresses(current => current.filter(
+                address => String(address.place_id || address.id) !== String(targetId),
+              ));
+              const activeId = store.getState().GlobalReducer.chosencity?.tempaddress?.place_id;
+              if (String(activeId) === String(targetId)) {
+                store.dispatch({ type: 'SETCITY', payload: null });
+                await AsyncStorage.removeItem(StaticConst.sessionkey.city);
+              }
+              return;
+            }
+            const body = JSON.stringify({ id: targetId });
             CommonService._callApi({
               api: '/member/removeaddress',
               method: 'POST',

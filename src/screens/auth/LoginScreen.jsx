@@ -12,16 +12,30 @@ import {
   ScrollView,
   ActivityIndicator,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import CommonService from '../../utils/CommonService';
 
 const { width } = Dimensions.get('window');
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation, route }) => {
   const [mobile, setMobile] = useState('');
   const [isChecked, setIsChecked] = useState(false);
   const [loader, setLoader] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  React.useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const showSubscription = Keyboard.addListener(showEvent, () => setKeyboardVisible(true));
+    const hideSubscription = Keyboard.addListener(hideEvent, () => setKeyboardVisible(false));
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleGetOtp = () => {
     if (mobile.length !== 10) {
@@ -49,6 +63,7 @@ const LoginScreen = ({ navigation }) => {
             phone: mobile,
             mobile: mobile,
             otp: json.response.data.otp,
+            returnTo: route.params?.returnTo,
           });
         } else {
           alert(
@@ -72,13 +87,19 @@ const LoginScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#263077" translucent />
-      
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent} 
+
+      <KeyboardAvoidingView
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, keyboardVisible && styles.keyboardScrollContent]}
         showsVerticalScrollIndicator={false}
         bounces={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* ================= TOP SECTION ================= */}
+        {!keyboardVisible && <>
         <LinearGradient
           colors={['#263077', '#364193']} 
           style={styles.topSection}
@@ -124,11 +145,12 @@ const LoginScreen = ({ navigation }) => {
             resizeMode="contain"
           />
         </LinearGradient>
+        </>}
 
         {/* ================= BOTTOM SECTION ================= */}
         <LinearGradient
           colors={['#FFFFFF', '#F4F5FF']} 
-          style={styles.bottomSection}
+          style={[styles.bottomSection, keyboardVisible && styles.bottomSectionKeyboard]}
         >
           <Text style={styles.title}>Login / Sign up</Text>
           <Text style={styles.subtitle}>Enter your 10 digits mobile numbers</Text>
@@ -169,6 +191,7 @@ const LoginScreen = ({ navigation }) => {
           </View>
         </LinearGradient>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -180,6 +203,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#263077', 
   },
   scrollContent: {
+    flexGrow: 1,
+  },
+  keyboardContainer: {
+    flex: 1,
+  },
+  keyboardScrollContent: {
     flexGrow: 1,
   },
   topSection: {
@@ -319,7 +348,16 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
     marginTop: -60,                 
     minHeight: 480,                 
-    zIndex: 2,                      
+    zIndex: 2,
+  },
+  bottomSectionKeyboard: {
+    flex: 1,
+    minHeight: 0,
+    marginTop: 0,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
   },
   title: {
     fontSize: 26,

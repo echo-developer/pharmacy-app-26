@@ -13,6 +13,7 @@ import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const WishlistScreen = ({ navigation }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -73,6 +74,7 @@ const WishlistScreen = ({ navigation }) => {
   };
 
   const handleAddToCart = (product) => {
+    if (isProductOutOfStock(product)) return;
     CommonService.addToCart(product);
     navigation.navigate('Cart');
   };
@@ -115,13 +117,14 @@ const WishlistScreen = ({ navigation }) => {
           <Trash2 size={18} color="#FF4D4D" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.addBtn}
-          onPress={() => handleAddToCart(item)}
-        >
-          <ShoppingBag size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
-          <Text style={styles.addBtnText}>ADD</Text>
-        </TouchableOpacity>
+        {isProductOutOfStock(item) ? (
+          <View style={[styles.addBtn, styles.unavailableBtn]}><Text style={styles.unavailableText}>OUT OF STOCK</Text></View>
+        ) : (
+          <TouchableOpacity style={styles.addBtn} onPress={() => handleAddToCart(item)}>
+            <ShoppingBag size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text style={styles.addBtnText}>ADD</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -257,6 +260,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  unavailableBtn: { backgroundColor: '#F1F1F3', minWidth: 94, justifyContent: 'center' },
+  unavailableText: { color: '#777987', fontSize: 9, fontWeight: '800', textAlign: 'center' },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',

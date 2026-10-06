@@ -4,6 +4,7 @@ import { ShoppingCart, Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const ProductBottomBar = ({
   message = 'yay! you have unlocked',
@@ -14,6 +15,7 @@ const ProductBottomBar = ({
   onBuyNow,
 }) => {
   const cart = useSelector(state => state.GlobalReducer.cart);
+  const outOfStock = isProductOutOfStock(product);
 
   // Derive cartQty from redux cart so it re-renders on change
   const cartQty = React.useMemo(() => {
@@ -25,7 +27,7 @@ const ProductBottomBar = ({
   }, [cart, product?.product_id]);
 
   const handleIncrease = () => {
-    if (product) CommonService.addToCart(product);
+    if (product && !outOfStock) CommonService.addToCart(product);
   };
 
   const handleDecrease = () => {
@@ -51,7 +53,11 @@ const ProductBottomBar = ({
       </View>
 
       {/* ===== BUTTONS ROW ===== */}
-      <View style={styles.buttonRow}>
+      {outOfStock ? (
+        <View style={[styles.outOfStockButton, styles.buttonRow]}>
+          <Text style={styles.outOfStockText}>OUT OF STOCK</Text>
+        </View>
+      ) : <View style={styles.buttonRow}>
         {/* Add to Cart / Stepper */}
         {cartQty > 0 ? (
           <View style={styles.stepperBtn}>
@@ -91,7 +97,7 @@ const ProductBottomBar = ({
           <ShoppingCart size={18} color="#FFFFFF" />
           <Text style={styles.buyNowText}>Buy Now</Text>
         </TouchableOpacity>
-      </View>
+      </View>}
     </View>
   );
 };
@@ -138,6 +144,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 12,
     gap: 10,
+  },
+  outOfStockButton: {
+    marginHorizontal: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#E1E3E6',
+    borderRadius: 24,
+    paddingVertical: 12,
+    backgroundColor: '#F1F2F4',
+    justifyContent: 'center',
+  },
+  outOfStockText: {
+    textAlign: 'center',
+    color: '#777C85',
+    fontSize: 14,
+    fontWeight: '800',
   },
   addToCartBtn: {
     flex: 1,

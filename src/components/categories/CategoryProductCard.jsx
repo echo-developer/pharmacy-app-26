@@ -4,6 +4,7 @@ import { Heart, Zap, Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, isFavorite = false }) => {
   // Read live cart qty from redux
@@ -13,6 +14,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
     const item = cart.items.find(o => Math.abs(o.product_id) === Math.abs(product.id));
     return item ? item.cartqty : 0;
   }, [cart, product?.id]);
+  const outOfStock = isProductOutOfStock(product);
 
   const handleIncrease = () => onAddPress?.();
   const handleDecrease = () => {
@@ -39,6 +41,11 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
             style={styles.image}
             resizeMode="contain"
           />
+          {outOfStock && (
+            <View style={styles.stockBadge}>
+              <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
+            </View>
+          )}
         </View>
 
         {/* Details */}
@@ -78,7 +85,11 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
         </TouchableOpacity>
 
         {/* Stepper or ADD */}
-        {cartQty > 0 ? (
+        {outOfStock ? (
+          <View style={[styles.addButton, styles.unavailableButton]}>
+            <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+          </View>
+        ) : cartQty > 0 ? (
           <View style={styles.stepper}>
             <TouchableOpacity style={styles.stepBtn} onPress={handleDecrease} activeOpacity={0.8}>
               <Minus size={14} color="#263077" strokeWidth={2.5} />
@@ -136,6 +147,22 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     textAlign: 'center',
+  },
+  stockBadge: {
+    position: 'absolute',
+    left: 5,
+    right: 5,
+    bottom: 5,
+    alignItems: 'center',
+    backgroundColor: 'rgba(27, 34, 50, 0.82)',
+    borderRadius: 6,
+    paddingVertical: 4,
+    zIndex: 3,
+  },
+  stockBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
   },
   image: {
     width: '80%',
@@ -222,6 +249,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#263077',
     letterSpacing: 0.5,
+  },
+  unavailableButton: {
+    backgroundColor: '#F1F2F4',
+  },
+  unavailableText: {
+    color: '#777C85',
+    fontSize: 11,
+    fontWeight: '800',
   },
   // Stepper
   stepper: {

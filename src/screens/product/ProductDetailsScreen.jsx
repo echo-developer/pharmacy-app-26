@@ -13,6 +13,7 @@ import ProductBottomBar from '../../components/product/ProductBottomBar';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { useSelector } from 'react-redux';
+import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const ProductDetailsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -104,14 +105,14 @@ const ProductDetailsScreen = ({ navigation }) => {
   const handleAddToCart = () => {
     // Use productData if available, fallback to previewProduct
     const product = productData || previewProduct;
-    if (product) {
+    if (product && !isProductOutOfStock(product)) {
       CommonService.addToCart(product);
     }
   };
 
   const handleBuyNow = () => {
     const product = productData || previewProduct;
-    if (product) {
+    if (product && !isProductOutOfStock(product)) {
       CommonService.addToCart(product);
       navigation.navigate('Cart');
     }

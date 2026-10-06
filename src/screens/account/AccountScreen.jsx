@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback } from 'react';
+import React, { useContext, useState, useCallback } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, Alert, Share, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -27,13 +27,17 @@ const AccountScreen = ({ navigation }) => {
   const [deletionRequestLoading, setDeletionRequestLoading] = useState(false);
   const [profilePhotoUploading, setProfilePhotoUploading] = useState(false);
 
-  useEffect(() => {
-    loadWalletBalance();
-  }, []);
-
   useFocusEffect(useCallback(() => {
-    setProfile(store.getState().GlobalReducer.authuser || loginState?.userToken || {});
-  }, [loginState?.userToken]));
+    const authuser = store.getState().GlobalReducer.authuser || loginState?.userToken;
+    if (!authuser) {
+      navigation.navigate('Login', {
+        returnTo: { name: 'Main', params: { screen: 'Account' } },
+      });
+      return;
+    }
+    setProfile(authuser);
+    loadWalletBalance();
+  }, [loginState?.userToken, navigation]));
 
   const loadWalletBalance = () => {
     CommonService._callApi({
@@ -54,7 +58,7 @@ const AccountScreen = ({ navigation }) => {
     await signOut();
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Login' }],
+      routes: [{ name: 'Main' }],
     });
   };
 
