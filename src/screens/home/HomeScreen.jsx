@@ -69,6 +69,7 @@ const normalizeHomeImage = image => {
 const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [uploadingPrescription, setUploadingPrescription] = useState(false);
+  const [activeHealthCategoryId, setActiveHealthCategoryId] = useState(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchHeight, setSearchHeight] = useState(0);
   const [dividerOffset, setDividerOffset] = useState(0);
@@ -122,16 +123,33 @@ const HomeScreen = ({ navigation }) => {
     : Array.isArray(homeState.data?.health_concerns)
       ? homeState.data.health_concerns
       : [];
-  const apiHealthConcerns = sourceHealthConcerns.map(item => ({
-    ...item,
-    label: item.category_name || item.name || item.label,
-    image: normalizeHomeImage(
-      item.image || item.subcategories?.find(subcategory => subcategory.image)?.image,
-    ),
-  }));
-  const healthConcerns = apiHealthConcerns.length > 0
-    ? apiHealthConcerns
-    : fallbackHealthConcerns;
+  const healthConcernCategories = sourceHealthConcerns
+    .map(item => ({
+      ...item,
+      id: item.id || item.category_id,
+      name: item.category_name || item.name || item.label,
+      subcategories: Array.isArray(item.subcategories)
+        ? item.subcategories.map(subcategory => ({
+          ...subcategory,
+          label: subcategory.sub_category_name || subcategory.category_name || subcategory.name,
+          image: normalizeHomeImage(subcategory.image),
+        }))
+        : [],
+    }))
+    .sort((a, b) => {
+      const rank = name => /over-the-counter|\botc\b/i.test(name) ? 0
+        : /vitamins?\s*&?\s*supplements/i.test(name) ? 1 : 2;
+      return rank(a.name || '') - rank(b.name || '');
+    });
+  const defaultHealthCategory = healthConcernCategories.find(category =>
+    /over-the-counter|\botc\b/i.test(category.name || ''),
+  ) || healthConcernCategories[0];
+  const selectedHealthCategory = healthConcernCategories.find(category =>
+    String(category.id) === String(activeHealthCategoryId),
+  ) || defaultHealthCategory;
+  const healthConcerns = selectedHealthCategory?.subcategories?.length
+    ? selectedHealthCategory.subcategories
+    : (sourceHealthConcerns.length === 0 ? fallbackHealthConcerns : []);
   const vitaminBrowseCategory = sourceHealthConcerns.find(category =>
     /vitamins?\s*&?\s*supplements/i.test(category.category_name || category.name || category.label || ''),
   );
@@ -294,17 +312,15 @@ const HomeScreen = ({ navigation }) => {
               onArrowPress={() => navigation.navigate('Categories')}
             />
             <ConcernPills
-              concerns={browseCategories.length > 0 ? browseCategories : popularCategories}
-              onPillPress={item => navigation.navigate('Products', {
-                title: item.category_name || item.label || item.name || 'Products',
-                category_id: item.category_id || item.id,
-              })}
+              concerns={healthConcernCategories}
+              onPillPress={item => setActiveHealthCategoryId(item.id || item.category_id)}
             />
             <HealthConcernList
               concerns={healthConcerns}
-              onCardPress={(item) => navigation.navigate('Products', {
-                title: item.category_name || item.label || item.name || 'Health Concern',
-                category_id: item.category_id || item.id,
+              onCardPress={item => navigation.navigate('Products', {
+                title: item.label || item.name || 'Health Concern',
+                category_id: selectedHealthCategory?.id,
+                sub_category_id: item.sub_category_id || item.id,
               })}
             />
           </>}
