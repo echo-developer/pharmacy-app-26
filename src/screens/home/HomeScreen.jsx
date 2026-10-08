@@ -268,13 +268,21 @@ const HomeScreen = ({ navigation }) => {
               category_id: item.category_id || item.id,
             })}
           />}
-          <HomeHighlights
-            categories={popularCategories}
-            onProductPress={item => navigation.navigate('ProductDetails', {
-              id: item.product_id,
-              product: item,
-            })}
-          />
+          <LinearGradient
+            colors={['#FEFCFD', '#E9F6FA']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.highlightsAndTrustBackground}
+          >
+            <HomeHighlights
+              categories={popularCategories}
+              onProductPress={item => navigation.navigate('ProductDetails', {
+                id: item.product_id,
+                product: item,
+              })}
+            />
+            <TrustBadges />
+          </LinearGradient>
           {browseCategories.length > 0 && <>
             <HealthConcernHeader
               title="Browse Categories"
@@ -300,7 +308,6 @@ const HomeScreen = ({ navigation }) => {
               })}
               onArrowPress={() => navigation.navigate('Products', { title: 'Popular Medicines' })}
             />}
-          <TrustBadges />
           {healthConcerns.length > 0 && <>
             <HealthConcernHeader
               onArrowPress={() => navigation.navigate('Categories')}
@@ -429,6 +436,10 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 20,
     elevation: 20,
+  },
+  highlightsAndTrustBackground: {
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
   },
   loaderContainer: {
     flex: 1,
