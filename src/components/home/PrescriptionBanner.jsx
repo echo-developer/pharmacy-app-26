@@ -8,6 +8,7 @@ const PrescriptionBanner = ({
   onUploadPress,
   onWhatsAppPress,
   onCallPress,
+  onDottedLineLayout,
   uploading = false,
 }) => {
   return (
@@ -42,7 +43,7 @@ const PrescriptionBanner = ({
       </View>
 
       {/* ===== DOTTED LINE ===== */}
-      <View style={styles.dottedLine} />
+      <View onLayout={onDottedLineLayout} style={styles.dottedLine} />
 
       {/* ===== BOTTOM SECTION ===== */}
       <View style={styles.bottomRow}>

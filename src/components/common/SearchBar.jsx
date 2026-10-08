@@ -6,12 +6,17 @@ const SearchBar = ({
   placeholder = 'Search medicines and health products',
   onSearch,
   onPress,
+  transparentBackground = false,
+  onLayout,
 }) => {
   return (
-    <View style={styles.container}>
+    <View
+      onLayout={onLayout}
+      style={[styles.container, transparentBackground && styles.transparentContainer]}
+    >
       <TouchableOpacity
         style={styles.searchWrapper}
-        activeOpacity={onPress ? 0.8 : 1}
+        activeOpacity={1}
         onPress={onPress}
       >
         {/* Search Icon */}
@@ -38,6 +43,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     paddingTop: 4,
+    zIndex: 10,
+    elevation: 10,
+  },
+  transparentContainer: {
+    backgroundColor: 'transparent',
   },
   searchWrapper: {
     flexDirection: 'row',

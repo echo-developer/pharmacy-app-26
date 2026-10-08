@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, View, StyleSheet, ScrollView, StatusBar, Platform } from 'react-native';
+import { ActivityIndicator, Alert, Linking, View, StyleSheet, Animated, StatusBar, Platform } from 'react-native';
 import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -69,10 +69,13 @@ const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [uploadingPrescription, setUploadingPrescription] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [searchHeight, setSearchHeight] = useState(0);
+  const [dividerOffset, setDividerOffset] = useState(0);
   const [homeState, dispatch] = useReducer(homeReducer, {
     data: null,
     loader: true,
   });
+  const scrollY = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     loadHomeData();
@@ -210,7 +213,8 @@ const HomeScreen = ({ navigation }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
-          height: insets.top + headerHeight,
+          // Keep one uninterrupted gradient through the prescription card's divider.
+          height: insets.top + headerHeight + searchHeight + 12 + dividerOffset,
           position: 'absolute',
           top: 0,
           left: 0,
@@ -218,11 +222,14 @@ const HomeScreen = ({ navigation }) => {
         }}
         pointerEvents="none"
       />
-      <ScrollView
+      <Animated.ScrollView
         style={{ flex: 1, marginTop: insets.top }}
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[1]}
-        stickyHeaderHiddenOnScroll={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
+        )}
       >
         <Header
           includeSafeAreaTop={false}
@@ -234,7 +241,7 @@ const HomeScreen = ({ navigation }) => {
           onLocationPress={() => navigation.navigate('MyAddress')}
           onCartPress={() => navigation.navigate('Cart')}
         />
-        <SearchBar onPress={() => navigation.navigate('Search')} />
+        <View style={{ height: searchHeight }} />
 
       {homeState.loader ? (
         <View style={styles.loaderContainer}>
@@ -242,6 +249,17 @@ const HomeScreen = ({ navigation }) => {
         </View>
       ) : (
         <View>
+          <PrescriptionBanner
+            phoneNumber="1800-123-456"
+            onUploadPress={handlePrescriptionUpload}
+            uploading={uploadingPrescription}
+            onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
+            onCallPress={() => openExternalUrl('tel:1800123456')}
+            onDottedLineLayout={event => {
+              const measuredOffset = event.nativeEvent.layout.y;
+              setDividerOffset(current => current || measuredOffset);
+            }}
+          />
           {banners.length > 0 && <OfferCarousel
             offers={banners}
             onCardPress={(item) => navigation.navigate('Products', {
@@ -263,13 +281,6 @@ const HomeScreen = ({ navigation }) => {
               })}
             />
           </>}
-          <PrescriptionBanner
-            phoneNumber="1800-123-456"
-            onUploadPress={handlePrescriptionUpload}
-            uploading={uploadingPrescription}
-            onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
-            onCallPress={() => openExternalUrl('tel:1800123456')}
-          />
           {(popularMedicines.length > 0 || popularCategories.length > 0) &&
             <PopularMedicineSection
               popularMedicines={popularMedicines}
@@ -367,7 +378,33 @@ const HomeScreen = ({ navigation }) => {
           </View>}
         </View>
       )}
-      </ScrollView>
+      </Animated.ScrollView>
+      {headerHeight > 0 && (
+        <Animated.View
+          style={[
+            styles.floatingSearch,
+            {
+              top: insets.top + headerHeight,
+              transform: [{
+                translateY: scrollY.interpolate({
+                  inputRange: [0, headerHeight],
+                  outputRange: [0, -headerHeight],
+                  extrapolate: 'clamp',
+                }),
+              }],
+            },
+          ]}
+        >
+          <SearchBar
+            transparentBackground
+            onLayout={event => {
+              const measuredHeight = event.nativeEvent.layout.height;
+              setSearchHeight(current => current || measuredHeight);
+            }}
+            onPress={() => navigation.navigate('Search')}
+          />
+        </Animated.View>
+      )}
       <CartFloatingBar />
     </View>
   );
@@ -377,6 +414,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  floatingSearch: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    elevation: 20,
   },
   loaderContainer: {
     flex: 1,
