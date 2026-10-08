@@ -205,6 +205,7 @@ const HomeScreen = ({ navigation }) => {
         onLocationPress={() => navigation.navigate('MyAddress')}
         onCartPress={() => navigation.navigate('Cart')}
       />
+      <SearchBar onPress={() => navigation.navigate('Search')} />
 
       {homeState.loader ? (
         <View style={styles.loaderContainer}>
@@ -212,8 +213,6 @@ const HomeScreen = ({ navigation }) => {
         </View>
       ) : (
         <ScrollView showsVerticalScrollIndicator={false}>
-          <SearchBar onPress={() => navigation.navigate('Search')} />
-
           {banners.length > 0 && <OfferCarousel
             offers={banners}
             onCardPress={(item) => navigation.navigate('Products', {
