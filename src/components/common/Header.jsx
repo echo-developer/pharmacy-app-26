@@ -10,6 +10,9 @@ const Header = ({
   userName,
   location, 
   cartCount,
+  includeSafeAreaTop = true,
+  transparentBackground = false,
+  onLayout,
   onLocationPress,
   onCartPress 
 }) => {
@@ -29,13 +32,20 @@ const Header = ({
   const displayLocation = location || activeCity?.tempaddress?.address ||
     (activeCity?.tempaddress?.postalcode ? `Pincode ${activeCity.tempaddress.postalcode}` : 'Select delivery location');
   const displayCartCount = cartCount !== undefined ? cartCount : (storeState.cart?.items?.length || 0);
+  const HeaderContainer = transparentBackground ? View : LinearGradient;
+  const gradientProps = transparentBackground
+    ? {}
+    : {
+        colors: ['#E3FCE4', '#FEFCFD'],
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 1 },
+      };
 
   return (
-    <LinearGradient
-      colors={['#E3FCE4', '#FEFCFD']} 
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={[styles.container, { paddingTop: insets.top + 8 }]}
+    <HeaderContainer
+      {...gradientProps}
+      onLayout={onLayout}
+      style={[styles.container, { paddingTop: (includeSafeAreaTop ? insets.top : 0) + 8 }]}
     >
       {/* LEFT SIDE */}
       <TouchableOpacity style={styles.leftContainer} onPress={onLocationPress} activeOpacity={0.8}>
@@ -69,7 +79,7 @@ const Header = ({
           )}
         </View>
       </TouchableOpacity>
-    </LinearGradient>
+    </HeaderContainer>
   );
 };
 

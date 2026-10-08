@@ -1,6 +1,8 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { ActivityIndicator, Alert, Linking, View, StyleSheet, ScrollView, StatusBar, Platform } from 'react-native';
 import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LinearGradient from 'react-native-linear-gradient';
 import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
@@ -64,7 +66,9 @@ const normalizeHomeImage = image => {
 };
 
 const HomeScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [uploadingPrescription, setUploadingPrescription] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
   const [homeState, dispatch] = useReducer(homeReducer, {
     data: null,
     loader: true,
@@ -201,18 +205,43 @@ const HomeScreen = ({ navigation }) => {
         backgroundColor="transparent"
         translucent={Platform.OS === 'android'}
       />
-      <Header
-        onLocationPress={() => navigation.navigate('MyAddress')}
-        onCartPress={() => navigation.navigate('Cart')}
+      <LinearGradient
+        colors={['#E3FCE4', '#FEFCFD']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{
+          height: insets.top + headerHeight,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+        }}
+        pointerEvents="none"
       />
-      <SearchBar onPress={() => navigation.navigate('Search')} />
+      <ScrollView
+        style={{ flex: 1, marginTop: insets.top }}
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[1]}
+        stickyHeaderHiddenOnScroll={false}
+      >
+        <Header
+          includeSafeAreaTop={false}
+          transparentBackground
+          onLayout={event => {
+            const measuredHeight = event.nativeEvent.layout.height;
+            setHeaderHeight(current => current || measuredHeight);
+          }}
+          onLocationPress={() => navigation.navigate('MyAddress')}
+          onCartPress={() => navigation.navigate('Cart')}
+        />
+        <SearchBar onPress={() => navigation.navigate('Search')} />
 
       {homeState.loader ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#2CB7DF" />
         </View>
       ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <View>
           {banners.length > 0 && <OfferCarousel
             offers={banners}
             onCardPress={(item) => navigation.navigate('Products', {
@@ -336,8 +365,9 @@ const HomeScreen = ({ navigation }) => {
               })}
             />
           </View>}
-        </ScrollView>
+        </View>
       )}
+      </ScrollView>
       <CartFloatingBar />
     </View>
   );
