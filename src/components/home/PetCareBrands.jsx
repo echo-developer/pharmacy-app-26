@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,235 +7,152 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { CachedImageBackground as ImageBackground } from '../common/CachedImage';
 import { ArrowUpRight } from 'lucide-react-native';
-import LinearGradient from 'react-native-linear-gradient';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_WIDTH = SCREEN_WIDTH * 0.52;
+const CARD_GAP = 24;
+const CARD_WIDTH = SCREEN_WIDTH * 0.5;
 const CARD_HEIGHT = 180;
-const IMAGE_CARD_HEIGHT = 220;
-const noImagePlaceholder = {
-  uri: 'https://pharmacy-shop.echodeveloper.com/useruploads/default/no-image-150x150.jpg',
-};
-const localBrandImages = {
-  cipla: require('../../assets/images/cipla.png'),
-  'sun pharma': require('../../assets/images/sunpharma.png'),
-};
+const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 
-const AbbottLogo = () => (
-  <View style={styles.abbottWrapper}>
-    <View style={styles.abbottSymbol}>
-      <View style={styles.abbottSymbolInner} />
-    </View>
-    <Text style={styles.abbottText}>Abbott</Text>
-  </View>
+const getAvailableCount = item => (
+  item.available_count
+  ?? item.available_medicines_count
+  ?? item.medicine_count
+  ?? item.product_count
+  ?? item.available
 );
 
 const PetCareBrands = ({ brands = [], onBrandPress }) => {
+  const initialActiveIndex = brands.length > 1 ? 1 : 0;
+  const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const index = brands.length > 1 ? 1 : 0;
+    setActiveIndex(index);
+    const frame = requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ x: index * SNAP_INTERVAL, animated: false });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [brands.length]);
+
+  const handleScrollEnd = event => {
+    const offset = event.nativeEvent.contentOffset.x;
+    setActiveIndex(Math.max(0, Math.min(brands.length - 1, Math.round(offset / SNAP_INTERVAL))));
+  };
+
   return (
-    <LinearGradient
-      colors={['#E9F6D6', '#E9F6D6']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradientContainer}
-    >
+    <View style={styles.container}>
       <ScrollView
+        ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"
-        snapToInterval={CARD_WIDTH + 16}
-        snapToAlignment="center"
+        snapToInterval={SNAP_INTERVAL}
+        snapToAlignment="start"
+        onMomentumScrollEnd={handleScrollEnd}
         contentContainerStyle={styles.scrollContent}
       >
-        {brands.map((item) => {
-          const itemId = item.id || item.brand_id;
-          const bgImage = item.logo || item.image || item.brand_image || item.banner;
-          const hasBrandImage = typeof bgImage === 'string'
-            ? bgImage.trim() !== '' && !/no-image|placeholder/i.test(bgImage)
-            : Boolean(bgImage);
+        {brands.map((item, index) => {
+          const itemId = item.id || item.brand_id || index;
           const brandName = item.name || item.brand_name || '';
-          const localBrandImage = localBrandImages[brandName.trim().toLowerCase()];
-          const isPlaceholderImage = !hasBrandImage && !localBrandImage;
-          const imageSource = hasBrandImage
-            ? (typeof bgImage === 'string' ? { uri: bgImage } : bgImage)
-            : (localBrandImage || noImagePlaceholder);
+          const count = getAvailableCount(item);
+          const isActive = index === activeIndex;
+          const rotation = index < activeIndex ? '-5deg' : '5deg';
 
           return (
             <TouchableOpacity
-              key={itemId}
+              key={itemId.toString()}
               activeOpacity={0.9}
-              style={styles.imageCard}
+              style={[
+                styles.brandCard,
+                isActive ? styles.activeCard : styles.sideCard,
+                !isActive && { transform: [{ rotate: rotation }] },
+              ]}
               onPress={() => onBrandPress?.(item)}
             >
-              <View style={styles.fullCardWrapper}>
-                <ImageBackground
-                  source={imageSource}
-                  style={styles.imageBackground}
-                  imageStyle={[styles.imageStyle, isPlaceholderImage && styles.placeholderImageStyle]}
-                  resizeMode="cover"
-                >
-                  {isPlaceholderImage && brandName ? (
-                    <Text style={styles.placeholderBrandName} numberOfLines={1}>
-                      {brandName}
-                    </Text>
-                  ) : null}
-                </ImageBackground>
-                {item.available && (
-                  <View style={styles.availablePill}>
-                    <Text style={styles.availableText}>{item.available}</Text>
-                  </View>
-                )}
-                <View style={styles.arrowButton}>
-                  <ArrowUpRight size={18} color="#FFFFFF" />
+              {count !== undefined && count !== null && count !== '' && (
+                <View style={styles.availablePill}>
+                  <Text style={styles.availableText}>
+                    {typeof count === 'string' && /available/i.test(count) ? count : `${count} available`}
+                  </Text>
                 </View>
+              )}
+              <Text style={styles.brandName} numberOfLines={2} adjustsFontSizeToFit>
+                {brandName}
+              </Text>
+              <View style={styles.arrowButton}>
+                <ArrowUpRight size={20} color="#FFFFFF" strokeWidth={2.5} />
               </View>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  gradientContainer: {
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-    paddingBottom: 20,
-    paddingTop: 4,
-    overflow: 'hidden',
+  container: {
+    height: CARD_HEIGHT + 22,
+    paddingBottom: 18,
   },
   scrollContent: {
-    paddingHorizontal: (SCREEN_WIDTH - 32 - CARD_WIDTH) / 2,
-    gap: 16,
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingHorizontal: (SCREEN_WIDTH - CARD_WIDTH) / 2,
+    gap: CARD_GAP,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
-  imageCard: {
+  brandCard: {
     width: CARD_WIDTH,
-    height: 180,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 4 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 8,
-    // elevation: 4,
-  },
-  fullCardWrapper: {
-    width: '100%',
-    height: '100%',
+    height: CARD_HEIGHT,
+    borderRadius: 14,
     position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    overflow: 'visible',
   },
-  imageBackground: {
-    width: '100%',
-    height: '100%',
+  activeCard: {
+    backgroundColor: '#FFFFFF',
   },
-  imageStyle: {
-    borderRadius: 16,
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
+  sideCard: {
+    backgroundColor: '#E2F0E5',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
-  placeholderImageStyle: {
-    width: '100%',
-    height: '100%',
-    alignSelf: 'center',
-  },
-  placeholderBrandName: {
-    position: 'absolute',
-    bottom: 14,
-    left: 12,
-    right: 48,
-    color: '#263077',
-    fontSize: 15,
+  brandName: {
+    color: '#202020',
+    fontSize: 25,
+    lineHeight: 30,
     fontWeight: '800',
     textAlign: 'center',
   },
-  fallbackCard: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 16,
-  },
-  brandNameWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   availablePill: {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(244, 245, 248, 0.92)',
-    paddingHorizontal: 10,
+    position: 'absolute',
+    top: 9,
+    right: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 12,
+    backgroundColor: '#F4F5F8',
   },
   availableText: {
+    color: '#263077',
     fontSize: 10,
     fontWeight: '600',
-    color: '#263077',
   },
-
-  /* Abbott custom logo */
-  abbottWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  abbottSymbol: {
-    width: 30,
-    height: 24,
-    borderWidth: 2.5,
-    borderColor: '#00A0DF',
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 6,
-  },
-  abbottSymbolInner: {
-    width: 14,
-    height: 7,
-    borderWidth: 2,
-    borderColor: '#00A0DF',
-    borderTopWidth: 0,
-    borderBottomLeftRadius: 4,
-    borderBottomRightRadius: 4,
-  },
-  abbottText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#000000',
-    letterSpacing: -0.3,
-  },
-
   arrowButton: {
     position: 'absolute',
-    bottom: 12,
-    right: 12,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    right: -8,
+    bottom: -6,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#263077',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  brandImageBg: {
-    width: '80%',
-    height: 60,
-  },
-  brandImageStyle: {
-    borderRadius: 8,
-  },
-  brandNameText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#263077',
-    textAlign: 'center',
-    paddingHorizontal: 8,
   },
 });
 

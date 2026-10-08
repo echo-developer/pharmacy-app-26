@@ -408,10 +408,15 @@ const HomeScreen = ({ navigation }) => {
               }
             }}
           />}
-          {popularBrands.length > 0 && <View style={styles.petCareSection}>
+          {popularBrands.length > 0 && <LinearGradient
+            colors={['#E9F6D6', '#FFFFFF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.petCareSection}
+          >
             <PetCareHeader
-              title="Most Popular Brands"
-              subtitle="Trusted healthcare brands"
+              title="Pet Care Top Brands"
+              subtitle="Everyday care for a healthier you"
             />
             <PetCareBrands
               brands={popularBrands}
@@ -420,7 +425,7 @@ const HomeScreen = ({ navigation }) => {
                 brand_id: item.brand_id || item.id,
               })}
             />
-          </View>}
+          </LinearGradient>}
         </View>
       )}
       </Animated.ScrollView>
@@ -479,7 +484,8 @@ const styles = StyleSheet.create({
   petCareSection: {
     marginTop: 16,
     marginHorizontal: 16,
-    borderRadius: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
 });
 
