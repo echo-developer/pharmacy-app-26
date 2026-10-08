@@ -149,11 +149,6 @@ const SearchScreen = ({ navigation, route }) => {
             style={styles.productImage}
             resizeMode="contain"
           />
-          {outOfStock && (
-            <View style={styles.stockBadge}>
-              <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
-            </View>
-          )}
         </View>
         <View style={styles.productInfo}>
           <Text style={styles.productName} numberOfLines={2}>

@@ -69,7 +69,6 @@ const OffersScreen = ({ navigation }) => {
         const cartQty = cartItems.find(cartItem => Math.abs(cartItem.product_id) === Math.abs(item.product_id))?.cartqty || 0;
         return <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}>
           <Image source={item.image ? { uri: item.image } : require('../../assets/images/products.png')} style={styles.image} resizeMode="contain" />
-          {outOfStock ? <Text style={styles.stockBadge}>OUT OF STOCK</Text> : null}
           <Text style={styles.badge}>{Math.round((1 - Number(item.product_sell_price) / Number(item.product_mrp)) * 100)}% OFF</Text>
           <Text style={styles.name} numberOfLines={2}>{item.product_name}</Text><Text style={styles.unit}>{item.unit || 'Healthcare product'}</Text>
           <View style={styles.priceRow}><Text style={styles.price}>₹{item.product_sell_price}</Text>{item.product_mrp ? <Text style={styles.mrp}>₹{item.product_mrp}</Text> : null}</View>

@@ -60,12 +60,6 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
                 style={styles.productImage}
                 resizeMode="contain"
               />
-              {outOfStock && (
-                <View style={styles.stockBadge}>
-                  <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
-                </View>
-              )}
-
               {/* Rating Pill */}
               {(rating > 0 || ratingCount > 0) && (
                 <View style={styles.ratingPill}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, StatusBar, ActivityIndicator, Modal, TouchableOpacity, ScrollView, Text, TextInput } from 'react-native';
 import { useSelector } from 'react-redux';
 import CategoryHeader from '../../components/categories/CategoryHeader';
@@ -17,6 +17,8 @@ const CategoriesScreen = ({ navigation }) => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const productCache = useRef(new Map());
+  const productRequestId = useRef(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [activeSubcategory, setActiveSubcategory] = useState(null);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -75,7 +77,20 @@ const CategoriesScreen = ({ navigation }) => {
     if (subcategoryId != null && subcategoryId !== '') {
       urlParams.sub_category_id = subcategoryId;
     }
-    setProductsLoading(true);
+    const cacheKey = JSON.stringify({
+      categoryId: categoryId || '',
+      subcategoryId: subcategoryId || '',
+      sort,
+      discount,
+      min: range.min,
+      max: range.max,
+    });
+    const cachedProducts = productCache.current.get(cacheKey);
+    const requestId = ++productRequestId.current;
+    if (cachedProducts) {
+      setProducts(cachedProducts);
+    }
+    setProductsLoading(!cachedProducts);
     CommonService._callApi({
       api: 'product/list',
       method: 'GET',
@@ -83,17 +98,19 @@ const CategoriesScreen = ({ navigation }) => {
     })
       .then(resp => {
         if (resp.data?.status == 1) {
-          setProducts(resp.data.response.data || []);
+          const nextProducts = resp.data.response.data || [];
+          productCache.current.set(cacheKey, nextProducts);
+          if (requestId === productRequestId.current) setProducts(nextProducts);
         } else {
-          setProducts([]);
+          if (requestId === productRequestId.current && !cachedProducts) setProducts([]);
         }
       })
       .catch(error => {
-        setProducts([]);
+        if (requestId === productRequestId.current && !cachedProducts) setProducts([]);
         console.log('Products API Error:', error);
       })
       .finally(() => {
-        setProductsLoading(false);
+        if (requestId === productRequestId.current) setProductsLoading(false);
       });
   };
 

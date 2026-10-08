@@ -69,6 +69,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#263077',      // Same color for active & inactive
     marginTop: 6,
+    width: '100%',
+    paddingHorizontal: 4,
+    textAlign: 'center',
+    flexShrink: 1,
   },
 });
 

@@ -47,11 +47,6 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
             style={styles.image}
             resizeMode="contain"
           />
-          {outOfStock && (
-            <View style={styles.stockBadge}>
-              <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
-            </View>
-          )}
         </View>
 
         {/* Details */}

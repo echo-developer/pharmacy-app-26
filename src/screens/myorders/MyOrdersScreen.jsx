@@ -65,12 +65,21 @@ const MyOrdersScreen = ({ navigation }) => {
     if (!searchQuery || searchQuery.trim() === '') return allOrders;
     const q = searchQuery.toLowerCase().trim();
     return allOrders.filter(order => {
+      if (!order || typeof order !== 'object') return false;
       const orderIdMatch = String(order.order_id || order.id || order.order_number || '').toLowerCase().includes(q);
-      const statusMatch = String(order.order_status || order.status || '').toLowerCase().includes(q);
+      const statusMatch = [order.order_status_name, order.status_label, order.order_status, order.status]
+        .some(value => String(value || '').toLowerCase().includes(q));
       const amountMatch = String(order.order_total ?? order.final_amount ?? order.total_amount ?? order.amount ?? order.grand_total ?? '').includes(q);
-      const dateMatch = String(order.order_date_formatted || order.order_date || '').toLowerCase().includes(q);
+      const dateMatch = [order.order_date_formatted, order.order_date, order.created_at]
+        .some(value => String(value || '').toLowerCase().includes(q));
 
-      const items = order.products || order.items || [];
+      const items = Array.isArray(order.products)
+        ? order.products
+        : Array.isArray(order.items)
+          ? order.items
+          : Array.isArray(order.order_details)
+            ? order.order_details
+            : [];
       const itemMatch = Array.isArray(items) && items.some(item => {
         if (typeof item === 'string') return item.toLowerCase().includes(q);
         if (typeof item === 'object' && item !== null) {
@@ -111,6 +120,7 @@ const MyOrdersScreen = ({ navigation }) => {
           : Array.isArray(dataRes.response)
             ? dataRes.response
             : [];
+        serverOrders = serverOrders.filter(order => order && typeof order === 'object' && !Array.isArray(order));
         const totalPages = parseInt(dataRes.response.total_page || dataRes.response.total_pages, 10) || 1;
         const fetchedPage = parseInt(dataRes.response.current_page, 10) || page;
         currentPageRef.current = fetchedPage;
@@ -120,7 +130,10 @@ const MyOrdersScreen = ({ navigation }) => {
       }
 
       // Prefer the server copy when a locally saved order has synced.
-      const combined = page === 1 ? mergeUniqueOrders([...serverOrders, ...localOrders]) : serverOrders;
+      const validLocalOrders = Array.isArray(localOrders)
+        ? localOrders.filter(order => order && typeof order === 'object' && !Array.isArray(order))
+        : [];
+      const combined = page === 1 ? mergeUniqueOrders([...serverOrders, ...validLocalOrders]) : serverOrders;
       const mapped = combined.map((order, index) => ({
         ...order,
         _uniqueKey: orderKey(order) || `order_${page}_${index}`,
@@ -131,7 +144,10 @@ const MyOrdersScreen = ({ navigation }) => {
       console.log('ORDER API ERROR:', err?.message || err);
       hasMoreRef.current = false;
       if (page === 1) {
-        const mapped = mergeUniqueOrders(localOrders).map((order, index) => ({
+        const validLocalOrders = Array.isArray(localOrders)
+          ? localOrders.filter(order => order && typeof order === 'object' && !Array.isArray(order))
+          : [];
+        const mapped = mergeUniqueOrders(validLocalOrders).map((order, index) => ({
           ...order,
           _uniqueKey: orderKey(order) || `local_${index}`,
           order_date_formatted: formatDate(order.order_date),
@@ -156,7 +172,6 @@ const MyOrdersScreen = ({ navigation }) => {
       }
       currentPageRef.current = 1;
       hasMoreRef.current = true;
-      isFetchingRef.current = false;
       loadOrder(1, false);
     });
     return focusSub;
@@ -266,9 +281,16 @@ const MyOrdersScreen = ({ navigation }) => {
               const status = getCardStatus(itemStatus);
               const headerText = getHeaderText(item);
               // New API returns gallery as URL strings; older responses return item objects.
+              const orderItems = Array.isArray(item.products)
+                ? item.products
+                : Array.isArray(item.items)
+                  ? item.items
+                  : Array.isArray(item.order_details)
+                    ? item.order_details
+                    : [];
               const imagesList = Array.isArray(item.gallery) && item.gallery.length
                 ? item.gallery.map(image => typeof image === 'string' ? { image } : image)
-                : (item.products || item.items || []).filter(p => p && typeof p === 'object');
+                : orderItems.filter(p => p && typeof p === 'object');
 
               return (
                 <TouchableOpacity

@@ -8,6 +8,7 @@ import {
   Modal,
   StatusBar,
   ActivityIndicator,
+  Image as NativeImage,
 } from 'react-native';
 import { CachedImage as Image } from '../common/CachedImage';
 import { Heart, ChevronUp, X } from 'lucide-react-native';
@@ -37,6 +38,7 @@ const ProductImageGallery = ({
   const [fullscreenIndex, setFullscreenIndex] = useState(0);
   const [loadedImages, setLoadedImages] = useState({});
   const [failedImages, setFailedImages] = useState({});
+  const prefetchedGalleryRef = React.useRef(null);
 
   // Support both `images` array (from API) and legacy single `image`
   const gallery =
@@ -53,10 +55,21 @@ const ProductImageGallery = ({
     setActiveIndex(0);
     setLoadedImages({});
     setFailedImages({});
+    prefetchedGalleryRef.current = null;
   }, [galleryKey]);
 
   const markImageLoaded = index => {
     setLoadedImages(current => ({ ...current, [index]: true }));
+    // Give the first image priority, then fetch the remaining gallery images
+    // into the native image cache so swiping does not start a cold request.
+    if (index === 0 && prefetchedGalleryRef.current !== galleryKey) {
+      prefetchedGalleryRef.current = galleryKey;
+      gallery.slice(1).forEach(uri => {
+        if (typeof uri === 'string' && uri.length > 0) {
+          NativeImage.prefetch(uri).catch(() => {});
+        }
+      });
+    }
   };
   const markImageFailed = index => {
     setFailedImages(current => ({ ...current, [index]: true }));

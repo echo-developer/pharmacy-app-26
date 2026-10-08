@@ -78,7 +78,6 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
                   style={styles.image}
                   resizeMode="contain"
                 />
-                {outOfStock && <View style={styles.stockBadge}><Text style={styles.stockBadgeText}>OUT OF STOCK</Text></View>}
                 {avgRating && (
                   <View style={styles.ratingPill}>
                     <Star size={10} color="#FF8D28" fill="#FF8D28" />

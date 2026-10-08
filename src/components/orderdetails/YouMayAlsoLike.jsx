@@ -104,7 +104,6 @@ const YouMayAlsoLike = ({
                   style={styles.image}
                   resizeMode="contain"
                 />
-                {outOfStock && <View style={styles.stockBadge}><Text style={styles.stockBadgeText}>OUT OF STOCK</Text></View>}
                 {item.rating && (
                   <View style={styles.ratingPill}>
                     <Star size={10} color="#FF8D28" fill="#FF8D28" />

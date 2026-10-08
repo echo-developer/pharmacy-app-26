@@ -157,11 +157,6 @@ const ProductsScreen = ({ navigation }) => {
           style={styles.cardImage}
           resizeMode="contain"
         />
-        {outOfStock && (
-          <View style={styles.stockBadge}>
-            <Text style={styles.stockBadgeText}>OUT OF STOCK</Text>
-          </View>
-        )}
         <Text style={styles.productName} numberOfLines={2}>
           {item.product_name}
         </Text>

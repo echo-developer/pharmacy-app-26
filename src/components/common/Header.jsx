@@ -51,7 +51,9 @@ const Header = ({
           
           <View style={styles.locationRow}>
             <MapPin size={12} color="#787887" style={styles.locationIcon} />
-            <Text style={styles.locationText} numberOfLines={1}>{displayLocation}</Text>
+            <Text style={styles.locationText} numberOfLines={1} ellipsizeMode="tail">
+              {displayLocation}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -87,13 +89,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     marginRight: 12,
   },
-  textColumn: { justifyContent: 'center' },
+  textColumn: { flex: 1, minWidth: 0, justifyContent: 'center' },
   nameRow: { flexDirection: 'row', alignItems: 'center' },
   userName: { fontSize: 16, fontWeight: '700', color: '#043250' },
   dropdownArrow: { marginLeft: 4, marginTop: 2 },
   locationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   locationIcon: { marginRight: 4 },
-  locationText: { fontSize: 12, color: '#787887' },
+  locationText: { flex: 1, minWidth: 0, maxWidth: 170, fontSize: 12, color: '#787887' },
   cartButton: { padding: 4 },
   cartIconWrapper: {
     width: 44, height: 44, borderRadius: 22,

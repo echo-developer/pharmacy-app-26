@@ -14,16 +14,16 @@ const CategoryProductList = ({ products = [], loading = false, onProductPress, o
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {loading ? (
+      {loading && products.length === 0 ? (
         <View style={styles.messageContainer}>
           <ActivityIndicator size="small" color="#0D7998" />
         </View>
-      ) : products.length === 0 ? (
+      ) : !loading && products.length === 0 ? (
         <View style={styles.messageContainer}>
           <Text style={styles.emptyText}>No products found in this category.</Text>
         </View>
       ) : null}
-      {!loading && products.map((item) => {
+      {products.map((item) => {
         const pid = Math.abs(item.product_id || item.id);
         // Check redux override first, fallback to API-supplied is_favorite
         const isFav =
