@@ -7,6 +7,7 @@ import Header from '../../components/common/Header';
 import SearchBar from '../../components/common/SearchBar';
 import PrescriptionBanner from '../../components/home/PrescriptionBanner';
 import OfferCarousel from '../../components/home/OfferCarousel';
+import HomeHighlights from '../../components/home/HomeHighlights';
 import TrustBadges from '../../components/home/TrustBadges';
 import HealthConcernHeader from '../../components/home/HealthConcernHeader';
 import ConcernPills from '../../components/home/ConcernPills';
@@ -267,6 +268,13 @@ const HomeScreen = ({ navigation }) => {
               category_id: item.category_id || item.id,
             })}
           />}
+          <HomeHighlights
+            categories={popularCategories}
+            onProductPress={item => navigation.navigate('ProductDetails', {
+              id: item.product_id,
+              product: item,
+            })}
+          />
           {browseCategories.length > 0 && <>
             <HealthConcernHeader
               title="Browse Categories"
