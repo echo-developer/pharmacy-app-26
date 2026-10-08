@@ -132,6 +132,16 @@ const HomeScreen = ({ navigation }) => {
   const healthConcerns = apiHealthConcerns.length > 0
     ? apiHealthConcerns
     : fallbackHealthConcerns;
+  const vitaminBrowseCategory = sourceHealthConcerns.find(category =>
+    /vitamins?\s*&?\s*supplements/i.test(category.category_name || category.name || category.label || ''),
+  );
+  const vitaminSubcategories = Array.isArray(vitaminBrowseCategory?.subcategories)
+    ? vitaminBrowseCategory.subcategories.map(item => ({
+      ...item,
+      name: item.sub_category_name || item.category_name || item.name,
+      image: normalizeHomeImage(item.image),
+    }))
+    : [];
   const popularMedicines = Array.isArray(homeState.data?.popular_medicines)
     ? homeState.data.popular_medicines
     : [];
@@ -142,10 +152,6 @@ const HomeScreen = ({ navigation }) => {
   const popularCategories = Array.isArray(homeState.data?.popular_category)
     ? homeState.data.popular_category
     : [];
-  const vitaminCategory = popularCategories.find(cat =>
-    /vitamins?\s*(?:&|and)?\s*supplements/i.test(cat.category_name || ''),
-  );
-  const vitamins = Array.isArray(vitaminCategory?.items) ? vitaminCategory.items : [];
   const deals = Array.isArray(homeState.data?.deals_of_the_day) ? homeState.data.deals_of_the_day : [];
   // popular_brand: { brand_id, brand_name, image }
   const popularBrands = Array.isArray(homeState.data?.popular_brand)
@@ -302,6 +308,20 @@ const HomeScreen = ({ navigation }) => {
               })}
             />
           </>}
+          {vitaminSubcategories.length > 0 && <>
+            <VitaminsHeader
+              subtitle="Nourish their growth with"
+              title="Vitamins & Supplements"
+            />
+            <VitaminsProducts
+              products={vitaminSubcategories}
+              onCardPress={item => navigation.navigate('Products', {
+                title: item.name || 'Vitamins & Supplements',
+                category_id: vitaminBrowseCategory.id || vitaminBrowseCategory.category_id,
+                sub_category_id: item.sub_category_id || item.id,
+              })}
+            />
+          </>}
           {browseCategories.length > 0 && <>
             <HealthConcernHeader
               title="Browse Categories"
@@ -338,19 +358,6 @@ const HomeScreen = ({ navigation }) => {
               products={mostOrderedMedicines}
               onAddPress={handleAddToCart}
               onProductPress={(item) => navigation.navigate('ProductDetails', {
-                id: item.product_id,
-                product: item,
-              })}
-            />
-          </>}
-          {vitamins.length > 0 && <>
-            <VitaminsHeader
-              subtitle="Nourish their growth with"
-              title="Vitamins & Supplements"
-            />
-            <VitaminsProducts
-              products={vitamins}
-              onCardPress={(item) => navigation.navigate('ProductDetails', {
                 id: item.product_id,
                 product: item,
               })}
