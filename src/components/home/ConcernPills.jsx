@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 
 const defaultPills = [
-  { id: 1, label: 'Diabetes Care' },
-  { id: 2, label: 'Cardiac Care' },
-  { id: 3, label: 'Stomach Care' },
-  { id: 4, label: 'Skin Care' },
-  { id: 5, label: 'Eye Care' },
+  { id: 'otc', label: 'OTC Medicines' },
+  { id: 'vitamins', label: 'Vitamins & Supplements' },
+  { id: 'baby', label: 'Baby Care' },
 ];
 
 const ConcernPills = ({ concerns = [], pills = [], onPillPress }) => {
@@ -15,6 +13,7 @@ const ConcernPills = ({ concerns = [], pills = [], onPillPress }) => {
   const dataList = (concerns && concerns.length > 0)
     ? concerns
     : (pills && pills.length > 0 ? pills : defaultPills);
+  const selectedId = activeId ?? (dataList[0]?.category_id || dataList[0]?.id || 0);
 
   const handlePress = (item, index) => {
     const id = item.category_id || item.id || index;
@@ -30,7 +29,7 @@ const ConcernPills = ({ concerns = [], pills = [], onPillPress }) => {
     >
       {dataList.map((item, index) => {
         const itemId = item.category_id || item.id || index;
-        const isActive = itemId === activeId;
+        const isActive = itemId === selectedId;
         return (
           <TouchableOpacity
             key={itemId.toString()}

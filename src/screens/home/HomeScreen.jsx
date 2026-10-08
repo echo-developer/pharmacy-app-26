@@ -283,6 +283,25 @@ const HomeScreen = ({ navigation }) => {
             />
             <TrustBadges />
           </LinearGradient>
+          {healthConcerns.length > 0 && <>
+            <HealthConcernHeader
+              onArrowPress={() => navigation.navigate('Categories')}
+            />
+            <ConcernPills
+              concerns={browseCategories.length > 0 ? browseCategories : popularCategories}
+              onPillPress={item => navigation.navigate('Products', {
+                title: item.category_name || item.label || item.name || 'Products',
+                category_id: item.category_id || item.id,
+              })}
+            />
+            <HealthConcernList
+              concerns={healthConcerns}
+              onCardPress={(item) => navigation.navigate('Products', {
+                title: item.category_name || item.label || item.name || 'Health Concern',
+                category_id: item.category_id || item.id,
+              })}
+            />
+          </>}
           {browseCategories.length > 0 && <>
             <HealthConcernHeader
               title="Browse Categories"
@@ -308,18 +327,6 @@ const HomeScreen = ({ navigation }) => {
               })}
               onArrowPress={() => navigation.navigate('Products', { title: 'Popular Medicines' })}
             />}
-          {healthConcerns.length > 0 && <>
-            <HealthConcernHeader
-              onArrowPress={() => navigation.navigate('Categories')}
-            />
-            <HealthConcernList
-              concerns={healthConcerns}
-              onCardPress={(item) => navigation.navigate('Products', {
-                title: item.category_name || item.label || item.name || 'Health Concern',
-                category_id: item.category_id || item.id,
-              })}
-            />
-          </>}
           {mostOrderedMedicines.length > 0 && <>
             <DealsHeader
               title="Most Ordered Medicines"

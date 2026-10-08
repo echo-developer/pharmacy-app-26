@@ -7,19 +7,30 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { CachedImageBackground as ImageBackground } from '../common/CachedImage';
+import { CachedImage } from '../common/CachedImage';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.42;
+const CARD_WIDTH = width * 0.44;
 const CARD_HEIGHT = CARD_WIDTH * 1.4;
 
-const defaultAsset = require('../../assets/images/allergy.png');
+const concernAssets = [
+  { match: /allerg/i, image: require('../../assets/images/allergy.png') },
+  { match: /cold|cough/i, image: require('../../assets/images/cold&cough.png') },
+  { match: /pain/i, image: require('../../assets/images/painrelief.png') },
+];
+const defaultAsset = concernAssets[0].image;
 
 const getImageSource = (img) => {
   if (!img) return defaultAsset;
   if (typeof img === 'string') return { uri: img };
   return img;
+};
+
+const getConcernImage = item => {
+  if (item.image) return getImageSource(item.image);
+  const label = item.label || item.category_name || item.name || '';
+  return concernAssets.find(asset => asset.match.test(label))?.image || defaultAsset;
 };
 
 const HealthConcernList = ({ concerns = [], onCardPress }) => {
@@ -31,7 +42,7 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
     >
       {concerns.map((item, index) => {
         const itemId = item.category_id || item.id || item.product_id || index;
-        const imgSource = getImageSource(item.image);
+        const imgSource = getConcernImage(item);
         return (
           <TouchableOpacity
             key={itemId.toString()}
@@ -39,24 +50,18 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
             style={styles.cardWrapper}
             onPress={() => onCardPress?.(item)}
           >
-            {/* Gradient Background */}
             <LinearGradient
-              colors={item.gradient || ['#E3FCE4', '#FEFCFD']}
+              colors={item.gradient || (index % 2 === 0 ? ['#FDEBEC', '#FAD1D2'] : ['#E8EEFC', '#D0DEF9'])}
               start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientBg}
+              end={{ x: 0, y: 1 }}
+              style={styles.cardShape}
             />
-
-            {/* Image full bleed */}
-            <ImageBackground
+            <CachedImage
               source={imgSource}
               style={styles.cardImage}
-              imageStyle={styles.cardImageStyle}
               resizeMode="cover"
-            >
-              {/* Label at bottom */}
-              <Text style={styles.cardLabel}>{item.label || item.category_name || item.name || 'Health Concern'}</Text>
-            </ImageBackground>
+            />
+            <Text style={styles.cardLabel}>{item.label || item.category_name || item.name || 'Health Concern'}</Text>
           </TouchableOpacity>
         );
       })}
@@ -68,42 +73,41 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     gap: 12,
-    paddingVertical: 8,
+    paddingTop: 14,
+    paddingBottom: 8,
   },
   cardWrapper: {
     width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    borderRadius: 14,
+    height: CARD_HEIGHT * 1.04,
+    position: 'relative',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     overflow: 'hidden',
-    // 3D shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 6,
-    backgroundColor: '#FFF',
+    borderRadius: 20,
   },
-  gradientBg: {
-    ...StyleSheet.absoluteFillObject,
-    // Hexagon-style cut corners
-    borderTopLeftRadius: 40,
-    borderBottomRightRadius: 40,
+  cardShape: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '78%',
+    borderRadius: 20,
   },
   cardImage: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  cardImageStyle: {
-    // Same hexagon cuts on image
-    borderTopLeftRadius: 40,
-    borderBottomRightRadius: 40,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '78%',
   },
   cardLabel: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#252525',
+    fontWeight: '700',
+    color: '#302426',
     paddingHorizontal: 12,
-    paddingBottom: 12,
+    paddingBottom: 8,
+    textAlign: 'center',
+    width: '100%',
   },
 });
 

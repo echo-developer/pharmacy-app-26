@@ -15,7 +15,7 @@ const GradientText = ({ text = '', style }) => {
       }
     >
       <LinearGradient
-        colors={['#049482', '#026E93', '#051727']}
+        colors={['#051727', '#026E93', '#049482']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         locations={[0, 0.24, 1]}
