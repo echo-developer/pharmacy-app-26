@@ -536,9 +536,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    marginTop: 4,
+    gap: 8,
   },
   priceText: {
     fontSize: 14,
@@ -554,8 +555,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(44, 183, 223, 0.12)',
     borderWidth: 1,
     borderColor: '#2CB7DF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    width: '100%',
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 6,
   },
   addBtnText: {
@@ -576,6 +579,7 @@ const styles = StyleSheet.create({
   stepper: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-end',
     borderWidth: 1.5,
     borderColor: '#263077',
     borderRadius: 6,
