@@ -59,7 +59,7 @@ const PetCareBrands = ({ brands = [], onBrandPress }) => {
           const brandName = item.name || item.brand_name || '';
           const count = getAvailableCount(item);
           const isActive = index === activeIndex;
-          const rotation = index < activeIndex ? '-5deg' : '5deg';
+          const rotation = index < activeIndex ? '-7deg' : '7deg';
 
           return (
             <TouchableOpacity
