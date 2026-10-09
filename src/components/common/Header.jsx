@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ChevronDown, ShoppingBag, MapPin, Navigation } from 'lucide-react-native';
+import { ChevronDown, MapPin, Navigation } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import store from '../../store/store';
 import CommonService from '../../utils/CommonService';
+import CartIcon from './CartIcon';
 
 const Header = ({ 
   userName,
@@ -116,7 +117,7 @@ const Header = ({
       {/* RIGHT SIDE */}
       <TouchableOpacity style={styles.cartButton} onPress={onCartPress}>
         <View style={styles.cartIconWrapper}>
-          <ShoppingBag size={22} color="#263077" />
+          <CartIcon size={22} color="#263077" />
           {displayCartCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{displayCartCount}</Text>

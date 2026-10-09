@@ -15,7 +15,7 @@ const CartItemsList = ({ items = [], onQtyChange }) => {
             qty: item.cartqty || item.qty,
             price: item.price || item.product_sell_price,
             cutPrice: item.mrp || item.product_mrp,
-            image: item.image,
+            image: item.image || item.product_image || item.image_url || item.product_image_url,
             is_out_of_stock: item.is_out_of_stock,
             out_of_stock: item.out_of_stock,
             isOutOfStock: item.isOutOfStock,

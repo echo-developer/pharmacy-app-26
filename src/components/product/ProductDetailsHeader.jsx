@@ -7,7 +7,8 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
-import { ChevronLeft, Search, Share2, ShoppingBag } from 'lucide-react-native';
+import { ChevronLeft, Search, Share2 } from 'lucide-react-native';
+import CartIcon from '../common/CartIcon';
 
 const ProductDetailsHeader = ({
   cartCount = 0,
@@ -50,7 +51,7 @@ const ProductDetailsHeader = ({
           activeOpacity={0.7}
           onPress={onCartPress}
         >
-          <ShoppingBag size={20} color="#043250" />
+          <CartIcon size={20} color="#043250" />
           {/* {cartCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{cartCount}</Text>

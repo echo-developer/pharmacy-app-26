@@ -16,13 +16,17 @@ const CartItemCard = ({
   showDashedBorder = true,
 }) => {
   const outOfStock = isProductOutOfStock(item);
+  const imageSource = typeof item.image === 'string'
+    ? { uri: item.image }
+    : item.image || require('../../assets/images/Subtract.png');
+
   return (
     <View style={[styles.card, showDashedBorder && styles.cardDashed]}>
       <View style={styles.row}>
         {/* ===== LEFT: Image (Full Bleed) ===== */}
         <View style={styles.imageBox}>
           <Image
-            source={item.image || require('../../assets/images/Subtract.png')}
+            source={imageSource}
             style={styles.image}
             resizeMode="cover"
           />

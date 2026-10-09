@@ -10,7 +10,8 @@ import {
   View,
 } from 'react-native';
 import { CachedImage as Image } from '../../components/common/CachedImage';
-import { ArrowLeft, ShoppingBag, Tag, Minus, Plus } from 'lucide-react-native';
+import { ArrowLeft, Tag, Minus, Plus } from 'lucide-react-native';
+import CartIcon from '../../components/common/CartIcon';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
@@ -86,7 +87,7 @@ const OffersScreen = ({ navigation }) => {
             </View>
           ) : (
             <TouchableOpacity style={styles.add} onPress={() => add(item)}>
-              <ShoppingBag size={15} color="#fff"/><Text style={styles.addText}>Add to cart</Text>
+              <CartIcon size={15} color="#fff"/><Text style={styles.addText}>Add to cart</Text>
             </TouchableOpacity>
           )}
         </TouchableOpacity>;

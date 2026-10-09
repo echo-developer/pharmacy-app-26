@@ -2,8 +2,8 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, Text, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
-import { ShoppingBag } from 'lucide-react-native';
 import CartHeader from '../../components/cart/CartHeader';
+import CartIcon from '../../components/common/CartIcon';
 import SavingsBanner from '../../components/cart/SavingsBanner';
 import DeliveryTimeRow from '../../components/cart/DeliveryTimeRow';
 import CartItemsList from '../../components/cart/CartItemList';
@@ -82,7 +82,7 @@ const CartScreen = ({ navigation }) => {
           </LinearGradient>
           <View style={styles.emptyCart}>
             <View style={styles.emptyCartIcon}>
-              <ShoppingBag size={38} color="#2CB7DF" />
+              <CartIcon size={38} color="#2CB7DF" />
             </View>
             <Text style={styles.emptyCartTitle}>Your cart is empty</Text>
             <Text style={styles.emptyCartMessage}>

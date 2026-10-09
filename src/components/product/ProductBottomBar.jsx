@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ShoppingCart, Minus, Plus } from 'lucide-react-native';
+import { Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import CartIcon from '../common/CartIcon';
 
 const ProductBottomBar = ({
   message = 'yay! you have unlocked',
@@ -83,7 +84,7 @@ const ProductBottomBar = ({
             activeOpacity={0.85}
             onPress={onAddToCart}
           >
-            <ShoppingCart size={18} color="#263077" />
+            <CartIcon size={18} color="#263077" />
             <Text style={styles.addToCartText}>Add to Cart</Text>
           </TouchableOpacity>
         )}
@@ -94,7 +95,7 @@ const ProductBottomBar = ({
           activeOpacity={0.85}
           onPress={onBuyNow}
         >
-          <ShoppingCart size={18} color="#FFFFFF" />
+          <CartIcon size={18} color="#FFFFFF" />
           <Text style={styles.buyNowText}>Buy Now</Text>
         </TouchableOpacity>
       </View>}

@@ -12,7 +12,8 @@ import {
   TextInput,
 } from 'react-native';
 import { CachedImage as Image } from '../../components/common/CachedImage';
-import { ArrowLeft, Search, ShoppingBag, SlidersHorizontal, Minus, Plus, X } from 'lucide-react-native';
+import { ArrowLeft, Search, SlidersHorizontal, Minus, Plus, X } from 'lucide-react-native';
+import CartIcon from '../../components/common/CartIcon';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
@@ -243,7 +244,7 @@ const ProductsScreen = ({ navigation }) => {
             style={styles.iconBtn}
             onPress={() => navigation.navigate('Cart')}
           >
-            <ShoppingBag size={20} color="#263077" />
+            <CartIcon size={20} color="#263077" />
             {cartCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{cartCount}</Text>

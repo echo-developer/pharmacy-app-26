@@ -7,7 +7,8 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
-import { ArrowLeft, Search, ShoppingBag } from 'lucide-react-native';
+import { ArrowLeft, Search } from 'lucide-react-native';
+import CartIcon from '../common/CartIcon';
 
 const CategoryHeader = ({
   title = 'Pet Supplements',
@@ -37,7 +38,7 @@ const CategoryHeader = ({
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.iconCircle} onPress={onCartPress}>
-            <ShoppingBag size={20} color="#263077" />
+            <CartIcon size={20} color="#263077" />
             {cartCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{cartCount}</Text>

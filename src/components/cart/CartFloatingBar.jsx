@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ShoppingBag, ChevronRight } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import store from '../../store/store';
+import CartIcon from '../common/CartIcon';
 
 const CartFloatingBar = () => {
   const navigation = useNavigation();
@@ -29,7 +30,7 @@ const CartFloatingBar = () => {
       >
         <View style={styles.leftCol}>
           <View style={styles.iconWrapper}>
-            <ShoppingBag size={20} color="#FFFFFF" />
+            <CartIcon size={20} color="#FFFFFF" />
             <View style={styles.qtyBadge}>
               <Text style={styles.qtyBadgeText}>{totalQty}</Text>
             </View>
@@ -40,7 +41,7 @@ const CartFloatingBar = () => {
           </View>
         </View>
 
-        <View style={styles.rightCol}>
+        <View style={styles.chevronWrapper}>
           <ChevronRight size={18} color="#FFFFFF" />
         </View>
       </TouchableOpacity>
@@ -110,9 +111,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
-  rightCol: {
-    flexDirection: 'row',
+  chevronWrapper: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   viewCartText: {
     color: '#FFFFFF',

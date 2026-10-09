@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { CachedImage as Image } from '../../components/common/CachedImage';
-import { ArrowLeft, Trash2, ShoppingBag } from 'lucide-react-native';
+import { ArrowLeft, Trash2 } from 'lucide-react-native';
+import CartIcon from '../../components/common/CartIcon';
 import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
@@ -121,7 +122,7 @@ const WishlistScreen = ({ navigation }) => {
           <View style={[styles.addBtn, styles.unavailableBtn]}><Text style={styles.unavailableText}>OUT OF STOCK</Text></View>
         ) : (
           <TouchableOpacity style={styles.addBtn} onPress={() => handleAddToCart(item)}>
-            <ShoppingBag size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <CartIcon size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.addBtnText}>ADD</Text>
           </TouchableOpacity>
         )}
