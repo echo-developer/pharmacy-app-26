@@ -33,6 +33,9 @@ const BottomTabNavigator = () => {
           marginTop: -2,
           marginBottom: 4,
         },
+        tabBarItemStyle: {
+          transform: [{ translateY: -10 }],
+        },
       }}
     >
       {/* Home Tab (Left aligned) */}
@@ -47,6 +50,7 @@ const BottomTabNavigator = () => {
             alignItems: 'flex-start',
             paddingLeft: 16,
             maxWidth: 80,
+            transform: [{ translateY: -10 }],
           },
         }}
       />
