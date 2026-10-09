@@ -19,7 +19,6 @@ const CartFloatingBar = () => {
   if (items.length === 0) return null;
 
   const totalQty = items.reduce((sum, item) => sum + (item.cartqty || 1), 0);
-  const totalPrice = items.reduce((sum, item) => sum + (Math.abs(item.price || item.product_sell_price || 0) * (item.cartqty || 1)), 0);
 
   return (
     <View style={styles.container}>
@@ -36,13 +35,12 @@ const CartFloatingBar = () => {
             </View>
           </View>
           <View style={styles.textCol}>
-            <Text style={styles.itemCountText}>{totalQty} {totalQty === 1 ? 'Item' : 'Items'} added</Text>
-            <Text style={styles.priceText}>₹{totalPrice}</Text>
+            <Text style={styles.viewCartText}>View Cart</Text>
+            <Text style={styles.itemCountText}>{totalQty} {totalQty === 1 ? 'Item' : 'Items'}</Text>
           </View>
         </View>
 
         <View style={styles.rightCol}>
-          <Text style={styles.viewCartText}>View Cart</Text>
           <ChevronRight size={18} color="#FFFFFF" />
         </View>
       </TouchableOpacity>
@@ -53,16 +51,18 @@ const CartFloatingBar = () => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 80,
-    left: 16,
-    right: 16,
+    bottom: 6,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
     zIndex: 9999,
   },
   bar: {
     backgroundColor: '#0D7998',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    width: 170,
+    borderRadius: 24,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -77,9 +77,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -107,13 +107,8 @@ const styles = StyleSheet.create({
   },
   itemCountText: {
     color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-  },
-  priceText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
   },
   rightCol: {
     flexDirection: 'row',
@@ -121,7 +116,7 @@ const styles = StyleSheet.create({
   },
   viewCartText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     marginRight: 4,
   },
