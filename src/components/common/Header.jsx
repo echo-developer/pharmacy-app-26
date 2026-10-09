@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: '#FFFFFF',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: '#263077',
   },
   badge: {
     position: 'absolute', top: -2, right: -2,
