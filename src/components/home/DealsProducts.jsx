@@ -94,44 +94,46 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
 
             {delivery ? <Text style={styles.delivery}>{delivery} ⚡</Text> : null}
 
-            {/* ===== BUTTON AREA ===== */}
-            {outOfStock ? (
-              <View style={[styles.addButton, styles.unavailableButton]}>
-                <Text style={styles.unavailableText}>OUT OF STOCK</Text>
-              </View>
-            ) : qty === 0 ? (
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  if (onAddPress) onAddPress(item);
-                  else CommonService.addToCart(item);
-                }}
-              >
-                <Text style={styles.addText}>ADD</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.qtyContainer}>
+            {/* Keep actions aligned at the bottom of every product card. */}
+            <View style={styles.actionArea}>
+              {outOfStock ? (
+                <View style={[styles.addButton, styles.unavailableButton]}>
+                  <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+                </View>
+              ) : qty === 0 ? (
                 <TouchableOpacity
-                  style={styles.qtyBtn}
+                  style={styles.addButton}
                   onPress={() => {
-                    CommonService.decreaseCart(itemId);
+                    if (onAddPress) onAddPress(item);
+                    else CommonService.addToCart(item);
                   }}
                 >
-                  <Minus size={16} color="#FFFFFF" />
+                  <Text style={styles.addText}>ADD</Text>
                 </TouchableOpacity>
+              ) : (
+                <View style={styles.qtyContainer}>
+                  <TouchableOpacity
+                    style={styles.qtyBtn}
+                    onPress={() => {
+                      CommonService.decreaseCart(itemId);
+                    }}
+                  >
+                    <Minus size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
 
-                <Text style={styles.qtyText}>{qty}</Text>
+                  <Text style={styles.qtyText}>{qty}</Text>
 
-                <TouchableOpacity
-                  style={styles.qtyBtn}
-                  onPress={() => {
-                    CommonService.addToCart(item);
-                  }}
-                >
-                  <Plus size={16} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
-            )}
+                  <TouchableOpacity
+                    style={styles.qtyBtn}
+                    onPress={() => {
+                      CommonService.addToCart(item);
+                    }}
+                  >
+                    <Plus size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           </View>
         );
       })}
@@ -147,6 +149,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
+    minHeight: 300,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     padding: 12,
@@ -230,6 +233,11 @@ const styles = StyleSheet.create({
     color: '#787887',
     marginTop: 4,
     marginBottom: 10,
+  },
+  actionArea: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingTop: 8,
   },
 
   /* ===== ADD BUTTON ===== */
