@@ -115,6 +115,10 @@ const AddressManageScreen = ({ navigation }) => {
         address: item.place_address || item.address || '',
         postalcode: item.place_pincode || item.pincode || '',
         place_id: item.place_id || item.id,
+        city_id: item.city_id || item.place_city_id || '',
+        city_name: item.city_name || item.place_city || item.city || item.main_city || '',
+        place_name: item.place_name || item.locality || item.area || '',
+        state_name: item.state_name || item.place_state || item.state || '',
       },
     };
     store.dispatch({ type: 'SETCITY', payload: payloadData });
