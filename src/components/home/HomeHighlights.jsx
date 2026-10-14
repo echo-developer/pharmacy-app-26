@@ -171,7 +171,7 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
+    marginTop: 0,
     marginBottom: 8,
   },
   content: {

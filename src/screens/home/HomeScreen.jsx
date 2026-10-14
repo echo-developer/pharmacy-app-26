@@ -262,18 +262,18 @@ const HomeScreen = ({ navigation }) => {
       {homeState.loader ? (
         <HomeLoadingSkeleton />
       ) : (
-        <View>
-          <PrescriptionBanner
+        <View style={styles.homeSections}>
+          <View><PrescriptionBanner
             onUploadPress={handlePrescriptionUpload}
             uploading={uploadingPrescription}
-          />
-          {banners.length > 0 && <OfferCarousel
+          /></View>
+          {banners.length > 0 && <View><OfferCarousel
             offers={banners}
             onCardPress={(item) => navigation.navigate('Products', {
               title: item.category_name || item.category || 'Special Offers',
               category_id: item.category_id || item.id,
             })}
-          />}
+          /></View>}
           <LinearGradient
             colors={['#FEFCFD', '#E9F6FA']}
             start={{ x: 0, y: 0 }}
@@ -289,7 +289,7 @@ const HomeScreen = ({ navigation }) => {
             />
             <TrustBadges />
           </LinearGradient>
-          {healthConcerns.length > 0 && <>
+          {healthConcerns.length > 0 && <View>
             <HealthConcernHeader
               onArrowPress={() => navigation.navigate('Categories')}
             />
@@ -305,8 +305,8 @@ const HomeScreen = ({ navigation }) => {
                 sub_category_id: item.sub_category_id || item.id,
               })}
             />
-          </>}
-          {vitaminSubcategories.length > 0 && <>
+          </View>}
+          {vitaminSubcategories.length > 0 && <View>
             <VitaminsHeader
               subtitle="Nourish their growth with"
               title="Vitamins & Supplements"
@@ -319,8 +319,8 @@ const HomeScreen = ({ navigation }) => {
                 sub_category_id: item.sub_category_id || item.id,
               })}
             />
-          </>}
-          {browseCategories.length > 0 && <>
+          </View>}
+          {browseCategories.length > 0 && <View>
             <HealthConcernHeader
               title="Browse Categories"
               subtitle="Browse medicines by category"
@@ -333,8 +333,8 @@ const HomeScreen = ({ navigation }) => {
                 category_id: item.category_id || item.id,
               })}
             />
-          </>}
-          {(popularMedicines.length > 0 || popularCategories.length > 0) &&
+          </View>}
+          {(popularMedicines.length > 0 || popularCategories.length > 0) && <View>
             <PopularMedicineSection
               popularMedicines={popularMedicines}
               categories={popularCategories}
@@ -344,8 +344,9 @@ const HomeScreen = ({ navigation }) => {
                 product: item,
               })}
               onArrowPress={() => navigation.navigate('Products', { title: 'Popular Medicines' })}
-            />}
-          {mostOrderedMedicines.length > 0 && <>
+            />
+          </View>}
+          {mostOrderedMedicines.length > 0 && <View>
             <DealsHeader
               title="Most Ordered Medicines"
               subtitle="Frequently ordered pharmacy essentials"
@@ -360,17 +361,18 @@ const HomeScreen = ({ navigation }) => {
                 product: item,
               })}
             />
-          </>}
-          {deals.length > 0 && <DealsHeader
+          </View>}
+          {deals.length > 0 && <View>
+          <DealsHeader
             title="Deals you'll love"
             subtitle="Buy now to get the best deals"
             onArrowPress={() => navigation.navigate('Offers')}
-          />}
-          {deals.length > 0 && <DealsProducts
+          />
+          <DealsProducts
             products={deals}
             onAddPress={handleAddToCart}
-          />}
-          {lowerBanners.length > 0 && <OfferCarousel
+          /></View>}
+          {lowerBanners.length > 0 && <View><OfferCarousel
             offers={lowerBanners.map(item => ({
               ...item,
               image: normalizeHomeImage(item.image),
@@ -389,7 +391,7 @@ const HomeScreen = ({ navigation }) => {
                 });
               }
             }}
-          />}
+          /></View>}
           {popularBrands.length > 0 && <LinearGradient
             colors={['#E9F6D6', '#FFFFFF']}
             start={{ x: 0, y: 0 }}
@@ -447,6 +449,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  homeSections: {
+    gap: 28,
+  },
   floatingSearch: {
     position: 'absolute',
     left: 0,
@@ -459,7 +464,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 18,
   },
   petCareSection: {
-    marginTop: 16,
     marginHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
