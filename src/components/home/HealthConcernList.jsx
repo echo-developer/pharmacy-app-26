@@ -8,7 +8,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { CachedImage } from '../common/CachedImage';
-import LinearGradient from 'react-native-linear-gradient';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.44;
@@ -43,25 +42,31 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
       {concerns.map((item, index) => {
         const itemId = item.category_id || item.id || item.product_id || index;
         const imgSource = getConcernImage(item);
+        const distanceFromCenter = index - (concerns.length - 1) / 2;
+        const tilt = distanceFromCenter === 0
+          ? '0deg'
+          : `${distanceFromCenter < 0 ? '-' : ''}${Math.min(Math.abs(distanceFromCenter) * 6, 12)}deg`;
+        const arcOffset = Math.min(Math.abs(distanceFromCenter) * 10, 30);
         return (
           <TouchableOpacity
             key={itemId.toString()}
             activeOpacity={0.9}
-            style={styles.cardWrapper}
+            style={[styles.cardWrapper, { transform: [{ translateY: arcOffset }, { rotate: tilt }] }]}
             onPress={() => onCardPress?.(item)}
           >
-            <LinearGradient
-              colors={item.gradient || (index % 2 === 0 ? ['#FDEBEC', '#FAD1D2'] : ['#E8EEFC', '#D0DEF9'])}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={styles.cardShape}
-            />
             <CachedImage
               source={imgSource}
               style={styles.cardImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
-            <Text style={styles.cardLabel}>{item.label || item.category_name || item.name || 'Health Concern'}</Text>
+            <Text
+              style={styles.cardLabel}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {item.label || item.category_name || item.name || 'Health Concern'}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -74,7 +79,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 12,
     paddingTop: 14,
-    paddingBottom: 8,
+    paddingBottom: 32,
   },
   cardWrapper: {
     width: CARD_WIDTH,
@@ -83,31 +88,30 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     overflow: 'hidden',
-    borderRadius: 20,
-  },
-  cardShape: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '78%',
-    borderRadius: 20,
+    borderRadius: 24,
   },
   cardImage: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    width: '100%',
-    height: '78%',
+    left: '-5%',
+    width: '110%',
+    height: '100%',
+    borderRadius: 24,
   },
   cardLabel: {
-    fontSize: 15,
+    position: 'absolute',
+    bottom: '18%',
+    left: 8,
+    right: 8,
+    zIndex: 2,
+    fontSize: 14,
     fontWeight: '700',
     color: '#302426',
     paddingHorizontal: 12,
-    paddingBottom: 8,
+    paddingVertical: 4,
+    borderRadius: 14,
+    backgroundColor: 'transparent',
     textAlign: 'center',
-    width: '100%',
   },
 });
 

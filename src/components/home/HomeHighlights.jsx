@@ -178,7 +178,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     gap: CARD_GAP,
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingTop: 30,
+    paddingBottom: 10,
   },
   cardScale: {
     width: CARD_WIDTH,
