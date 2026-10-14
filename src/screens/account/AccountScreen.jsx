@@ -271,14 +271,14 @@ const AccountScreen = ({ navigation }) => {
           onOrdersPress={() => navigation.navigate('My Orders')}
           onWalletPress={handleWalletPress}
           onHelpPress={handleHelpPress}
-          onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
-          onCallPress={() => openExternalUrl('tel:1800123456')}
         />
         <AppUpdateBanner
           title="App Update Available"
           subtitle="Bug Fixes & Improvements"
           version="V1.010"
           onPress={handleAppUpdate}
+          onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
+          onCallPress={() => openExternalUrl('tel:1800123456')}
         />
         <SettingsSection title="Information">
           <SettingsRow Icon={Tag} label="Offers" onPress={() => navigation.navigate('Offers')} showDivider />
