@@ -11,7 +11,7 @@ import { CachedImage as Image } from '../common/CachedImage';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 
-const CARD_WIDTH = 128;
+const CARD_WIDTH = 156;
 const CARD_GAP = 10;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 const CARD_COLORS = [
@@ -20,6 +20,7 @@ const CARD_COLORS = [
   ['#E8F8FC', '#E9E3DC'],
 ];
 const NO_IMAGE = /no-image|placeholder/i;
+const getSingleWordName = name => String(name || '').trim().split(/\s+/)[0];
 const OfferGradientText = ({ children }) => (
   <MaskedView
     maskElement={<Text style={styles.offerText}>{children}</Text>}
@@ -123,8 +124,8 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
                       resizeMode="contain"
                     />
                   </View>
-                  <Text style={styles.categoryName}>
-                    {highlight.categoryName || highlight.product.product_name}
+                  <Text style={styles.categoryName} numberOfLines={1}>
+                    {getSingleWordName(highlight.categoryName || highlight.product.product_name)}
                   </Text>
                   <OfferGradientText>
                     {highlight.discountPercent > 0
@@ -176,14 +177,14 @@ const styles = StyleSheet.create({
   },
   cardBackground: {
     width: '100%',
-    minHeight: 162,
+    minHeight: 192,
     alignItems: 'center',
     paddingBottom: 6,
     borderRadius: 12,
   },
   imageArea: {
     width: '100%',
-    height: 112,
+    height: 136,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -194,16 +195,16 @@ const styles = StyleSheet.create({
   categoryName: {
     width: '100%',
     color: '#26332A',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     textAlign: 'center',
     paddingHorizontal: 5,
     marginTop: 2,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   offerText: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '900',
     textAlign: 'center',
     letterSpacing: 0.2,
   },
