@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 const { width } = Dimensions.get('window');
 const CARD_GAP = 10;
 const CARD_WIDTH = (width - 32 - CARD_GAP * 2) / 3;
-const CARD_HEIGHT = 150;
+const CARD_HEIGHT = 132;
 
 const VitaminsProducts = ({ products = [], onCardPress }) => {
   const [previewItem, setPreviewItem] = useState(null);
@@ -61,14 +61,14 @@ const VitaminsProducts = ({ products = [], onCardPress }) => {
                 <FastImage
                   source={{ uri: item.image, priority: FastImage.priority.normal }}
                   style={styles.cardImage}
-                  resizeMode={FastImage.resizeMode.contain}
+                  resizeMode={FastImage.resizeMode.cover}
                   onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
                 />
               ) : (
                 <FastImage
                   source={require('../../assets/images/petsupplements.png')}
                   style={styles.cardImage}
-                  resizeMode={FastImage.resizeMode.contain}
+                  resizeMode={FastImage.resizeMode.cover}
                   onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
                 />
               )}
@@ -158,10 +158,10 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     position: 'absolute',
+    top: '40%',
     bottom: 0,
     alignSelf: 'center',
-    width: '94%',
-    height: '70%',
+    width: '100%',
     backgroundColor: 'transparent',
     zIndex: 1,
   },
