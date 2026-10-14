@@ -5,6 +5,7 @@ import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBann
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
 import OrderTimelineCard from '../../components/orderdetails/OrderTimelineCard';
 import OrderBillDetails from '../../components/orderdetails/OrderBillDetails';
+import { DetailLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import OrderInfoCard from '../../components/orderdetails/OrderInfoCard';
 import YouMayAlsoLike from '../../components/orderdetails/YouMayAlsoLike';
 import RepeatOrderButton from '../../components/orderdetails/RepeatOrderButton';
@@ -439,9 +440,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
       />
 
       {loader ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#0D7998" />
-        </View>
+        <DetailLoadingSkeleton order />
       ) : !orderData ? (
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Order details unavailable</Text>

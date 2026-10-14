@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import base64 from 'react-native-base64';
 import StaticConst from '../../utils/StaticConst';
 import CommonService from '../../utils/CommonService';
+import { SimplePageLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import store from '../../store/store';
 
 const AddressManageScreen = ({ navigation }) => {
@@ -325,9 +326,7 @@ const AddressManageScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Saved Addresses</Text>
 
         {loader ? (
-          <View style={styles.loaderBox}>
-            <ActivityIndicator size="large" color="#2CB7DF" />
-          </View>
+          <SimplePageLoadingSkeleton count={2} rowHeight={58} />
         ) : addresses.length === 0 ? (
           <View style={styles.emptyBox}>
             <MapPin size={40} color="#CCCCCC" />

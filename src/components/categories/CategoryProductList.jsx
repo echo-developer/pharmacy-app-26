@@ -1,24 +1,23 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import CategoryProductCard from './CategoryProductCard';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import { CategoryProductsLoadingSkeleton } from '../common/ScreenLoadingSkeletons';
 
 const CategoryProductList = ({ products = [], loading = false, onProductPress, onAddPress, onFavPress, favoriteIds = {} }) => {
   // Read favoriteOverrides from redux so heart state syncs across screens
   const favoriteOverrides = useSelector(state => state.GlobalReducer.favoriteOverrides);
 
-  return (
+  return loading && products.length === 0 ? (
+    <CategoryProductsLoadingSkeleton />
+  ) : (
     <ScrollView
       style={styles.list}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      {loading && products.length === 0 ? (
-        <View style={styles.messageContainer}>
-          <ActivityIndicator size="small" color="#0D7998" />
-        </View>
-      ) : !loading && products.length === 0 ? (
+      {!loading && products.length === 0 ? (
         <View style={styles.messageContainer}>
           <Text style={styles.emptyText}>No products found in this category.</Text>
         </View>

@@ -7,12 +7,15 @@ import {
   StatusBar,
   useWindowDimensions,
 } from 'react-native';
-import { CachedImageBackground as ImageBackground } from '../../components/common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 
 const SplashScreen = ({ navigation }) => {
-  const { width, height } = useWindowDimensions(); 
+  const { width, height } = useWindowDimensions();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const [bgLoaded, setBgLoaded] = React.useState(false);
+  const [logoLoaded, setLogoLoaded] = React.useState(false);
 
   useEffect(() => {
     Animated.parallel([
@@ -35,15 +38,25 @@ const SplashScreen = ({ navigation }) => {
     return () => clearTimeout(timer);
   }, [fadeAnim, scaleAnim, navigation]);
 
-  
+
   const styles = getStyles(width, height);
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/splash_bg.png')}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
+    <View style={styles.backgroundImage}>
+      {!bgLoaded && (
+        <ShimmerPlaceholder
+          style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+          shimmerColor="#EAEAEA"
+          shimmerBackgroundColor="#F5F5F5"
+          visible={false}
+        />
+      )}
+      <FastImage
+        source={require('../../assets/images/splash_bg.png')}
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        resizeMode={FastImage.resizeMode.cover}
+        onLoad={() => setBgLoaded(true)}
+      />
       <StatusBar
         backgroundColor="transparent"
         barStyle="dark-content"
@@ -51,6 +64,14 @@ const SplashScreen = ({ navigation }) => {
       />
 
       <View style={styles.logoContainer}>
+        {!logoLoaded && (
+          <ShimmerPlaceholder
+            style={styles.logo}
+            shimmerColor="#EAEAEA"
+            shimmerBackgroundColor="#F5F5F5"
+            visible={false}
+          />
+        )}
         <Animated.Image
           source={require('../../assets/images/logo.png')}
           style={[
@@ -61,6 +82,7 @@ const SplashScreen = ({ navigation }) => {
             },
           ]}
           resizeMode="contain"
+          onLoad={() => setLogoLoaded(true)}
         />
       </View>
 
@@ -68,7 +90,7 @@ const SplashScreen = ({ navigation }) => {
         <Text style={styles.heartIcon}>❤️</Text>
         <Text style={styles.madeInIndiaText}>Made in India</Text>
       </View>
-    </ImageBackground>
+    </View>
   );
 };
 
@@ -80,6 +102,7 @@ const getStyles = (width, height) =>
       height: height,
       alignItems: 'center',
       justifyContent: 'center',
+      backgroundColor: '#FFFFFF',
     },
     logoContainer: {
       flex: 1,

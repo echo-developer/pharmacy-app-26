@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SimplePageLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import { ArrowLeft, Star } from 'lucide-react-native';
 import CommonService from '../../utils/CommonService';
 
@@ -140,7 +141,7 @@ const OrderReviewScreen = ({ route, navigation }) => {
         <Text style={styles.title}>Rate your order</Text>
       </View>
       {loading ? (
-        <View style={styles.center}><ActivityIndicator size="large" color="#263077" /></View>
+        <SimplePageLoadingSkeleton count={3} rowHeight={52} />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={styles.caption}>Order #{order?.order_number || order?.order_id || orderId}</Text>

@@ -121,7 +121,7 @@ const YouMayAlsoLike = ({
               <Text style={styles.tablets}>
                 {item.tablets || item.unit || item.description || ''}
               </Text>
-              {item.mrp && (
+              {Number(item.mrp) > Number(item.price || item.product_sell_price || item.sell_price) && (
                 <Text style={styles.mrp}>MRP ₹{item.mrp}</Text>
               )}
 

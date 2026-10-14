@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import ProductDetailsHeader from '../../components/product/ProductDetailsHeader';
 import ProductSummaryBar from '../../components/product/ProductSummaryBar';
 import ProductImageGallery from '../../components/product/ProductImageGallery';
+import { DetailLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import ProductInfoCard from '../../components/product/ProductInfoCard';
 import ProductTabs from '../../components/product/ProductTabs';
 import ProductDescription from '../../components/product/ProductDescription';
@@ -198,9 +199,7 @@ const ProductDetailsScreen = ({ navigation }) => {
       />
 
       {loader ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#2CB7DF" />
-        </View>
+        <DetailLoadingSkeleton />
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}

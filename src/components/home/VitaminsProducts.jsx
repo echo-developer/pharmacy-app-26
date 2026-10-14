@@ -7,7 +7,8 @@ import {
   Dimensions,
   Modal,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width } = Dimensions.get('window');
@@ -17,6 +18,7 @@ const CARD_HEIGHT = 150;
 
 const VitaminsProducts = ({ products = [], onCardPress }) => {
   const [previewItem, setPreviewItem] = useState(null);
+  const [loadedImages, setLoadedImages] = useState({});
 
   const handleCardPress = item => {
     if (Number(item.product_count) > 0) {
@@ -29,36 +31,50 @@ const VitaminsProducts = ({ products = [], onCardPress }) => {
   return (
     <>
       <View style={styles.grid}>
-        {products.map((item, index) => (
-          <TouchableOpacity
-            key={(item.product_id || item.category_id || item.id || index).toString()}
-            activeOpacity={0.9}
-            style={styles.card}
-            onPress={() => handleCardPress(item)}
-          >
-            <LinearGradient
-              colors={['#FED7D4', '#E0C763']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              locations={[0.34, 1]}
-              style={styles.gradientBg}
-            />
-            <Text style={styles.cardLabel}>{item.label || item.category_name || item.name || item.product_name}</Text>
-            {typeof item.image === 'string' && item.image && !item.image.includes('via.placeholder') ? (
-              <Image
-                source={{ uri: item.image }}
-                style={styles.cardImage}
-                resizeMode="contain"
+        {products.map((item, index) => {
+          const itemId = item.product_id || item.category_id || item.id || index;
+          const isLoaded = loadedImages[itemId];
+          return (
+            <TouchableOpacity
+              key={itemId.toString()}
+              activeOpacity={0.9}
+              style={styles.card}
+              onPress={() => handleCardPress(item)}
+            >
+              <LinearGradient
+                colors={['#FED7D4', '#E0C763']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                locations={[0.34, 1]}
+                style={styles.gradientBg}
               />
-            ) : (
-              <Image
-                source={require('../../assets/images/petsupplements.png')}
-                style={styles.cardImage}
-                resizeMode="contain"
-              />
-            )}
-          </TouchableOpacity>
-        ))}
+              <Text style={styles.cardLabel}>{item.label || item.category_name || item.name || item.product_name}</Text>
+              {!isLoaded && (
+                <ShimmerPlaceholder
+                  style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                  shimmerColor="#EAEAEA"
+                  shimmerBackgroundColor="#F5F5F5"
+                  visible={false}
+                />
+              )}
+              {typeof item.image === 'string' && item.image && !item.image.includes('via.placeholder') ? (
+                <FastImage
+                  source={{ uri: item.image, priority: FastImage.priority.normal }}
+                  style={styles.cardImage}
+                  resizeMode={FastImage.resizeMode.contain}
+                  onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
+                />
+              ) : (
+                <FastImage
+                  source={require('../../assets/images/petsupplements.png')}
+                  style={styles.cardImage}
+                  resizeMode={FastImage.resizeMode.contain}
+                  onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
+                />
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
       <Modal
         visible={Boolean(previewItem)}
@@ -81,10 +97,10 @@ const VitaminsProducts = ({ products = [], onCardPress }) => {
               <Text style={styles.closeText}>×</Text>
             </TouchableOpacity>
             {previewItem?.image ? (
-              <Image
-                source={{ uri: previewItem.image }}
+              <FastImage
+                source={{ uri: previewItem.image, priority: FastImage.priority.high }}
                 style={styles.previewImage}
-                resizeMode="contain"
+                resizeMode={FastImage.resizeMode.contain}
               />
             ) : null}
             <Text style={styles.previewTitle}>

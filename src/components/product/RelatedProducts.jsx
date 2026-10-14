@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { ChevronRight, Star, Zap } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 
@@ -15,6 +16,7 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
 
 const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPress }) => {
+  const [loadedImages, setLoadedImages] = useState({});
   // Don't render section if no products
   if (!products || products.length === 0) return null;
 
@@ -61,6 +63,8 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
               ).toFixed(1)
               : null;
 
+          const isLoaded = loadedImages[item.product_id ?? index];
+
           return (
             <TouchableOpacity
               key={item.product_id ?? index}
@@ -69,14 +73,23 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
               onPress={() => onProductPress?.(item)}>
               {/* Image Area with Rating Pill */}
               <View style={styles.imageArea}>
-                <Image
+                {!isLoaded && (
+                  <ShimmerPlaceholder
+                    style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                    shimmerColor="#EAEAEA"
+                    shimmerBackgroundColor="#F5F5F5"
+                    visible={false}
+                  />
+                )}
+                <FastImage
                   source={
                     item.image
-                      ? { uri: item.image }
+                      ? { uri: item.image, priority: FastImage.priority.normal }
                       : require('../../assets/images/deals.png')
                   }
                   style={styles.image}
-                  resizeMode="contain"
+                  resizeMode={FastImage.resizeMode.contain}
+                  onLoad={() => setLoadedImages(prev => ({ ...prev, [item.product_id ?? index]: true }))}
                 />
                 {avgRating && (
                   <View style={styles.ratingPill}>

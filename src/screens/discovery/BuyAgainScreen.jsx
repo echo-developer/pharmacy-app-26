@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   RefreshControl,
@@ -18,6 +17,7 @@ import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const hasPrice = product => {
   const price = product?.product_sell_price ?? product?.sell_price ?? product?.price;
@@ -91,7 +91,7 @@ const BuyAgainScreen = ({ navigation }) => {
     CommonService.addToCart({ ...product, product_id: product.product_id || product.id, product_name: product.product_name || product.name, product_sell_price: product.product_sell_price ?? product.sell_price ?? product.price, product_mrp: product.product_mrp ?? product.mrp, qty: product.qty || 99 });
   };
   return <View style={styles.page}><StatusBar barStyle="dark-content" backgroundColor="#fff"/><View style={styles.header}><TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}><ArrowLeft size={22} color="#263077"/></TouchableOpacity><View><Text style={styles.title}>Buy Again</Text><Text style={styles.sub}>Your previously ordered pharmacy items</Text></View></View>
-    {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#263077"/></View> : <FlatList data={products} keyExtractor={(item,i) => String(item.product_id || item.id || i)} contentContainerStyle={styles.list} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {setRefreshing(true);load();}}/>} ListEmptyComponent={<View style={styles.empty}><RotateCcw size={34} color="#8B91B9"/><Text style={styles.emptyTitle}>No past items to repeat</Text><Text style={styles.emptySub}>Products from your orders will appear here for quick reordering.</Text><TouchableOpacity style={styles.browse} onPress={() => navigation.navigate('Products',{title:'Browse medicines'})}><Text style={styles.browseText}>Browse products</Text></TouchableOpacity></View>}
+    {loading ? <ProductRowsLoadingSkeleton /> : <FlatList data={products} keyExtractor={(item,i) => String(item.product_id || item.id || i)} contentContainerStyle={styles.list} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => {setRefreshing(true);load();}}/>} ListEmptyComponent={<View style={styles.empty}><RotateCcw size={34} color="#8B91B9"/><Text style={styles.emptyTitle}>No past items to repeat</Text><Text style={styles.emptySub}>Products from your orders will appear here for quick reordering.</Text><TouchableOpacity style={styles.browse} onPress={() => navigation.navigate('Products',{title:'Browse medicines'})}><Text style={styles.browseText}>Browse products</Text></TouchableOpacity></View>}
       renderItem={({item}) => {
         const itemId = item.product_id || item.id;
         const outOfStock = isProductOutOfStock(item);

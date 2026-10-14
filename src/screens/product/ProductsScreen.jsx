@@ -6,7 +6,6 @@ import {
   FlatList,
   StyleSheet,
   StatusBar,
-  ActivityIndicator,
   Modal,
   ScrollView,
   TextInput,
@@ -21,6 +20,7 @@ import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import FilterSortBar from '../../components/categories/FilterSortBar';
+import { ProductGridLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const ProductsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -266,9 +266,7 @@ const ProductsScreen = ({ navigation }) => {
 
       {/* PRODUCT GRID */}
       {loading ? (
-        <View style={styles.loaderCenter}>
-          <ActivityIndicator size="large" color="#2CB7DF" />
-        </View>
+        <ProductGridLoadingSkeleton />
       ) : (
         <FlatList
           data={getProcessedProducts()}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { Star, Minus, Plus } from 'lucide-react-native';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
@@ -19,6 +20,7 @@ const CARD_WIDTH = width * 0.5;
 const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
   const cartItems = useSelector(state => state.GlobalReducer.cart?.items || []);
   const getCartQty = id => cartItems.find(item => Math.abs(item.product_id) === Math.abs(id))?.cartqty || 0;
+  const [loadedImages, setLoadedImages] = useState({});
 
   return (
     <ScrollView
@@ -40,6 +42,7 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
         const discount = item.discount || '';
         const delivery = item.delivery || '';
         const imageUri = typeof item.image === 'string' ? item.image : '';
+        const isLoaded = loadedImages[itemId];
         return (
           <View key={itemId.toString()} style={styles.card}>
             {/* ===== IMAGE AREA ===== */}
@@ -51,14 +54,23 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
               accessibilityRole={onProductPress ? 'button' : undefined}
               accessibilityLabel={onProductPress ? `View ${title}` : undefined}
             >
-              <Image
+              {!isLoaded && (
+                <ShimmerPlaceholder
+                  style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                  shimmerColor="#EAEAEA"
+                  shimmerBackgroundColor="#F5F5F5"
+                  visible={false}
+                />
+              )}
+              <FastImage
                 source={
                   imageUri && !imageUri.includes('via.placeholder')
-                    ? { uri: imageUri }
+                    ? { uri: imageUri, priority: FastImage.priority.normal }
                     : require('../../assets/images/deals.png')
                 }
                 style={styles.productImage}
-                resizeMode="contain"
+                resizeMode={FastImage.resizeMode.contain}
+                onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
               />
               {/* Rating Pill */}
               {(rating > 0 || ratingCount > 0) && (
@@ -85,7 +97,7 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
 
             {unit ? <Text style={styles.tablets}>{unit}</Text> : null}
 
-            {mrp ? <Text style={styles.mrp}>MRP ₹{mrp}</Text> : null}
+            {Number(mrp) > Number(price) ? <Text style={styles.mrp}>MRP ₹{mrp}</Text> : null}
 
             <View style={styles.priceRow}>
               <Text style={styles.price}>₹{price}</Text>

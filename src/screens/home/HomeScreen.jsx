@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, View, StyleSheet, Animated, StatusBar, Platform } from 'react-native';
+import { Alert, Linking, View, StyleSheet, Animated, StatusBar, Platform } from 'react-native';
 import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -22,6 +22,7 @@ import PetCareBrands from '../../components/home/PetCareBrands';
 import CommonService from '../../utils/CommonService';
 import StaticConst from '../../utils/StaticConst';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
+import { HomeLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const homeReducer = (prevState, action) => {
   switch (action.type) {
@@ -269,9 +270,7 @@ const HomeScreen = ({ navigation }) => {
         <View style={{ height: searchHeight }} />
 
       {homeState.loader ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#2CB7DF" />
-        </View>
+        <HomeLoadingSkeleton />
       ) : (
         <View>
           <PrescriptionBanner
@@ -475,11 +474,6 @@ const styles = StyleSheet.create({
   highlightsAndTrustBackground: {
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
-  },
-  loaderContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   petCareSection: {
     marginTop: 16,

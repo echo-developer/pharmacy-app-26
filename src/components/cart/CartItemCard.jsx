@@ -5,7 +5,8 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { Minus, Plus } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 
@@ -15,9 +16,10 @@ const CartItemCard = ({
   onDecrease,
   showDashedBorder = true,
 }) => {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
   const outOfStock = isProductOutOfStock(item);
   const imageSource = typeof item.image === 'string'
-    ? { uri: item.image }
+    ? { uri: item.image, priority: FastImage.priority.normal }
     : item.image || require('../../assets/images/Subtract.png');
 
   return (
@@ -25,10 +27,19 @@ const CartItemCard = ({
       <View style={styles.row}>
         {/* ===== LEFT: Image (Full Bleed) ===== */}
         <View style={styles.imageBox}>
-          <Image
+          {!imageLoaded && (
+            <ShimmerPlaceholder
+              style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+              shimmerColor="#EAEAEA"
+              shimmerBackgroundColor="#F5F5F5"
+              visible={false}
+            />
+          )}
+          <FastImage
             source={imageSource}
             style={styles.image}
-            resizeMode="cover"
+            resizeMode={FastImage.resizeMode.cover}
+            onLoad={() => setImageLoaded(true)}
           />
         </View>
 
@@ -71,7 +82,9 @@ const CartItemCard = ({
 
           <View style={styles.priceRow}>
             <Text style={styles.price}>₹{item.price}</Text>
-            <Text style={styles.cutPrice}>₹{item.cutPrice}</Text>
+            {Number(item.cutPrice) > Number(item.price) && (
+              <Text style={styles.cutPrice}>₹{item.cutPrice}</Text>
+            )}
           </View>
         </View>
       </View>

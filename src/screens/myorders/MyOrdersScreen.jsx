@@ -13,6 +13,7 @@ import OrderHistoryHeader from '../../components/orders/OrderHistoryHeader';
 import OrderCard from '../../components/orders/OrderCard';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
+import { OrdersLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 // Helper date formatting function replacing moment
 const formatDate = (dateString, options = {}) => {
@@ -251,9 +252,7 @@ const MyOrdersScreen = ({ navigation }) => {
       />
 
       {loader ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#0D7998" />
-        </View>
+        <OrdersLoadingSkeleton />
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -358,11 +357,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6F6F6',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   emptyContainer: {
     padding: 40,

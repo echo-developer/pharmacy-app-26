@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { ChevronRight } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -42,6 +43,7 @@ const OrderCard = ({
   actions = [],
   onPress,
 }) => {
+  const [loadedImages, setLoadedImages] = useState({});
   const config = HEADER_CONFIG[status] || HEADER_CONFIG.ontime;
 
   return (
@@ -80,19 +82,30 @@ const OrderCard = ({
         <View style={styles.imagesRow}>
           {images.slice(0, 4).map((item, index) => {
             const imgUri = item?.image || item?.img || null;
+            const isLoaded = loadedImages[index];
             return (
               <View key={index} style={styles.imageBox}>
+                {!isLoaded && (
+                  <ShimmerPlaceholder
+                    style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                    shimmerColor="#EAEAEA"
+                    shimmerBackgroundColor="#F5F5F5"
+                    visible={false}
+                  />
+                )}
                 {imgUri ? (
-                  <Image
-                    source={{ uri: imgUri }}
+                  <FastImage
+                    source={{ uri: imgUri, priority: FastImage.priority.normal }}
                     style={styles.image}
-                    resizeMode="contain"
+                    resizeMode={FastImage.resizeMode.contain}
+                    onLoad={() => setLoadedImages(prev => ({ ...prev, [index]: true }))}
                   />
                 ) : (
-                  <Image
+                  <FastImage
                     source={require('../../assets/images/deals.png')}
                     style={styles.image}
-                    resizeMode="cover"
+                    resizeMode={FastImage.resizeMode.cover}
+                    onLoad={() => setLoadedImages(prev => ({ ...prev, [index]: true }))}
                   />
                 )}
               </View>

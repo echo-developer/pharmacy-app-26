@@ -10,7 +10,8 @@ import {
   ActivityIndicator,
   Image as NativeImage,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { Heart, ChevronUp, X } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -20,7 +21,12 @@ const ImageLoader = ({ visible }) => {
   if (!visible) return null;
   return (
     <View style={styles.imageLoader} pointerEvents="none">
-      <ActivityIndicator size="large" color="#263077" />
+      <ShimmerPlaceholder
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        shimmerColor="#EAEAEA"
+        shimmerBackgroundColor="#F5F5F5"
+        visible={false}
+      />
     </View>
   );
 };
@@ -115,12 +121,19 @@ const ProductImageGallery = ({
               index,
             })}
             keyExtractor={(item, idx) => `full-${item}-${idx}`}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: item }}
-                style={styles.fullscreenImage}
-                resizeMode="contain"
-              />
+            renderItem={({ item, index }) => (
+              <View style={styles.fullscreenImageContainer}>
+                {!loadedImages[index] && <ImageLoader visible />}
+                <FastImage
+                  source={failedImages[index]
+                    ? require('../../assets/images/Subtract.png')
+                    : { uri: item, priority: FastImage.priority.high }}
+                  style={styles.fullscreenImage}
+                  resizeMode={FastImage.resizeMode.contain}
+                  onLoad={() => markImageLoaded(index)}
+                  onError={() => markImageFailed(index)}
+                />
+              </View>
             )}
           />
           {hasMultiple && (
@@ -156,29 +169,45 @@ const ProductImageGallery = ({
                 activeOpacity={0.95}
                 onPress={() => openFullscreen(index)}
               >
-                <Image
-                  source={failedImages[index] ? require('../../assets/images/Subtract.png') : { uri: item }}
-                  style={[
-                    styles.image,
-                    styles.pageImage,
-                    loadedImages[index] ? styles.imageLoaded : styles.imageLoading,
-                  ]}
-                  resizeMode="cover"
-                  onLoad={() => markImageLoaded(index)}
-                  onError={() => markImageFailed(index)}
-                />
+                <View style={[styles.image, styles.pageImage]}>
+                  {!loadedImages[index] && (
+                    <ShimmerPlaceholder
+                      style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                      shimmerColor="#EAEAEA"
+                      shimmerBackgroundColor="#F5F5F5"
+                      visible={false}
+                    />
+                  )}
+                  <FastImage
+                    source={failedImages[index] ? require('../../assets/images/Subtract.png') : { uri: item, priority: FastImage.priority.high }}
+                    style={StyleSheet.absoluteFill}
+                    resizeMode={FastImage.resizeMode.cover}
+                    onLoad={() => markImageLoaded(index)}
+                    onError={() => markImageFailed(index)}
+                  />
+                </View>
               </TouchableOpacity>
             )}
           />
         ) : (
           <TouchableOpacity activeOpacity={0.95} onPress={() => openFullscreen(0)}>
-            <Image
-              source={require('../../assets/images/Subtract.png')}
-              style={[styles.image, loadedImages[0] ? styles.imageLoaded : styles.imageLoading]}
-              resizeMode="cover"
-              onLoad={() => markImageLoaded(0)}
-              onError={() => markImageFailed(0)}
-            />
+            <View style={[styles.image, loadedImages[0] ? styles.imageLoaded : styles.imageLoading]}>
+              {!loadedImages[0] && (
+                <ShimmerPlaceholder
+                  style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                  shimmerColor="#EAEAEA"
+                  shimmerBackgroundColor="#F5F5F5"
+                  visible={false}
+                />
+              )}
+              <FastImage
+                source={require('../../assets/images/Subtract.png')}
+                  style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                resizeMode={FastImage.resizeMode.cover}
+                onLoad={() => markImageLoaded(0)}
+                onError={() => markImageFailed(0)}
+              />
+            </View>
           </TouchableOpacity>
         )}
         <ImageLoader visible={!loadedImages[activeIndex]} />
@@ -265,6 +294,10 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   fullscreenImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+  },
+  fullscreenImageContainer: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
   },

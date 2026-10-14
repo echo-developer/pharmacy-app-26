@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import { ProductGridLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const OffersScreen = ({ navigation }) => {
   const cartItems = useSelector(state => state.GlobalReducer.cart?.items || []);
@@ -58,7 +59,7 @@ const OffersScreen = ({ navigation }) => {
   return <View style={styles.page}>
     <StatusBar barStyle="dark-content" backgroundColor="#fff" />
     <View style={styles.header}><TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}><ArrowLeft size={22} color="#263077" /></TouchableOpacity><View style={styles.titleWrap}><Text style={styles.title}>Offers for you</Text><Text style={styles.sub}>Save on medicines and wellness essentials</Text></View></View>
-    {loading ? <View style={styles.center}><ActivityIndicator size="large" color="#263077" /></View> : <FlatList
+    {loading ? <ProductGridLoadingSkeleton /> : <FlatList
       data={products} keyExtractor={(item, i) => String(item.product_id || i)} numColumns={2}
       contentContainerStyle={styles.grid} columnWrapperStyle={styles.row}
       onEndReached={loadMore} onEndReachedThreshold={0.5}

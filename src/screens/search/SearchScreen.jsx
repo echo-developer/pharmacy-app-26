@@ -7,13 +7,14 @@ import {
   FlatList,
   StyleSheet,
   StatusBar,
-  ActivityIndicator,
 } from 'react-native';
-import { CachedImage as Image } from '../../components/common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
+import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const SearchScreen = ({ navigation, route }) => {
   const initialKeyword = route?.params?.keyword || route?.params?.query || route?.params?.search || '';
@@ -27,6 +28,7 @@ const SearchScreen = ({ navigation, route }) => {
     'Thermometer',
     'Baby Wipes',
   ]);
+  const [loadedImages, setLoadedImages] = useState({});
 
   useEffect(() => {
     const paramKw = route?.params?.keyword || route?.params?.query || route?.params?.search;
@@ -132,6 +134,7 @@ const SearchScreen = ({ navigation, route }) => {
     const sellPrice = item.product_sell_price || item.sell_price || item.price || 0;
     const mrpPrice = item.product_mrp || item.mrp;
     const outOfStock = isProductOutOfStock(item);
+    const isLoaded = loadedImages[productId];
 
     return (
       <TouchableOpacity
@@ -140,14 +143,23 @@ const SearchScreen = ({ navigation, route }) => {
         onPress={() => navigation.navigate('ProductDetails', { id: productId, product: item })}
       >
         <View style={styles.productImageArea}>
-          <Image
+          {!isLoaded && (
+            <ShimmerPlaceholder
+              style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+              shimmerColor="#EAEAEA"
+              shimmerBackgroundColor="#F5F5F5"
+              visible={false}
+            />
+          )}
+          <FastImage
             source={
               productImage && typeof productImage === 'string'
-                ? { uri: productImage }
-                : productImage || require('../../assets/images/products.png')
+                ? { uri: productImage, priority: FastImage.priority.normal }
+                : require('../../assets/images/products.png')
             }
             style={styles.productImage}
-            resizeMode="contain"
+            resizeMode={FastImage.resizeMode.contain}
+            onLoad={() => setLoadedImages(prev => ({ ...prev, [productId]: true }))}
           />
         </View>
         <View style={styles.productInfo}>
@@ -208,9 +220,7 @@ const SearchScreen = ({ navigation, route }) => {
 
       {/* CONTENT */}
       {loading ? (
-        <View style={styles.loaderCenter}>
-          <ActivityIndicator size="large" color="#2CB7DF" />
-        </View>
+        <ProductRowsLoadingSkeleton />
       ) : query.length >= 1 ? (
         results.length > 0 ? (
           <FlatList

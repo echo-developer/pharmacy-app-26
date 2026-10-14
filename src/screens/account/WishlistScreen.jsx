@@ -6,7 +6,6 @@ import {
   FlatList,
   StyleSheet,
   StatusBar,
-  ActivityIndicator,
 } from 'react-native';
 import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ArrowLeft, Trash2 } from 'lucide-react-native';
@@ -15,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const WishlistScreen = ({ navigation }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -104,7 +104,7 @@ const WishlistScreen = ({ navigation }) => {
         <Text style={styles.unitText}>{item.unit}</Text>
         <View style={styles.priceRow}>
           <Text style={styles.priceText}>₹{item.product_sell_price}</Text>
-          {item.product_mrp ? (
+          {Number(item.product_mrp) > Number(item.product_sell_price) ? (
             <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
           ) : null}
         </View>
@@ -143,9 +143,7 @@ const WishlistScreen = ({ navigation }) => {
       </View>
 
       {loader ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#2CB7DF" />
-        </View>
+        <ProductRowsLoadingSkeleton />
       ) : wishlistItems.length > 0 ? (
         <FlatList
           data={wishlistItems}

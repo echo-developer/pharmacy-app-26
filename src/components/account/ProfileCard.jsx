@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { User, Pencil, ChevronRight, Camera } from 'lucide-react-native';
 
 const ProfileCard = ({
@@ -18,6 +19,12 @@ const ProfileCard = ({
   onEditPress,
   onEmailPress,
 }) => {
+  const [avatarLoaded, setAvatarLoaded] = useState(!avatarUri);
+
+  React.useEffect(() => {
+    setAvatarLoaded(!avatarUri);
+  }, [avatarUri]);
+
   return (
     <View style={styles.container}>
       {/* LEFT: Avatar Circle */}
@@ -31,7 +38,21 @@ const ProfileCard = ({
         {uploadingAvatar ? (
           <ActivityIndicator color="#263077" />
         ) : avatarUri ? (
-          <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+          <>
+            {!avatarLoaded && (
+              <ShimmerPlaceholder
+                style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                shimmerColor="#EAEAEA"
+                shimmerBackgroundColor="#F5F5F5"
+                visible={false}
+              />
+            )}
+            <FastImage
+              source={{ uri: avatarUri, priority: FastImage.priority.normal }}
+              style={styles.avatarImage}
+              onLoad={() => setAvatarLoaded(true)}
+            />
+          </>
         ) : (
           <User size={36} color="#333333" fill="#333333" />
         )}

@@ -7,7 +7,8 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import { CachedImageBackground as ImageBackground } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -41,12 +42,13 @@ const defaultBannerAsset = require('../../assets/images/deals.png');
 
 const getImageSource = (img) => {
   if (!img) return defaultBannerAsset;
-  if (typeof img === 'string') return { uri: img };
-  return img;
+  if (typeof img === 'string') return { uri: img, priority: FastImage.priority.high };
+  return { ...img, priority: FastImage.priority.high };
 };
 
 const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState({});
 
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
@@ -68,6 +70,7 @@ const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
         {offers.map((item, index) => {
           const itemId = item.banner_id || item.id || index;
           const imgSource = getImageSource(item.image);
+          const isLoaded = loadedImages[itemId];
           return (
             <TouchableOpacity
               key={itemId.toString()}
@@ -76,12 +79,22 @@ const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
               onPress={() => onCardPress?.(item)}
             >
               {/* Image */}
-              <ImageBackground
-                source={imgSource}
-                style={styles.cardImage}
-                imageStyle={styles.cardImageStyle}
-                resizeMode="cover"
-              />
+              <View style={styles.cardImage}>
+                {!isLoaded && (
+                  <ShimmerPlaceholder
+                    style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                    shimmerColor="#EAEAEA"
+                    shimmerBackgroundColor="#F5F5F5"
+                    visible={false}
+                  />
+                )}
+                <FastImage
+                  source={imgSource}
+                  style={StyleSheet.absoluteFill}
+                  resizeMode={FastImage.resizeMode.cover}
+                  onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
+                />
+              </View>
 
               {showCaption && (
                 <View style={styles.textContainer}>
@@ -128,9 +141,8 @@ const styles = StyleSheet.create({
   cardImage: {
     width: CARD_WIDTH,
     height: 160,
-  },
-  cardImageStyle: {
     borderRadius: 16,
+    overflow: 'hidden',
   },
   textContainer: {
     marginTop: -43,

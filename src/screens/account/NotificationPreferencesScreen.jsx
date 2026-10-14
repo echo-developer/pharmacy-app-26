@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   StatusBar,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
 import { ArrowLeft, Bell, ChevronRight } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
+import { SimplePageLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const NotificationPreferencesScreen = ({ navigation }) => {
   const [items, setItems] = useState([]);
@@ -123,9 +123,7 @@ const NotificationPreferencesScreen = ({ navigation }) => {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#263077" />
-        </View>
+        <SimplePageLoadingSkeleton count={5} rowHeight={34} />
       ) : (
         <FlatList
           data={items}

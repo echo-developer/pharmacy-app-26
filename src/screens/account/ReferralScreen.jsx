@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Share,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { ArrowLeft, Gift, Share2 } from 'lucide-react-native';
 import CommonService from '../../utils/CommonService';
+import { SimplePageLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const ReferralScreen = ({ navigation }) => {
   const [coupons, setCoupons] = useState([]);
@@ -90,11 +90,7 @@ const ReferralScreen = ({ navigation }) => {
       </View>
 
       {loading ? (
-        <ActivityIndicator
-          style={styles.loader}
-          color="#263077"
-          size="large"
-        />
+        <SimplePageLoadingSkeleton count={3} rowHeight={54} />
       ) : (
         <FlatList
           data={coupons}

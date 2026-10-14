@@ -20,7 +20,7 @@ const BillDetails = ({
         <View style={styles.row}>
           <Text style={styles.label}>Items Total</Text>
           <View style={styles.valueRow}>
-            <Text style={styles.cutPrice}>₹{itemsCutPrice}</Text>
+            {itemsCutPrice > subtotal && <Text style={styles.cutPrice}>₹{itemsCutPrice}</Text>}
             <Text style={styles.price}>₹{subtotal}</Text>
           </View>
         </View>

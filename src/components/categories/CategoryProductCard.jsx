@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
+import FastImage from 'react-native-fast-image';
 import { Heart, Zap, Minus, Plus } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
@@ -13,6 +13,12 @@ import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 
 const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, isFavorite = false }) => {
+  const imageUri = typeof product.image === 'string' ? product.image : product.image?.uri;
+  const [imageLoaded, setImageLoaded] = React.useState(!imageUri);
+
+  React.useEffect(() => {
+    setImageLoaded(!imageUri);
+  }, [imageUri]);
   // Read live cart qty from redux
   const cart = useSelector(state => state.GlobalReducer.cart);
   const cartQty = React.useMemo(() => {
@@ -38,14 +44,13 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
               <Text style={styles.badgeText}>{product.discount}</Text>
             </View>
           )}
-          <Image
-            source={
-              product.image && typeof product.image === 'string'
-                ? { uri: product.image }
-                : product.image || require('../../assets/images/products.png')
-            }
-            style={styles.image}
-            resizeMode="contain"
+          {!imageLoaded && <View pointerEvents="none" style={styles.imageSkeleton} />}
+          <FastImage
+            source={imageUri ? { uri: imageUri, priority: FastImage.priority.normal } : require('../../assets/images/products.png')}
+            style={[styles.image, !imageLoaded && styles.imagePending]}
+            resizeMode={FastImage.resizeMode.contain}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageLoaded(true)}
           />
         </View>
 
@@ -55,7 +60,9 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
             {product.title}
           </Text>
           <Text style={styles.tablets}>{product.tablets}</Text>
-          <Text style={styles.mrp}>MRP ₹{product.mrp}</Text>
+          {Number(product.mrp) > Number(product.price) && (
+            <Text style={styles.mrp}>MRP ₹{product.mrp}</Text>
+          )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>~₹{product.price}</Text>
             <Text style={styles.discountPct}>{product.discountPct}</Text>
@@ -168,6 +175,14 @@ const styles = StyleSheet.create({
   image: {
     width: '80%',
     height: '80%',
+  },
+  imagePending: {
+    opacity: 0,
+  },
+  imageSkeleton: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#ECEFF3',
+    borderRadius: 10,
   },
   details: {
     flex: 1,

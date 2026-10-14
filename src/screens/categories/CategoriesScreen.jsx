@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, StatusBar, ActivityIndicator, Modal, TouchableOpacity, ScrollView, Text, TextInput } from 'react-native';
+import { View, StyleSheet, StatusBar, Modal, TouchableOpacity, ScrollView, Text, TextInput } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CategoryHeader from '../../components/categories/CategoryHeader';
@@ -11,6 +11,7 @@ import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ChevronRight, X } from 'lucide-react-native';
+import { CategoriesLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const CategoriesScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -91,6 +92,9 @@ const CategoriesScreen = ({ navigation }) => {
     const requestId = ++productRequestId.current;
     if (cachedProducts) {
       setProducts(cachedProducts);
+    } else {
+      // Never leave the previous category visible while the next list loads.
+      setProducts([]);
     }
     setProductsLoading(!cachedProducts);
     CommonService._callApi({
@@ -308,9 +312,7 @@ const CategoriesScreen = ({ navigation }) => {
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
       {loader ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#2CB7DF" />
-        </View>
+        <CategoriesLoadingSkeleton />
       ) : (
         <>
           {showCategoryProducts ? (
@@ -527,11 +529,6 @@ const CategoriesScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  loaderContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   contentArea: { flex: 1, backgroundColor: '#FFFFFF' },
   landingHeader: {
     justifyContent: 'center',

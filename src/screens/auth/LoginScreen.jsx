@@ -14,7 +14,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { CachedImage as Image } from '../../components/common/CachedImage';
+import FastImage from 'react-native-fast-image';
+import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
 import CommonService from '../../utils/CommonService';
 
@@ -25,6 +26,7 @@ const LoginScreen = ({ navigation, route }) => {
   const [isChecked, setIsChecked] = useState(false);
   const [loader, setLoader] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [medicineImageLoaded, setMedicineImageLoaded] = useState(false);
 
   React.useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -139,10 +141,19 @@ const LoginScreen = ({ navigation, route }) => {
           </View>
 
           {/* Medicine Bag Image */}
-          <Image
+          {!medicineImageLoaded && (
+            <ShimmerPlaceholder
+              style={styles.medicineImage}
+              shimmerColor="#EAEAEA"
+              shimmerBackgroundColor="#F5F5F5"
+              visible={false}
+            />
+          )}
+          <FastImage
             source={require('../../assets/images/Subtract.png')}
             style={styles.medicineImage}
-            resizeMode="contain"
+            resizeMode={FastImage.resizeMode.contain}
+            onLoad={() => setMedicineImageLoaded(true)}
           />
         </LinearGradient>
         </>}
