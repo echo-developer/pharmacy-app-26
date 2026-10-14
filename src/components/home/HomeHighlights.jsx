@@ -14,6 +14,8 @@ import MaskedView from '@react-native-masked-view/masked-view';
 const CARD_WIDTH = 156;
 const CARD_GAP = 10;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
+const VIEWPORT_WIDTH = Dimensions.get('window').width;
+const CENTER_OFFSET = (VIEWPORT_WIDTH - CARD_WIDTH) / 2;
 const CARD_COLORS = [
   ['#E7F8FC', '#E9E3DC'],
   ['#8DF79B', '#E5E9DE'],
@@ -71,13 +73,22 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
   const scrollX = React.useRef(new Animated.Value(0)).current;
   const highlights = getCategoryHighlights(categories);
   if (!highlights.length) return null;
+  const maxScrollOffset = Math.max(
+    0,
+    highlights.length * CARD_WIDTH + (highlights.length - 1) * CARD_GAP - VIEWPORT_WIDTH,
+  );
+  const snapOffsets = highlights.map((_, index) => {
+    if (index === 0) return 0;
+    if (index === highlights.length - 1) return maxScrollOffset;
+    return Math.max(0, Math.min(maxScrollOffset, index * SNAP_INTERVAL - CENTER_OFFSET));
+  });
 
   return (
     <View style={styles.container}>
       <Animated.ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={SNAP_INTERVAL}
+        snapToOffsets={snapOffsets}
         decelerationRate="fast"
         scrollEventThrottle={16}
         contentContainerStyle={styles.content}
@@ -87,18 +98,24 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
         )}
         onMomentumScrollEnd={event => {
           const x = event.nativeEvent.contentOffset.x;
-          setActiveIndex(Math.min(highlights.length - 1, Math.max(0, Math.round(x / SNAP_INTERVAL))));
+          const nearestIndex = snapOffsets.reduce((bestIndex, offset, index) =>
+            Math.abs(offset - x) < Math.abs(snapOffsets[bestIndex] - x) ? index : bestIndex,
+          0);
+          setActiveIndex(nearestIndex);
         }}
       >
         {highlights.map((highlight, index) => {
           const colors = CARD_COLORS[index % CARD_COLORS.length];
+          const currentOffset = snapOffsets[index];
+          const previousOffset = index > 0 ? snapOffsets[index - 1] : currentOffset - SNAP_INTERVAL;
+          const nextOffset = index < highlights.length - 1 ? snapOffsets[index + 1] : currentOffset + SNAP_INTERVAL;
           const scale = scrollX.interpolate({
             inputRange: [
-              (index - 1) * SNAP_INTERVAL,
-              index * SNAP_INTERVAL,
-              (index + 1) * SNAP_INTERVAL,
+              previousOffset < currentOffset ? previousOffset : currentOffset - SNAP_INTERVAL,
+              currentOffset,
+              nextOffset > currentOffset ? nextOffset : currentOffset + SNAP_INTERVAL,
             ],
-            outputRange: [0.9, 1.12, 0.9],
+              outputRange: [0.82, 1.18, 0.82],
             extrapolate: 'clamp',
           });
           return (
@@ -154,11 +171,11 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 12,
+    marginTop: 40,
     marginBottom: 8,
   },
   content: {
-    paddingHorizontal: (Dimensions.get('window').width - CARD_WIDTH) / 2,
+    paddingHorizontal: 0,
     gap: CARD_GAP,
     alignItems: 'center',
     paddingVertical: 10,

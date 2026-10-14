@@ -1,26 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { ShieldCheck, Truck, Headphones } from 'lucide-react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
 const badges = [
   {
     id: 1,
-    icon: ShieldCheck,
-    iconColor: '#2CB7DF',
+    icon: require('../../assets/images/genuine.png'),
     title: 'Genuine',
     subtitle: 'Products',
   },
   {
     id: 2,
-    icon: Truck,
-    iconColor: '#2CB7DF',
+    icon: require('../../assets/images/delivery.png'),
     title: 'Fast & Secure',
     subtitle: 'Delivery',
   },
   {
     id: 3,
-    icon: Headphones,
-    iconColor: '#6C63FF',
+    icon: require('../../assets/images/support.png'),
     title: 'Expert',
     subtitle: 'Support',
   },
@@ -30,15 +26,16 @@ const TrustBadges = () => {
   return (
     <View style={styles.container}>
       {badges.map((item, index) => {
-        const Icon = item.icon;
         return (
-          <View key={item.id} style={styles.badgeWrapper}>
+          <View key={item.id} style={[styles.badgeWrapper, index === 1 && styles.middleBadgeWrapper]}>
             <View style={styles.iconWrapper}>
-              <Icon size={22} color={item.iconColor} />
+              <Image source={item.icon} style={styles.icon} resizeMode="contain" />
             </View>
 
             <View style={styles.textWrapper}>
-              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                {item.title}
+              </Text>
               <Text style={styles.subtitle}>{item.subtitle}</Text>
             </View>
 
@@ -53,11 +50,15 @@ const TrustBadges = () => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    marginHorizontal: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
     marginTop: 16,
+    columnGap: 12,
+    borderRadius: 12,
+    backgroundColor: '#EAF7FA',
   },
   badgeWrapper: {
     flexDirection: 'row',
@@ -66,29 +67,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
+  middleBadgeWrapper: {
+    transform: [{ translateX: 6 }],
+  },
   iconWrapper: {
-    marginRight: 8,
+    marginRight: 6,
+  },
+  icon: {
+    width: 22,
+    height: 22,
   },
   textWrapper: {
     flexDirection: 'column',
+    flexShrink: 1,
   },
   title: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#113A6A',              // Title color
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#4C6269',              // Subtitle color
     marginTop: 1,
   },
   divider: {
     position: 'absolute',
-    right: 0,
-    top: 6,
-    bottom: 6,
+    right: -6,
+    top: -4,
+    bottom: -4,
     width: 1,
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#A6CCD8',
   },
 });
 
