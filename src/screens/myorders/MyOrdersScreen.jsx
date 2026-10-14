@@ -189,6 +189,37 @@ const MyOrdersScreen = ({ navigation }) => {
     loadOrder(1, false);
   };
 
+  const repeatOrder = order => {
+    const orderItems = Array.isArray(order.items)
+      ? order.items
+      : Array.isArray(order.products)
+        ? order.products
+        : Array.isArray(order.order_details)
+          ? order.order_details
+          : [];
+
+    if (orderItems.length === 0) {
+      navigation.navigate('OrderDetails', { id: order.order_id, oid: order.order_id });
+      return;
+    }
+
+    const addedAny = orderItems.reduce((added, item) => {
+      const product = {
+        ...item,
+        product_id: item.product_id || item.id,
+        product_name: item.product_name || item.name,
+        product_sell_price: item.product_sell_price || item.price || item.sell_price,
+        product_mrp: item.product_mrp || item.mrp,
+        qty: item.qty || item.product_qty || 1,
+        cartqty: 1,
+        image: item.image || item.product_image,
+      };
+      return CommonService.addToCart(product) || added;
+    }, false);
+
+    if (addedAny) navigation.navigate('Cart');
+  };
+
   const getCardStatus = (statusStr) => {
     // 1: Placed, 2: Shipped, 3: Out for Delivery, 4: Delivered, 7: Cancelled
     const status = String(statusStr || '').toLowerCase();
@@ -279,6 +310,8 @@ const MyOrdersScreen = ({ navigation }) => {
               const itemStatus = item.order_status_name || item.status_label || item.order_status || item.status;
               const status = getCardStatus(itemStatus);
               const headerText = getHeaderText(item);
+              const isUnpaidCodOrder = parseInt(item.is_paid, 10) !== 1
+                && (item.payment_method === 'COD' || item.payment_mode === 'Cash on Delivery');
               // New API returns gallery as URL strings; older responses return item objects.
               const orderItems = Array.isArray(item.products)
                 ? item.products
@@ -297,18 +330,12 @@ const MyOrdersScreen = ({ navigation }) => {
                   activeOpacity={0.9}
                   onPress={() => navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id })}
                 >
-                  <View style={styles.dateLabelWrapper}>
-                    <Text style={styles.dateLabel}>
-                      Ordered on {formatDate(item.order_date)}
-                    </Text>
-                  </View>
-
                   <OrderCard
                     status={status}
                     statusLabel={item.status_label || item.order_status_name || getStatusLabel(itemStatus)}
                     headerText={headerText}
                     orderId={item.order_number || item.order_id}
-                    amount={item.order_total ?? item.final_amount ?? item.total_amount ?? item.grand_total ?? item.amount}
+                    orderedOn={formatDate(item.order_date)}
                     images={imagesList}
                     onPress={() => navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id })}
                     timelineSteps={getTimelineSteps(item)}
@@ -320,20 +347,22 @@ const MyOrdersScreen = ({ navigation }) => {
                             onPress: () =>
                               navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
                           },
+                          ...(isUnpaidCodOrder ? [{
+                            label: 'Pay Online',
+                            onPress: () => navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
+                          }] : []),
                         ]
                         : status === 'completed'
                           ? [
                             {
-                              label: 'View Details',
-                              onPress: () =>
-                                navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
+                              label: 'Repeat Order',
+                              onPress: () => repeatOrder(item),
                             },
                           ]
                           : [
                             {
-                              label: 'View Details',
-                              onPress: () =>
-                                navigation.navigate('OrderDetails', { id: item.order_id, oid: item.order_id }),
+                              label: 'Reorder',
+                              onPress: () => repeatOrder(item),
                             },
                           ]
                     }
@@ -365,20 +394,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#787887',
-  },
-  dateLabelWrapper: {
-    marginHorizontal: 16,
-    marginVertical: 12,
-    alignSelf: 'flex-start',
-  },
-  dateLabel: {
-    fontSize: 12,
-    color: '#787887',
-    backgroundColor: '#E7E8F0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    overflow: 'hidden',
   },
 });
 

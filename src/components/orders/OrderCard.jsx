@@ -38,7 +38,7 @@ const OrderCard = ({
   headerText = 'Arriving by 10th Jun',
   images = [],
   orderId,
-  amount,
+  orderedOn,
   timelineSteps = [],
   actions = [],
   onPress,
@@ -66,13 +66,13 @@ const OrderCard = ({
       </LinearGradient>
 
       {/* ===== ORDER META ===== */}
-      {(orderId || amount) ? (
+      {(orderId || orderedOn) ? (
         <View style={styles.metaRow}>
           {orderId ? (
-            <Text style={styles.metaText}>Order #{orderId}</Text>
+            <Text style={styles.metaText} numberOfLines={1}>Ordered ID {orderId}</Text>
           ) : null}
-          {amount ? (
-            <Text style={styles.metaAmount}>₹{amount}</Text>
+          {orderedOn ? (
+            <Text style={styles.metaDate} numberOfLines={1}>Ordered on {orderedOn}</Text>
           ) : null}
         </View>
       ) : null}
@@ -168,14 +168,17 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   metaText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#787887',
     fontWeight: '500',
+    flexShrink: 1,
   },
-  metaAmount: {
-    fontSize: 14,
-    color: '#043250',
-    fontWeight: '700',
+  metaDate: {
+    fontSize: 12,
+    color: '#787887',
+    fontWeight: '500',
+    marginLeft: 8,
+    flexShrink: 1,
   },
 
   /* ===== Images Row ===== */
