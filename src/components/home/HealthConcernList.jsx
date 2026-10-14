@@ -77,7 +77,7 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
-    gap: 12,
+    gap: 6,
     paddingTop: 14,
     paddingBottom: 32,
   },
@@ -92,10 +92,10 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     position: 'absolute',
-    top: 0,
-    left: '-5%',
-    width: '110%',
-    height: '100%',
+    top: '-4%',
+    left: '-10%',
+    width: '120%',
+    height: '108%',
     borderRadius: 24,
   },
   cardLabel: {
