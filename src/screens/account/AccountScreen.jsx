@@ -1,5 +1,5 @@
 import React, { useContext, useState, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, StatusBar, Alert, Share, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, StyleSheet, StatusBar, Alert, Share, Linking, ActivityIndicator, TouchableOpacity, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import AccountHeader from '../../components/account/AccountHeader';
@@ -90,6 +90,14 @@ const AccountScreen = ({ navigation }) => {
 
   const handleHelpPress = () => {
     navigation.navigate('ContactSupport');
+  };
+
+  const openExternalUrl = async url => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Unable to open link', 'Please try again or contact customer support.');
+    }
   };
 
   const submitAccountDeletionRequest = async () => {
@@ -263,6 +271,8 @@ const AccountScreen = ({ navigation }) => {
           onOrdersPress={() => navigation.navigate('My Orders')}
           onWalletPress={handleWalletPress}
           onHelpPress={handleHelpPress}
+          onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
+          onCallPress={() => openExternalUrl('tel:1800123456')}
         />
         <AppUpdateBanner
           title="App Update Available"

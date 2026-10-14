@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Alert, Linking, View, StyleSheet, Animated, StatusBar, Platform } from 'react-native';
+import { Alert, View, StyleSheet, Animated, StatusBar, Platform } from 'react-native';
 import { errorCodes, isErrorWithCode, pick, types } from '@react-native-documents/picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -73,7 +73,6 @@ const HomeScreen = ({ navigation }) => {
   const [activeHealthCategoryId, setActiveHealthCategoryId] = useState(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchHeight, setSearchHeight] = useState(0);
-  const [dividerOffset, setDividerOffset] = useState(0);
   const [homeState, dispatch] = useReducer(homeReducer, {
     data: null,
     loader: true,
@@ -177,14 +176,6 @@ const HomeScreen = ({ navigation }) => {
     ? homeState.data.popular_brand.map(b => ({ ...b, id: b.brand_id || b.id, name: b.brand_name || b.name }))
     : [];
 
-  const openExternalUrl = async (url) => {
-    try {
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert('Unable to open link', 'Please try again or contact customer support.');
-    }
-  };
-
   const handlePrescriptionUpload = async () => {
     if (uploadingPrescription) return;
     try {
@@ -239,8 +230,7 @@ const HomeScreen = ({ navigation }) => {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={{
-          // Keep one uninterrupted gradient through the prescription card's divider.
-          height: insets.top + headerHeight + searchHeight + 12 + dividerOffset,
+          height: insets.top + headerHeight + searchHeight + 12,
           position: 'absolute',
           top: 0,
           left: 0,
@@ -274,15 +264,8 @@ const HomeScreen = ({ navigation }) => {
       ) : (
         <View>
           <PrescriptionBanner
-            phoneNumber="1800-123-456"
             onUploadPress={handlePrescriptionUpload}
             uploading={uploadingPrescription}
-            onWhatsAppPress={() => openExternalUrl('https://wa.me/?text=Hello%2C%20I%20need%20help%20with%20my%20prescription.')}
-            onCallPress={() => openExternalUrl('tel:1800123456')}
-            onDottedLineLayout={event => {
-              const measuredOffset = event.nativeEvent.layout.y;
-              setDividerOffset(current => current || measuredOffset);
-            }}
           />
           {banners.length > 0 && <OfferCarousel
             offers={banners}
