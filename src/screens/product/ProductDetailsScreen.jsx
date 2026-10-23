@@ -21,7 +21,7 @@ const ProductDetailsScreen = ({ navigation }) => {
   const productId = route.params?.id;
   const previewProduct = route.params?.product;
 
-  const [loader, setLoader] = useState(false);
+  const [loader, setLoader] = useState(!previewProduct);
   const [productData, setProductData] = useState(previewProduct || null);
 
   // Wishlist state
@@ -33,7 +33,7 @@ const ProductDetailsScreen = ({ navigation }) => {
   const cartCount = cart?.items?.length || 0;
 
   const getProductDetails = (id) => {
-    setLoader(true);
+    if (!previewProduct) setLoader(true);
     CommonService._callApi({
       api: '/product/details',
       method: 'GET',
@@ -47,7 +47,7 @@ const ProductDetailsScreen = ({ navigation }) => {
         setLoader(false);
         if (dataresp.status == 1) {
           const data = dataresp.response.data;
-          setProductData(data);
+          setProductData(current => ({ ...(current || {}), ...data }));
           // Sync favorite state from API response
           setIsFavorite(data?.is_favorite === 1);
         }

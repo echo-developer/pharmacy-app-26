@@ -11,6 +11,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import OutOfStockBanner from '../common/OutOfStockBanner';
+import { getDiscountLabel } from '../../utils/productPricing';
 
 const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, isFavorite = false }) => {
   const imageUri = typeof product.image === 'string' ? product.image : product.image?.uri;
@@ -27,6 +29,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
     return item ? item.cartqty : 0;
   }, [cart, product?.id]);
   const outOfStock = isProductOutOfStock(product);
+  const discountLabel = getDiscountLabel(product);
 
   const handleIncrease = () => onAddPress?.();
   const handleDecrease = () => {
@@ -34,7 +37,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, outOfStock && { opacity: 0.62 }]}>
       {/* ===== TOP: Image + Details ===== */}
       <TouchableOpacity style={styles.topRow} activeOpacity={0.85} onPress={onProductPress}>
         {/* Image Area */}
@@ -52,6 +55,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageLoaded(true)}
           />
+          {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} />}
         </View>
 
         {/* Details */}
@@ -61,11 +65,11 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
           </Text>
           <Text style={styles.tablets}>{product.tablets}</Text>
           {Number(product.mrp) > Number(product.price) && (
-            <Text style={styles.mrp}>MRP ₹{product.mrp}</Text>
+            <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>₹{product.mrp}</Text></Text>
           )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>~₹{product.price}</Text>
-            <Text style={styles.discountPct}>{product.discountPct}</Text>
+            {discountLabel ? <Text style={styles.discountPct}>{discountLabel}</Text> : null}
           </View>
           <View style={styles.deliveryRow}>
             <Text style={styles.delivery}>{product.delivery}</Text>
@@ -95,7 +99,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
         {/* Stepper or ADD */}
         {outOfStock ? (
           <View style={[styles.addButton, styles.unavailableButton]}>
-            <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+            <Text style={styles.unavailableText}>ADD</Text>
           </View>
         ) : cartQty > 0 ? (
           <View style={styles.stepper}>
@@ -172,6 +176,8 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '800',
   },
+  outOfStockBanner: { position: 'absolute', left: -8, right: -8, bottom: -1, height: 37, zIndex: 4 },
+  outOfStockBannerText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
   image: {
     width: '80%',
     height: '80%',
@@ -202,9 +208,9 @@ const styles = StyleSheet.create({
   mrp: {
     fontSize: 11,
     color: '#949494',
-    textDecorationLine: 'line-through',
     marginTop: 6,
   },
+  mrpAmount: { textDecorationLine: 'line-through' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

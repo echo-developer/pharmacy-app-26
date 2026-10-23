@@ -18,6 +18,9 @@ import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
+import OutOfStockBanner from '../../components/common/OutOfStockBanner';
+import { getDiscountLabel } from '../../utils/productPricing';
+import DeliveryTimeInfo from '../../components/common/DeliveryTimeInfo';
 
 const hasPrice = product => {
   const price = product?.product_sell_price ?? product?.sell_price ?? product?.price;
@@ -95,18 +98,22 @@ const BuyAgainScreen = ({ navigation }) => {
       renderItem={({item}) => {
         const itemId = item.product_id || item.id;
         const outOfStock = isProductOutOfStock(item);
+        const discountLabel = getDiscountLabel(item);
         const cartQty = cartItems.find(cartItem => Math.abs(cartItem.product_id) === Math.abs(itemId))?.cartqty || 0;
-        return <View style={styles.card}>
-          <TouchableOpacity onPress={() => navigation.navigate('ProductDetails',{id:itemId,product:item})}>
+        return <View style={[styles.card, outOfStock && { opacity: 0.62 }]}>
+          <TouchableOpacity style={styles.imageWrap} onPress={() => navigation.navigate('ProductDetails',{id:itemId,product:item})}>
             <Image source={item.image ? {uri:item.image} : require('../../assets/images/products.png')} style={styles.image} resizeMode="contain"/>
+            {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} fontSize={10} />}
           </TouchableOpacity>
           <View style={styles.info}>
             <Text style={styles.name} numberOfLines={2}>{item.product_name || item.name || 'Pharmacy item'}</Text>
             <Text style={styles.unit}>{item.unit || 'Previously ordered'}</Text>
-            <Text style={styles.price}>₹{item.product_sell_price ?? item.sell_price ?? item.price ?? '—'}</Text>
+            {Number(item.product_mrp ?? item.mrp) > Number(item.product_sell_price ?? item.sell_price ?? item.price) ? <Text style={{ color: '#949494', fontSize: 10 }}>MRP <Text style={{ textDecorationLine: 'line-through' }}>₹{item.product_mrp ?? item.mrp}</Text></Text> : null}
+            <View style={styles.priceRow}><Text style={[styles.price, { color: '#0E1442' }]}>~₹{item.product_sell_price ?? item.sell_price ?? item.price ?? '—'}</Text>{discountLabel ? <Text style={{ color: '#FF6565', fontSize: 10, fontWeight: '700', marginLeft: 5 }}>{discountLabel}</Text> : null}</View>
+            <DeliveryTimeInfo text={item.delivery} />
           </View>
           {outOfStock ? (
-            <View style={styles.outOfStock}><Text style={styles.outOfStockText}>OUT OF STOCK</Text></View>
+            <View style={styles.outOfStock}><Text style={styles.outOfStockText}>ADD</Text></View>
           ) : cartQty > 0 ? (
             <View style={styles.qtyContainer}>
               <TouchableOpacity style={styles.qtyButton} onPress={() => CommonService.decreaseCart(itemId)}>
@@ -125,5 +132,5 @@ const BuyAgainScreen = ({ navigation }) => {
         </View>;
       }}/>}</View>;
 };
-const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#F7F8FC'},header:{paddingTop:48,paddingBottom:16,paddingHorizontal:16,backgroundColor:'#fff',flexDirection:'row',alignItems:'center',borderBottomWidth:1,borderColor:'#ECEEF4'},back:{padding:6,marginRight:10},title:{fontSize:20,fontWeight:'700',color:'#18204F'},sub:{fontSize:12,color:'#6D7184',marginTop:3},center:{flex:1,alignItems:'center',justifyContent:'center'},list:{padding:14,flexGrow:1},card:{backgroundColor:'#fff',borderRadius:13,padding:12,marginBottom:10,flexDirection:'row',alignItems:'center',borderWidth:1,borderColor:'#ECEEF4'},image:{width:72,height:72},info:{flex:1,marginHorizontal:12},name:{fontSize:14,fontWeight:'600',color:'#222744'},unit:{fontSize:11,color:'#85899A',marginTop:5},price:{fontSize:14,fontWeight:'700',color:'#263077',marginTop:5},add:{backgroundColor:'#263077',paddingHorizontal:12,paddingVertical:9,borderRadius:8,flexDirection:'row',alignItems:'center',gap:5},addText:{color:'#fff',fontSize:12,fontWeight:'700'},outOfStock:{backgroundColor:'#F1F1F3',paddingHorizontal:9,paddingVertical:9,borderRadius:8},outOfStockText:{color:'#777987',fontSize:9,fontWeight:'800'},qtyContainer:{height:36,width:92,backgroundColor:'#263077',borderRadius:8,flexDirection:'row',alignItems:'center',justifyContent:'space-around'},qtyButton:{width:30,height:36,alignItems:'center',justifyContent:'center'},qtyText:{color:'#fff',fontSize:14,fontWeight:'700',minWidth:18,textAlign:'center'},empty:{flex:1,alignItems:'center',justifyContent:'center',padding:30,minHeight:400},emptyTitle:{fontSize:17,fontWeight:'700',color:'#252A44',marginTop:15},emptySub:{fontSize:13,color:'#7B7F90',textAlign:'center',marginTop:6,lineHeight:19},browse:{marginTop:18,paddingHorizontal:20,paddingVertical:11,borderRadius:8,backgroundColor:'#263077'},browseText:{color:'#fff',fontWeight:'700'}});
+const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#F7F8FC'},header:{paddingTop:48,paddingBottom:16,paddingHorizontal:16,backgroundColor:'#fff',flexDirection:'row',alignItems:'center',borderBottomWidth:1,borderColor:'#ECEEF4'},back:{padding:6,marginRight:10},title:{fontSize:20,fontWeight:'700',color:'#18204F'},sub:{fontSize:12,color:'#6D7184',marginTop:3},center:{flex:1,alignItems:'center',justifyContent:'center'},list:{padding:14,flexGrow:1},card:{backgroundColor:'#fff',borderRadius:13,padding:12,marginBottom:10,flexDirection:'row',alignItems:'center',borderWidth:1,borderColor:'#ECEEF4'},image:{width:72,height:72},imageWrap:{position:'relative'},outOfStockBanner:{position:'absolute',left:-8,right:-8,bottom:0,height:34,alignItems:'center',justifyContent:'center',},outOfStockBannerText:{color:'#FFFFFF',fontSize:10,fontWeight:'600'},info:{flex:1,marginHorizontal:12},name:{fontSize:14,fontWeight:'600',color:'#222744'},unit:{fontSize:11,color:'#85899A',marginTop:5},price:{fontSize:14,fontWeight:'700',color:'#263077',marginTop:5},add:{backgroundColor:'#263077',paddingHorizontal:12,paddingVertical:9,borderRadius:8,flexDirection:'row',alignItems:'center',gap:5},addText:{color:'#fff',fontSize:12,fontWeight:'700'},outOfStock:{backgroundColor:'#F1F1F3',paddingHorizontal:9,paddingVertical:9,borderRadius:8},outOfStockText:{color:'#777987',fontSize:9,fontWeight:'800'},qtyContainer:{height:36,width:92,backgroundColor:'#263077',borderRadius:8,flexDirection:'row',alignItems:'center',justifyContent:'space-around'},qtyButton:{width:30,height:36,alignItems:'center',justifyContent:'center'},qtyText:{color:'#fff',fontSize:14,fontWeight:'700',minWidth:18,textAlign:'center'},empty:{flex:1,alignItems:'center',justifyContent:'center',padding:30,minHeight:400},emptyTitle:{fontSize:17,fontWeight:'700',color:'#252A44',marginTop:15},emptySub:{fontSize:13,color:'#7B7F90',textAlign:'center',marginTop:6,lineHeight:19},browse:{marginTop:18,paddingHorizontal:20,paddingVertical:11,borderRadius:8,backgroundColor:'#263077'},browseText:{color:'#fff',fontWeight:'700'}});
 export default BuyAgainScreen;

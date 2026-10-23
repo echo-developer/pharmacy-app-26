@@ -21,6 +21,9 @@ import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import FilterSortBar from '../../components/categories/FilterSortBar';
 import { ProductGridLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
+import OutOfStockBanner from '../../components/common/OutOfStockBanner';
+import { getDiscountLabel } from '../../utils/productPricing';
+import DeliveryTimeInfo from '../../components/common/DeliveryTimeInfo';
 
 const ProductsScreen = ({ navigation }) => {
   const route = useRoute();
@@ -146,34 +149,42 @@ const ProductsScreen = ({ navigation }) => {
   const renderProductCard = ({ item }) => {
     const qty = getCartQty(item.product_id);
     const outOfStock = isProductOutOfStock(item);
+    const discountLabel = getDiscountLabel(item);
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, outOfStock && { opacity: 0.62 }]}
         activeOpacity={0.85}
         onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
       >
-        <Image
-          source={{ uri: item.image || 'https://via.placeholder.com/120' }}
-          style={styles.cardImage}
-          resizeMode="contain"
-        />
+        <View style={styles.cardImageArea}>
+          <Image
+            source={{ uri: item.image || 'https://via.placeholder.com/120' }}
+            style={styles.cardImage}
+            resizeMode="contain"
+          />
+          {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} fontSize={10} />}
+        </View>
         <Text style={styles.productName} numberOfLines={2}>
           {item.product_name}
         </Text>
         <Text style={styles.unitText}>{item.unit || '1 Unit'}</Text>
 
         <View style={styles.cardFooter}>
-          <View>
-            <Text style={styles.priceText}>₹{item.product_sell_price || item.price}</Text>
-            {item.product_mrp && item.product_mrp > (item.product_sell_price || item.price) && (
-              <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
+          <View style={styles.priceInfo}>
+            {Number(item.product_mrp || item.mrp) > Number(item.product_sell_price || item.price) && (
+              <Text style={styles.mrpText}>MRP <Text style={styles.mrpAmount}>₹{item.product_mrp || item.mrp}</Text></Text>
             )}
+            <View style={styles.priceRow}>
+              <Text style={styles.priceText}>~₹{item.product_sell_price || item.price}</Text>
+              {discountLabel ? <Text style={styles.discountText}>{discountLabel}</Text> : null}
+            </View>
+            <DeliveryTimeInfo text={item.delivery} />
           </View>
 
           {outOfStock ? (
             <View style={[styles.addBtn, styles.unavailableBtn]}>
-              <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+              <Text style={styles.unavailableText}>ADD</Text>
             </View>
           ) : qty > 0 ? (
             // Stepper — stop card navigation on press
@@ -506,6 +517,9 @@ const styles = StyleSheet.create({
     height: 100,
     marginBottom: 8,
   },
+  cardImageArea: { position: 'relative', width: '100%' },
+  outOfStockBanner: { position: 'absolute', left: -8, right: -8, bottom: 0, height: 35, zIndex: 2 },
+  outOfStockBannerText: { color: '#FFFFFF', fontSize: 10, fontWeight: '600' },
   stockBadge: {
     position: 'absolute',
     left: 8,
@@ -542,11 +556,16 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#263077',
+    color: '#0E1442',
   },
+  priceInfo: { flex: 1 },
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  discountText: { fontSize: 11, fontWeight: '700', color: '#FF6565' },
   mrpText: {
     fontSize: 10,
-    color: '#787887',
+    color: '#949494',
+  },
+  mrpAmount: {
     textDecorationLine: 'line-through',
   },
   addBtn: {

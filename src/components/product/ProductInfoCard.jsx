@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { getDiscountLabel } from '../../utils/productPricing';
 
 // Simple price formatter — no external dependency needed
 const formatPrice = (value) => {
@@ -35,10 +36,22 @@ const ProductInfoCard = ({
     ? (packSizes.find(p => p.product_id === activePack) || null)
     : null;
 
-  const displayPrice = selectedPack?.product_sell_price ?? product.product_sell_price;
-  const displayMrp = selectedPack?.product_mrp ?? product.product_mrp;
+  // Product cards and detail APIs use different keys for the same prices.
+  // Resolve all known aliases immediately so preview data can render the MRP
+  // (including its strike-through) before the detail request completes.
+  const displayPrice = selectedPack?.product_sell_price ?? selectedPack?.sell_price ?? selectedPack?.price
+    ?? product.product_sell_price ?? product.sell_price ?? product.price;
+  const displayMrp = selectedPack?.product_mrp ?? selectedPack?.mrp
+    ?? product.product_mrp ?? product.mrp;
   const displayUnit = selectedPack?.unit ?? product.unit ?? '';
-  const displayDiscount = product.discount;
+  const displayDiscount = getDiscountLabel({
+    ...(selectedPack || product),
+    product_sell_price: displayPrice,
+    product_mrp: displayMrp,
+  });
+  const hasDiscountedMrp = Number(displayMrp) > 0
+    && Number(displayPrice) > 0
+    && Number(displayMrp) > Number(displayPrice);
 
   return (
     <View style={styles.wrapper}>
@@ -73,15 +86,15 @@ const ProductInfoCard = ({
         )}
 
         {/* MRP */}
-        {displayMrp != displayPrice && (
-          <Text style={styles.mrp}>MRP {formatPrice(displayMrp)}</Text>
+        {hasDiscountedMrp && (
+          <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>{formatPrice(displayMrp)}</Text></Text>
         )}
 
         {/* Sell Price + Discount */}
         <View style={styles.priceRow}>
-          <Text style={styles.price}>{formatPrice(displayPrice)}</Text>
-          {displayDiscount && product.product_discount_type !== 'F' ? (
-            <Text style={styles.discount}>{displayDiscount} OFF</Text>
+          <Text style={styles.price}>~{formatPrice(displayPrice)}</Text>
+          {displayDiscount ? (
+            <Text style={styles.discount}>{displayDiscount}</Text>
           ) : null}
         </View>
 
@@ -270,9 +283,9 @@ const styles = StyleSheet.create({
   mrp: {
     fontSize: 12,
     color: '#949494',
-    textDecorationLine: 'line-through',
     marginTop: 8,
   },
+  mrpAmount: { textDecorationLine: 'line-through' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -281,7 +294,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#263077',
+    color: '#0E1442',
   },
   discount: {
     fontSize: 13,

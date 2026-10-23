@@ -10,11 +10,14 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
-import { ArrowLeft, Search, X } from 'lucide-react-native';
+import { ArrowLeft, Search, X, Zap } from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
+import OutOfStockBanner from '../../components/common/OutOfStockBanner';
+import { getDiscountLabel } from '../../utils/productPricing';
 
 const SearchScreen = ({ navigation, route }) => {
   const initialKeyword = route?.params?.keyword || route?.params?.query || route?.params?.search || '';
@@ -133,12 +136,13 @@ const SearchScreen = ({ navigation, route }) => {
     const unitText = item.unit || item.pack_size || item.tablets || '1 Unit';
     const sellPrice = item.product_sell_price || item.sell_price || item.price || 0;
     const mrpPrice = item.product_mrp || item.mrp;
+    const discountLabel = getDiscountLabel(item);
     const outOfStock = isProductOutOfStock(item);
     const isLoaded = loadedImages[productId];
 
     return (
       <TouchableOpacity
-        style={styles.productCard}
+        style={[styles.productCard, outOfStock && { opacity: 0.62 }]}
         activeOpacity={0.8}
         onPress={() => navigation.navigate('ProductDetails', { id: productId, product: item })}
       >
@@ -161,22 +165,30 @@ const SearchScreen = ({ navigation, route }) => {
             resizeMode={FastImage.resizeMode.contain}
             onLoad={() => setLoadedImages(prev => ({ ...prev, [productId]: true }))}
           />
+          {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} fontSize={10} />}
         </View>
         <View style={styles.productInfo}>
           <Text style={styles.productName} numberOfLines={2}>
             {productName}
           </Text>
           <Text style={styles.productUnit}>{unitText}</Text>
+          {mrpPrice && parseFloat(mrpPrice) > parseFloat(sellPrice) && (
+            <Text style={styles.mrpText}>MRP <Text style={styles.mrpAmount}>₹{mrpPrice}</Text></Text>
+          )}
           <View style={styles.priceRow}>
-            <Text style={styles.sellPrice}>₹{sellPrice}</Text>
-            {mrpPrice && parseFloat(mrpPrice) > parseFloat(sellPrice) && (
-              <Text style={styles.mrpText}>₹{mrpPrice}</Text>
-            )}
+            <Text style={styles.sellPrice}>~₹{sellPrice}</Text>
+            {discountLabel ? <Text style={styles.discountText}>{discountLabel}</Text> : null}
+          </View>
+          <View style={styles.deliveryRow}>
+            <Text style={styles.deliveryText}>{item.delivery || 'Get in 30 mins'}</Text>
+            <LinearGradient colors={['#E8F4FA', '#A2D0E8']} style={styles.zapCircle}>
+              <Zap size={9} color="#043250" fill="#043250" />
+            </LinearGradient>
           </View>
         </View>
         {outOfStock ? (
           <View style={[styles.addBtn, styles.unavailableBtn]}>
-            <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+            <Text style={styles.unavailableText}>ADD</Text>
           </View>
         ) : (
           <TouchableOpacity
@@ -338,6 +350,8 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontWeight: '800',
   },
+  outOfStockBanner: { position: 'absolute', left: -4, right: -4, bottom: -1, height: 35, zIndex: 2 },
+  outOfStockBannerText: { color: '#FFFFFF', fontSize: 10, fontWeight: '600' },
   productInfo: {
     flex: 1,
   },
@@ -359,14 +373,18 @@ const styles = StyleSheet.create({
   sellPrice: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#263077',
+    color: '#0E1442',
     marginRight: 8,
   },
   mrpText: {
     fontSize: 12,
-    color: '#787887',
-    textDecorationLine: 'line-through',
+    color: '#949494',
   },
+  mrpAmount: { textDecorationLine: 'line-through' },
+  discountText: { color: '#FF6565', fontSize: 10, fontWeight: '700' },
+  deliveryRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
+  deliveryText: { fontSize: 10, color: '#787887' },
+  zapCircle: { width: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   addBtn: {
     backgroundColor: 'rgba(44, 183, 223, 0.12)',
     borderWidth: 1,

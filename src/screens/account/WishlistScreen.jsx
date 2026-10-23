@@ -14,6 +14,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import CommonService from '../../utils/CommonService';
 import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import { getDiscountLabel } from '../../utils/productPricing';
+import DeliveryTimeInfo from '../../components/common/DeliveryTimeInfo';
 import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const WishlistScreen = ({ navigation }) => {
@@ -80,8 +82,10 @@ const WishlistScreen = ({ navigation }) => {
     navigation.navigate('Cart');
   };
 
-  const renderWishlistItem = ({ item }) => (
-    <View style={styles.card}>
+  const renderWishlistItem = ({ item }) => {
+    const outOfStock = isProductOutOfStock(item);
+    return (
+    <View style={[styles.card, outOfStock && { opacity: 0.62 }]}>
       <TouchableOpacity
         activeOpacity={0.85}
         onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
@@ -102,12 +106,14 @@ const WishlistScreen = ({ navigation }) => {
           {item.product_name}
         </Text>
         <Text style={styles.unitText}>{item.unit}</Text>
+        {Number(item.product_mrp) > Number(item.product_sell_price) ? (
+          <Text style={styles.mrpText}>MRP <Text style={styles.mrpAmount}>₹{item.product_mrp}</Text></Text>
+        ) : null}
         <View style={styles.priceRow}>
-          <Text style={styles.priceText}>₹{item.product_sell_price}</Text>
-          {Number(item.product_mrp) > Number(item.product_sell_price) ? (
-            <Text style={styles.mrpText}>₹{item.product_mrp}</Text>
-          ) : null}
+          <Text style={styles.priceText}>~₹{item.product_sell_price}</Text>
+          {getDiscountLabel(item) ? <Text style={styles.discountText}>{getDiscountLabel(item)}</Text> : null}
         </View>
+        <DeliveryTimeInfo text={item.delivery} />
       </View>
 
       <View style={styles.actionsCol}>
@@ -118,8 +124,8 @@ const WishlistScreen = ({ navigation }) => {
           <Trash2 size={18} color="#FF4D4D" />
         </TouchableOpacity>
 
-        {isProductOutOfStock(item) ? (
-          <View style={[styles.addBtn, styles.unavailableBtn]}><Text style={styles.unavailableText}>OUT OF STOCK</Text></View>
+        {outOfStock ? (
+          <View style={[styles.addBtn, styles.unavailableBtn]}><Text style={styles.unavailableText}>ADD</Text></View>
         ) : (
           <TouchableOpacity style={styles.addBtn} onPress={() => handleAddToCart(item)}>
             <CartIcon size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
@@ -128,7 +134,8 @@ const WishlistScreen = ({ navigation }) => {
         )}
       </View>
     </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -226,18 +233,22 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   priceText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#263077',
+    color: '#0E1442',
     marginRight: 6,
   },
   mrpText: {
     fontSize: 11,
-    color: '#787887',
+    color: '#949494',
+  },
+  mrpAmount: {
     textDecorationLine: 'line-through',
   },
+  discountText: { color: '#FF6565', fontSize: 10, fontWeight: '700' },
   actionsCol: {
     alignItems: 'flex-end',
     justifyContent: 'space-between',

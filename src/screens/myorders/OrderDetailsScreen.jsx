@@ -548,7 +548,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
             products={recommendedProducts}
             onArrowPress={() => navigation.navigate('Products', { title: 'Recommended for you' })}
             onProductPress={(product) => {
-              navigation.navigate('ProductDetails', { id: product.product_id });
+              navigation.navigate('ProductDetails', { id: product.product_id, product });
             }}
             onAddPress={(product) => {
               const productData = {

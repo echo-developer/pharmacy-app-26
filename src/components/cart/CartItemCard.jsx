@@ -23,7 +23,7 @@ const CartItemCard = ({
     : item.image || require('../../assets/images/Subtract.png');
 
   return (
-    <View style={[styles.card, showDashedBorder && styles.cardDashed]}>
+    <View style={[styles.card, showDashedBorder && styles.cardDashed, outOfStock && { opacity: 0.62 }]}>
       <View style={styles.row}>
         {/* ===== LEFT: Image (Full Bleed) ===== */}
         <View style={styles.imageBox}>

@@ -9,10 +9,13 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
-import { Star, Minus, Plus } from 'lucide-react-native';
+import { Star, Minus, Plus, Zap } from 'lucide-react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import OutOfStockBanner from '../common/OutOfStockBanner';
+import { getDiscountLabel } from '../../utils/productPricing';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.5;
@@ -39,12 +42,12 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
         const unit = item.unit || item.tablets;
         const rating = item.product_rating || item.rating || 0;
         const ratingCount = item.product_total_rating || item.ratingCount || 0;
-        const discount = item.discount || '';
-        const delivery = item.delivery || '';
+        const discount = getDiscountLabel(item);
+        const delivery = item.delivery || 'Get in 30 mins';
         const imageUri = typeof item.image === 'string' ? item.image : '';
         const isLoaded = loadedImages[itemId];
         return (
-          <View key={itemId.toString()} style={styles.card}>
+          <View key={itemId.toString()} style={[styles.card, outOfStock && { opacity: 0.62 }]}>
             {/* ===== IMAGE AREA ===== */}
             <TouchableOpacity
               style={styles.imageArea}
@@ -81,6 +84,9 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
                   </Text>
                 </View>
               )}
+              {outOfStock && (
+                <OutOfStockBanner style={styles.outOfStockBanner} fontSize={13} />
+              )}
             </TouchableOpacity>
 
             {/* ===== DETAILS ===== */}
@@ -97,20 +103,34 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
 
             {unit ? <Text style={styles.tablets}>{unit}</Text> : null}
 
-            {Number(mrp) > Number(price) ? <Text style={styles.mrp}>MRP ₹{mrp}</Text> : null}
+            {Number(mrp) > Number(price) ? (
+              <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>₹{mrp}</Text></Text>
+            ) : null}
 
             <View style={styles.priceRow}>
-              <Text style={styles.price}>₹{price}</Text>
+              <Text style={styles.price}>~₹{price}</Text>
               {discount ? <Text style={styles.discount}>{discount}</Text> : null}
             </View>
 
-            {delivery ? <Text style={styles.delivery}>{delivery} ⚡</Text> : null}
+            {delivery ? (
+              <View style={styles.deliveryRow}>
+                <Text style={styles.delivery}>{delivery}</Text>
+                <LinearGradient
+                  colors={['#E8F4FA', '#A2D0E8']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.zapCircle}
+                >
+                  <Zap size={10} color="#043250" fill="#043250" />
+                </LinearGradient>
+              </View>
+            ) : null}
 
             {/* Keep actions aligned at the bottom of every product card. */}
             <View style={styles.actionArea}>
               {outOfStock ? (
                 <View style={[styles.addButton, styles.unavailableButton]}>
-                  <Text style={styles.unavailableText}>OUT OF STOCK</Text>
+                  <Text style={styles.unavailableText}>ADD</Text>
                 </View>
               ) : qty === 0 ? (
                 <TouchableOpacity
@@ -173,7 +193,6 @@ const styles = StyleSheet.create({
     // shadowRadius: 6,
     // elevation: 3,
   },
-
   /* ===== IMAGE AREA ===== */
   imageArea: {
     backgroundColor: '#F7F7F7',
@@ -205,6 +224,19 @@ const styles = StyleSheet.create({
     color: '#0E1442',
     marginLeft: 3,
   },
+  outOfStockBanner: {
+    position: 'absolute',
+    left: -8,
+    right: -8,
+    bottom: -10,
+    height: 40,
+    zIndex: 3,
+  },
+  outOfStockBannerText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
 
   /* ===== DETAILS ===== */
   title: {
@@ -221,8 +253,10 @@ const styles = StyleSheet.create({
   mrp: {
     fontSize: 11,
     color: '#949494',
-    textDecorationLine: 'line-through',
     marginTop: 6,
+  },
+  mrpAmount: {
+    textDecorationLine: 'line-through',
   },
   priceRow: {
     flexDirection: 'row',
@@ -243,8 +277,20 @@ const styles = StyleSheet.create({
   delivery: {
     fontSize: 11,
     color: '#787887',
+  },
+  deliveryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 4,
     marginBottom: 10,
+  },
+  zapCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionArea: {
     flex: 1,

@@ -10,6 +10,8 @@ import {
 import { CachedImage as Image } from '../common/CachedImage';
 import { ChevronRight, Star, Zap } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import OutOfStockBanner from '../common/OutOfStockBanner';
+import { getDiscountLabel } from '../../utils/productPricing';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.42;
@@ -84,7 +86,7 @@ const BeforeYouBuy = ({ onArrowPress, onProductPress, onAddPress }) => {
           <TouchableOpacity
             key={item.id}
             activeOpacity={0.85}
-            style={styles.card}
+            style={[styles.card, outOfStock && { opacity: 0.62 }]}
             onPress={() => onProductPress?.(item)}
           >
             {/* Image Area with Rating Pill */}
@@ -94,6 +96,7 @@ const BeforeYouBuy = ({ onArrowPress, onProductPress, onAddPress }) => {
                 style={styles.image}
                 resizeMode="contain"
               />
+              {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} />}
               <View style={styles.ratingPill}>
                 <Star size={10} color="#FF8D28" fill="#FF8D28" />
                 <Text style={styles.ratingText}>
@@ -107,11 +110,11 @@ const BeforeYouBuy = ({ onArrowPress, onProductPress, onAddPress }) => {
               {item.title}
             </Text>
             <Text style={styles.tablets}>{item.tablets}</Text>
-            <Text style={styles.mrp}>MRP ₹{item.mrp}</Text>
+            <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>₹{item.mrp}</Text></Text>
 
             <View style={styles.priceRow}>
               <Text style={styles.price}>~₹{item.price}</Text>
-              <Text style={styles.discount}>{item.discount}</Text>
+              <Text style={styles.discount}>{getDiscountLabel(item)}</Text>
             </View>
 
             <View style={styles.deliveryRow}>
@@ -123,7 +126,7 @@ const BeforeYouBuy = ({ onArrowPress, onProductPress, onAddPress }) => {
 
             {/* ADD Button */}
             {outOfStock ? (
-              <View style={[styles.addButton, styles.unavailableButton]}><Text style={styles.unavailableText}>OUT OF STOCK</Text></View>
+              <View style={[styles.addButton, styles.unavailableButton]}><Text style={styles.unavailableText}>ADD</Text></View>
             ) : (
               <TouchableOpacity style={styles.addButton} onPress={() => onAddPress?.(item)} activeOpacity={0.85}>
                 <Text style={styles.addText}>ADD</Text>
@@ -199,6 +202,8 @@ const styles = StyleSheet.create({
   },
   stockBadge: { position: 'absolute', left: 4, right: 4, bottom: 4, alignItems: 'center', backgroundColor: 'rgba(38,48,119,0.88)', paddingVertical: 4, borderRadius: 5 },
   stockBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
+  outOfStockBanner: { position: 'absolute', left: -6, right: -6, bottom: -10, height: 38, zIndex: 3 },
+  outOfStockBannerText: { color: '#FFFFFF', fontSize: 12, fontWeight: '600' },
   image: {
     width: '80%',
     height: '80%',
@@ -236,9 +241,9 @@ const styles = StyleSheet.create({
   mrp: {
     fontSize: 10,
     color: '#949494',
-    textDecorationLine: 'line-through',
     marginTop: 4,
   },
+  mrpAmount: { textDecorationLine: 'line-through' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
