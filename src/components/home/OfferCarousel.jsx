@@ -46,7 +46,13 @@ const getImageSource = (img) => {
   return { ...img, priority: FastImage.priority.high };
 };
 
-const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
+const OfferCarousel = ({
+  offers = [],
+  onCardPress,
+  showCaption = true,
+  showPagination = true,
+  fullWidth = false,
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loadedImages, setLoadedImages] = useState({});
 
@@ -61,9 +67,9 @@ const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={SNAP_INTERVAL}
+        snapToInterval={fullWidth ? width : SNAP_INTERVAL}
         decelerationRate="fast"
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, fullWidth && styles.fullWidthScrollContent]}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
@@ -75,11 +81,11 @@ const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
             <TouchableOpacity
               key={itemId.toString()}
               activeOpacity={0.9}
-              style={styles.card}
+              style={[styles.card, fullWidth && styles.fullWidthCard]}
               onPress={() => onCardPress?.(item)}
             >
               {/* Image */}
-              <View style={styles.cardImage}>
+              <View style={[styles.cardImage, fullWidth && styles.fullWidthImage]}>
                 {!isLoaded && (
                   <ShimmerPlaceholder
                     style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
@@ -92,6 +98,7 @@ const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
                   source={imgSource}
                   style={StyleSheet.absoluteFill}
                   resizeMode={FastImage.resizeMode.cover}
+                  loop={true}
                   onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
                 />
               </View>
@@ -111,17 +118,19 @@ const OfferCarousel = ({ offers = [], onCardPress, showCaption = true }) => {
       </ScrollView>
 
       {/* Pagination Dots */}
-      <View style={styles.dotsContainer}>
-        {offers.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.dot,
-              index === activeIndex && styles.dotActive,
-            ]}
-          />
-        ))}
-      </View>
+      {showPagination && (
+        <View style={styles.dotsContainer}>
+          {offers.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                index === activeIndex && styles.dotActive,
+              ]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -135,14 +144,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: CARD_SPACING,
   },
+  fullWidthScrollContent: {
+    paddingHorizontal: 0,
+    gap: 0,
+  },
   card: {
     width: CARD_WIDTH,
+  },
+  fullWidthCard: {
+    width,
   },
   cardImage: {
     width: CARD_WIDTH,
     height: 160,
     borderRadius: 16,
     overflow: 'hidden',
+  },
+  fullWidthImage: {
+    width,
+    borderRadius: 0,
   },
   textContainer: {
     marginTop: -43,

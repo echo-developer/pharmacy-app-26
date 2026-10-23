@@ -111,7 +111,9 @@ const HomeScreen = ({ navigation }) => {
   // API keys include banner, category, popular_category, popular_medicines,
   // most_ordered, deals_of_the_day, popular_brand, and promo_offer.
   const apiBanners = Array.isArray(homeState.data?.banner) ? homeState.data.banner : [];
-  const banners = apiBanners.length > 0 ? apiBanners : fallbackBanners;
+  const banners = apiBanners.length > 0
+    ? apiBanners.map(item => ({ ...item, image: normalizeHomeImage(item.image) }))
+    : fallbackBanners;
   const lowerBanners = Array.isArray(homeState.data?.lower_banner)
     ? homeState.data.lower_banner
     : [];
@@ -269,6 +271,9 @@ const HomeScreen = ({ navigation }) => {
           /></View>
           {banners.length > 0 && <View><OfferCarousel
             offers={banners}
+            showCaption={false}
+            showPagination={false}
+            fullWidth
             onCardPress={(item) => navigation.navigate('Products', {
               title: item.category_name || item.category || 'Special Offers',
               category_id: item.category_id || item.id,
