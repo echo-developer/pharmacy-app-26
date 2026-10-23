@@ -9,6 +9,7 @@ import FastImage from 'react-native-fast-image';
 import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { Minus, Plus } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 
 const CartItemCard = ({
   item,
@@ -83,7 +84,7 @@ const CartItemCard = ({
           <View style={styles.priceRow}>
             <Text style={styles.price}>₹{item.price}</Text>
             {Number(item.cutPrice) > Number(item.price) && (
-              <Text style={styles.cutPrice}>₹{item.cutPrice}</Text>
+              <StrikethroughPrice label="" amount={`₹${item.cutPrice}`} fontSize={11} color="#CDDEE4" />
             )}
           </View>
         </View>
@@ -185,11 +186,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: '#1B1F22',
-  },
-  cutPrice: {
-    fontSize: 11,
-    color: '#CDDEE4',
-    textDecorationLine: 'line-through',
   },
 });
 

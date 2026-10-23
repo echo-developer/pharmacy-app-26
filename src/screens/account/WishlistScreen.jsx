@@ -16,6 +16,7 @@ import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import { getDiscountLabel } from '../../utils/productPricing';
 import DeliveryTimeInfo from '../../components/common/DeliveryTimeInfo';
+import StrikethroughPrice from '../../components/common/StrikethroughPrice';
 import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 
 const WishlistScreen = ({ navigation }) => {
@@ -107,7 +108,7 @@ const WishlistScreen = ({ navigation }) => {
         </Text>
         <Text style={styles.unitText}>{item.unit}</Text>
         {Number(item.product_mrp) > Number(item.product_sell_price) ? (
-          <Text style={styles.mrpText}>MRP <Text style={styles.mrpAmount}>₹{item.product_mrp}</Text></Text>
+          <StrikethroughPrice amount={`₹${item.product_mrp}`} fontSize={11} color="#949494" />
         ) : null}
         <View style={styles.priceRow}>
           <Text style={styles.priceText}>~₹{item.product_sell_price}</Text>
@@ -240,13 +241,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0E1442',
     marginRight: 6,
-  },
-  mrpText: {
-    fontSize: 11,
-    color: '#949494',
-  },
-  mrpAmount: {
-    textDecorationLine: 'line-through',
   },
   discountText: { color: '#FF6565', fontSize: 10, fontWeight: '700' },
   actionsCol: {

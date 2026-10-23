@@ -19,6 +19,7 @@ import store from '../../store/store';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import OutOfStockBanner from '../../components/common/OutOfStockBanner';
+import StrikethroughPrice from '../../components/common/StrikethroughPrice';
 import { getDiscountLabel } from '../../utils/productPricing';
 import DeliveryTimeInfo from '../../components/common/DeliveryTimeInfo';
 
@@ -108,7 +109,7 @@ const BuyAgainScreen = ({ navigation }) => {
           <View style={styles.info}>
             <Text style={styles.name} numberOfLines={2}>{item.product_name || item.name || 'Pharmacy item'}</Text>
             <Text style={styles.unit}>{item.unit || 'Previously ordered'}</Text>
-            {Number(item.product_mrp ?? item.mrp) > Number(item.product_sell_price ?? item.sell_price ?? item.price) ? <Text style={{ color: '#949494', fontSize: 10 }}>MRP <Text style={{ textDecorationLine: 'line-through' }}>₹{item.product_mrp ?? item.mrp}</Text></Text> : null}
+            {Number(item.product_mrp ?? item.mrp) > Number(item.product_sell_price ?? item.sell_price ?? item.price) ? <StrikethroughPrice amount={`₹${item.product_mrp ?? item.mrp}`} fontSize={10} color="#949494" /> : null}
             <View style={styles.priceRow}><Text style={[styles.price, { color: '#0E1442' }]}>~₹{item.product_sell_price ?? item.sell_price ?? item.price ?? '—'}</Text>{discountLabel ? <Text style={{ color: '#FF6565', fontSize: 10, fontWeight: '700', marginLeft: 5 }}>{discountLabel}</Text> : null}</View>
             <DeliveryTimeInfo text={item.delivery} />
           </View>

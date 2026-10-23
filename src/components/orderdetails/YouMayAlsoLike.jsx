@@ -11,6 +11,7 @@ import { CachedImage as Image } from '../common/CachedImage';
 import { ChevronRight, Star, Zap } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import OutOfStockBanner from '../common/OutOfStockBanner';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 import { getDiscountLabel } from '../../utils/productPricing';
 
 const { width } = Dimensions.get('window');
@@ -125,7 +126,7 @@ const YouMayAlsoLike = ({
                 {item.tablets || item.unit || item.description || ''}
               </Text>
               {Number(item.mrp) > Number(item.price || item.product_sell_price || item.sell_price) && (
-                <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>₹{item.mrp}</Text></Text>
+                <StrikethroughPrice amount={`₹${item.mrp}`} fontSize={11} color="#949494" style={styles.mrp} />
               )}
 
               <View style={styles.priceRow}>
@@ -259,7 +260,6 @@ const styles = StyleSheet.create({
     color: '#949494',
     marginTop: 4,
   },
-  mrpAmount: { textDecorationLine: 'line-through' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

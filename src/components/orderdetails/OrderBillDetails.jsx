@@ -1,4 +1,5 @@
 import React from 'react';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Download } from 'lucide-react-native';
 
@@ -22,7 +23,7 @@ const OrderBillDetails = ({
         <Text style={styles.label}>Items Total</Text>
         <View style={styles.valueRow}>
           {Number(itemsCutPrice) > Number(itemsTotal) && (
-            <Text style={styles.cutPrice}>₹{itemsCutPrice}</Text>
+            <StrikethroughPrice label="" amount={`₹${itemsCutPrice}`} fontSize={11} color="#787C77" />
           )}
           <Text style={styles.price}>₹{itemsTotal}</Text>
         </View>
@@ -115,11 +116,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  cutPrice: {
-    fontSize: 11,
-    color: '#787C77',                 // Cut price
-    textDecorationLine: 'line-through',
   },
   price: {
     fontSize: 12,

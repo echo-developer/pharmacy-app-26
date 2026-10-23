@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import OutOfStockBanner from '../common/OutOfStockBanner';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 import { getDiscountLabel } from '../../utils/productPricing';
 
 const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, isFavorite = false }) => {
@@ -65,7 +66,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
           </Text>
           <Text style={styles.tablets}>{product.tablets}</Text>
           {Number(product.mrp) > Number(product.price) && (
-            <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>₹{product.mrp}</Text></Text>
+            <StrikethroughPrice amount={`₹${product.mrp}`} fontSize={11} color="#949494" style={styles.mrp} />
           )}
           <View style={styles.priceRow}>
             <Text style={styles.price}>~₹{product.price}</Text>
@@ -210,7 +211,6 @@ const styles = StyleSheet.create({
     color: '#949494',
     marginTop: 6,
   },
-  mrpAmount: { textDecorationLine: 'line-through' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

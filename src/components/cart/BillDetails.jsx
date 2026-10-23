@@ -1,4 +1,5 @@
 import React from 'react';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 import { View, Text, StyleSheet } from 'react-native';
 
 const BillDetails = ({
@@ -20,7 +21,7 @@ const BillDetails = ({
         <View style={styles.row}>
           <Text style={styles.label}>Items Total</Text>
           <View style={styles.valueRow}>
-            {itemsCutPrice > subtotal && <Text style={styles.cutPrice}>₹{itemsCutPrice}</Text>}
+            {itemsCutPrice > subtotal && <StrikethroughPrice label="" amount={`₹${itemsCutPrice}`} fontSize={11} color="#787C77" />}
             <Text style={styles.price}>₹{subtotal}</Text>
           </View>
         </View>
@@ -96,11 +97,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  cutPrice: {
-    fontSize: 11,
-    color: '#787C77',
-    textDecorationLine: 'line-through',
   },
   price: {
     fontSize: 12,

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { getDiscountLabel } from '../../utils/productPricing';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 
 // Simple price formatter — no external dependency needed
 const formatPrice = (value) => {
@@ -87,7 +88,7 @@ const ProductInfoCard = ({
 
         {/* MRP */}
         {hasDiscountedMrp && (
-          <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>{formatPrice(displayMrp)}</Text></Text>
+          <StrikethroughPrice amount={formatPrice(displayMrp)} fontSize={12} color="#949494" style={styles.mrpRow} />
         )}
 
         {/* Sell Price + Discount */}
@@ -280,12 +281,7 @@ const styles = StyleSheet.create({
     color: '#555',
     marginLeft: 6,
   },
-  mrp: {
-    fontSize: 12,
-    color: '#949494',
-    marginTop: 8,
-  },
-  mrpAmount: { textDecorationLine: 'line-through' },
+  mrpRow: { marginTop: 8 },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

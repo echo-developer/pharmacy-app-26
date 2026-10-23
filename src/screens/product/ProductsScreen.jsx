@@ -22,6 +22,7 @@ import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import FilterSortBar from '../../components/categories/FilterSortBar';
 import { ProductGridLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import OutOfStockBanner from '../../components/common/OutOfStockBanner';
+import StrikethroughPrice from '../../components/common/StrikethroughPrice';
 import { getDiscountLabel } from '../../utils/productPricing';
 import DeliveryTimeInfo from '../../components/common/DeliveryTimeInfo';
 
@@ -173,7 +174,7 @@ const ProductsScreen = ({ navigation }) => {
         <View style={styles.cardFooter}>
           <View style={styles.priceInfo}>
             {Number(item.product_mrp || item.mrp) > Number(item.product_sell_price || item.price) && (
-              <Text style={styles.mrpText}>MRP <Text style={styles.mrpAmount}>₹{item.product_mrp || item.mrp}</Text></Text>
+              <StrikethroughPrice amount={`₹${item.product_mrp || item.mrp}`} fontSize={10} color="#949494" />
             )}
             <View style={styles.priceRow}>
               <Text style={styles.priceText}>~₹{item.product_sell_price || item.price}</Text>
@@ -561,13 +562,6 @@ const styles = StyleSheet.create({
   priceInfo: { flex: 1 },
   priceRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   discountText: { fontSize: 11, fontWeight: '700', color: '#FF6565' },
-  mrpText: {
-    fontSize: 10,
-    color: '#949494',
-  },
-  mrpAmount: {
-    textDecorationLine: 'line-through',
-  },
   addBtn: {
     backgroundColor: 'rgba(44, 183, 223, 0.12)',
     borderWidth: 1,

@@ -12,6 +12,7 @@ import ShimmerPlaceholder from 'react-native-shimmer-placeholder';
 import { ChevronRight, Star, Zap } from 'lucide-react-native';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import OutOfStockBanner from '../common/OutOfStockBanner';
+import StrikethroughPrice from '../common/StrikethroughPrice';
 import { getDiscountLabel } from '../../utils/productPricing';
 
 const { width } = Dimensions.get('window');
@@ -108,7 +109,7 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
                 <Text style={styles.tablets}>{item.unit}</Text>
               ) : null}
               {hasDiscount ? (
-                <Text style={styles.mrp}>MRP <Text style={styles.mrpAmount}>₹{item.product_mrp}</Text></Text>
+                <StrikethroughPrice amount={`₹${item.product_mrp}`} fontSize={10} color="#949494" style={styles.mrp} />
               ) : null}
 
               <View style={styles.priceRow}>
@@ -243,7 +244,6 @@ const styles = StyleSheet.create({
     color: '#949494',
     marginTop: 4,
   },
-  mrpAmount: { textDecorationLine: 'line-through' },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -16,6 +16,7 @@ import CommonService from '../../utils/CommonService';
 import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 import { ProductRowsLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
+import StrikethroughPrice from '../../components/common/StrikethroughPrice';
 import OutOfStockBanner from '../../components/common/OutOfStockBanner';
 import { getDiscountLabel } from '../../utils/productPricing';
 
@@ -173,7 +174,7 @@ const SearchScreen = ({ navigation, route }) => {
           </Text>
           <Text style={styles.productUnit}>{unitText}</Text>
           {mrpPrice && parseFloat(mrpPrice) > parseFloat(sellPrice) && (
-            <Text style={styles.mrpText}>MRP <Text style={styles.mrpAmount}>₹{mrpPrice}</Text></Text>
+            <StrikethroughPrice amount={`₹${mrpPrice}`} fontSize={12} color="#949494" />
           )}
           <View style={styles.priceRow}>
             <Text style={styles.sellPrice}>~₹{sellPrice}</Text>
@@ -376,11 +377,6 @@ const styles = StyleSheet.create({
     color: '#0E1442',
     marginRight: 8,
   },
-  mrpText: {
-    fontSize: 12,
-    color: '#949494',
-  },
-  mrpAmount: { textDecorationLine: 'line-through' },
   discountText: { color: '#FF6565', fontSize: 10, fontWeight: '700' },
   deliveryRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 3 },
   deliveryText: { fontSize: 10, color: '#787887' },
