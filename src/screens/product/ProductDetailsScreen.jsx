@@ -23,6 +23,7 @@ const ProductDetailsScreen = ({ navigation }) => {
 
   const [loader, setLoader] = useState(!previewProduct);
   const [productData, setProductData] = useState(previewProduct || null);
+  const [detailGallery, setDetailGallery] = useState(null);
 
   // Wishlist state
   const [isFavorite, setIsFavorite] = useState(false);
@@ -47,13 +48,22 @@ const ProductDetailsScreen = ({ navigation }) => {
         setLoader(false);
         if (dataresp.status == 1) {
           const data = dataresp.response.data;
+          const images = Array.isArray(data?.gallery) && data.gallery.length > 0
+            ? data.gallery
+            : data?.image
+              ? [data.image]
+              : [];
+          setDetailGallery({ productId: id, images });
           setProductData(current => ({ ...(current || {}), ...data }));
           // Sync favorite state from API response
           setIsFavorite(data?.is_favorite === 1);
+        } else {
+          setDetailGallery({ productId: id, images: [] });
         }
       })
       .catch(error => {
         setLoader(false);
+        setDetailGallery({ productId: id, images: [] });
         console.log('Product Details API Error:', error);
       });
   };
@@ -181,6 +191,7 @@ const ProductDetailsScreen = ({ navigation }) => {
   };
 
   const currentAddress = store.getState().GlobalReducer.chosencity?.tempaddress?.address || '';
+  const galleryReady = String(detailGallery?.productId) === String(productId);
 
   return (
     <View style={styles.container}>
@@ -207,13 +218,8 @@ const ProductDetailsScreen = ({ navigation }) => {
         >
           <ProductSummaryBar onPress={() => console.log('Summary pressed')} />
           <ProductImageGallery
-            images={
-              productData?.gallery?.length
-                ? productData.gallery
-                : productData?.image
-                  ? [productData.image]
-                  : []
-            }
+            images={galleryReady ? detailGallery.images : []}
+            loading={!galleryReady}
             isFavorite={isFavorite}
             favLoading={favLoading}
             onFavPress={handleFavPress}

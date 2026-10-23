@@ -34,6 +34,7 @@ const ImageLoader = ({ visible }) => {
 const ProductImageGallery = ({
   images,
   image,
+  loading = false,
   isFavorite = false,
   onFavPress,
   favLoading = false,
@@ -107,6 +108,7 @@ const ProductImageGallery = ({
             <X size={26} color="#fff" />
           </TouchableOpacity>
           <FlatList
+            key={galleryKey}
             data={gallery}
             horizontal
             pagingEnabled
@@ -153,6 +155,7 @@ const ProductImageGallery = ({
       <View style={styles.imageArea}>
         {gallery.length > 0 ? (
           <FlatList
+            key={galleryKey}
             data={gallery}
             horizontal
             pagingEnabled
@@ -190,7 +193,11 @@ const ProductImageGallery = ({
             )}
           />
         ) : (
-          <TouchableOpacity activeOpacity={0.95} onPress={() => openFullscreen(0)}>
+          <TouchableOpacity
+            activeOpacity={0.95}
+            onPress={() => openFullscreen(0)}
+            disabled={loading}
+          >
             <View style={[styles.image, loadedImages[0] ? styles.imageLoaded : styles.imageLoading]}>
               {!loadedImages[0] && (
                 <ShimmerPlaceholder
@@ -200,13 +207,15 @@ const ProductImageGallery = ({
                   visible={false}
                 />
               )}
-              <FastImage
-                source={require('../../assets/images/Subtract.png')}
+              {!loading && (
+                <FastImage
+                  source={require('../../assets/images/Subtract.png')}
                   style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
-                resizeMode={FastImage.resizeMode.cover}
-                onLoad={() => markImageLoaded(0)}
-                onError={() => markImageFailed(0)}
-              />
+                  resizeMode={FastImage.resizeMode.cover}
+                  onLoad={() => markImageLoaded(0)}
+                  onError={() => markImageFailed(0)}
+                />
+              )}
             </View>
           </TouchableOpacity>
         )}
