@@ -95,7 +95,8 @@ const PetCareBrands = ({ brands = [], onBrandPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: CARD_HEIGHT + 22,
+    // Keep enough viewport for the full card plus its bottom arrow button.
+    height: CARD_HEIGHT + 40,
     paddingBottom: 18,
   },
   scrollContent: {

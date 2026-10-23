@@ -4,8 +4,8 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Image,
 } from 'react-native';
-import { CachedImage as Image } from '../common/CachedImage';
 import { Star, ChevronRight } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -31,7 +31,7 @@ const ProductSummaryBar = ({
         <Image
           source={require('../../assets/images/Subtract.png')}
           style={styles.image}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       </View>
 

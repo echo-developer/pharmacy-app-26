@@ -12,6 +12,8 @@ import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import { CachedImage as Image } from '../../components/common/CachedImage';
 import { ChevronRight, X } from 'lucide-react-native';
 import { CategoriesLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
+import LinearGradient from 'react-native-linear-gradient';
+import CategoryItem from '../../components/categories/CategoryItem';
 
 const CategoriesScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -125,6 +127,11 @@ const CategoriesScreen = ({ navigation }) => {
     setActiveSubcategory(null);
     getProductsApi(categoryId, selectedSort, selectedDiscount, priceRange, null);
     setShowCategoryProducts(true);
+  };
+
+  const selectLandingCategory = categoryId => {
+    setActiveCategory(categoryId);
+    setActiveSubcategory(null);
   };
 
   const openSubcategory = (category, subcategory) => {
@@ -343,22 +350,37 @@ const CategoriesScreen = ({ navigation }) => {
             </View>
             </>
           ) : (
-            <>
-              <View style={[styles.landingHeader, { height: 48 + insets.top, paddingTop: insets.top }]}>
-                <Text style={styles.landingTitle}>Categories</Text>
-              </View>
-              <ScrollView
-                style={styles.landingScroll}
-                contentContainerStyle={styles.landingContent}
-                showsVerticalScrollIndicator={false}
-              >
-                {categorySections.map((category, categoryIndex) => {
-                  const palette = sectionPalettes[categoryIndex % sectionPalettes.length];
-                  const subcategories = category._subcategories.slice(0, 6);
-                  return (
+            <LinearGradient colors={['#F4F5FF', '#FFFFFF']} style={styles.landingBackground}>
+              <CategoryHeader
+                title="Category"
+                cartCount={cartCount}
+                onBackPress={() => navigation.canGoBack() ? navigation.goBack() : navigation.navigate('Home')}
+                onSearchPress={() => navigation.navigate('Search')}
+                onCartPress={() => navigation.navigate('Cart')}
+              />
+              <View style={styles.categoryBrowser}>
+                <ScrollView style={styles.categorySidebar} contentContainerStyle={styles.categorySidebarContent} showsVerticalScrollIndicator={false}>
+                  {categorySections.map(category => (
+                    <CategoryItem
+                      key={String(category._id)}
+                      label={category._name}
+                      image={category.image || category.category_image}
+                      isActive={String(activeCategory) === String(category._id)}
+                      onPress={() => selectLandingCategory(category._id)}
+                    />
+                  ))}
+                </ScrollView>
+                <ScrollView
+                  style={styles.landingScroll}
+                  contentContainerStyle={styles.landingContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {categorySections.filter(category => String(category._id) === String(activeCategory)).map(category => {
+                    const subcategories = category._subcategories.slice(0, 6);
+                    return (
                     <View key={String(category._id)} style={styles.categorySection}>
                       <Text style={styles.categorySectionTitle}>{category._name}</Text>
-                      <View style={[styles.subcategoryPanel, { backgroundColor: palette.panel }]}>
+                      <View style={styles.subcategoryPanel}>
                         <View style={styles.subcategoryGrid}>
                           {subcategories.map((subcategory, index) => {
                             const name = subcategory.sub_category_name || subcategory.category_name ||
@@ -372,13 +394,16 @@ const CategoriesScreen = ({ navigation }) => {
                                 activeOpacity={0.85}
                                 onPress={() => openSubcategory(category, subcategory)}
                               >
-                                <Text style={styles.subcategoryName} numberOfLines={2}>{name}</Text>
-                                {!!discount && <Text style={styles.subcategoryDiscount} numberOfLines={1}>{discount}</Text>}
-                                {imageSource ? (
-                                  <Image source={imageSource} style={styles.subcategoryImage} resizeMode="contain" />
-                                ) : (
-                                  <View style={styles.subcategoryImagePlaceholder} />
-                                )}
+                                <LinearGradient colors={['#FED7D4', '#E0C763']} style={styles.subcategoryTileGradient}>
+                                  <Text style={styles.subcategoryName} numberOfLines={2}>{name}</Text>
+                                  {!!discount && <Text style={styles.subcategoryDiscount} numberOfLines={1}>{discount}</Text>}
+                                  <View style={styles.subcategoryImageSpacer} />
+                                  {imageSource ? (
+                                    <Image source={imageSource} style={styles.subcategoryImage} resizeMode="contain" />
+                                  ) : (
+                                    <View style={styles.subcategoryImagePlaceholder} />
+                                  )}
+                                </LinearGradient>
                               </TouchableOpacity>
                             );
                           })}
@@ -393,10 +418,11 @@ const CategoriesScreen = ({ navigation }) => {
                         </TouchableOpacity>
                       </View>
                     </View>
-                  );
-                })}
-              </ScrollView>
-            </>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </LinearGradient>
           )}
         </>
       )}
@@ -529,40 +555,43 @@ const CategoriesScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
+  landingBackground: { flex: 1 },
+  categoryBrowser: { flex: 1, flexDirection: 'row' },
+  categorySidebar: { width: 80, flexGrow: 0, flexShrink: 0, backgroundColor: '#F4F5FF', borderRightWidth: 1, borderRightColor: '#E3E6F1' },
+  categorySidebarContent: { paddingVertical: 8 },
   contentArea: { flex: 1, backgroundColor: '#FFFFFF' },
   landingHeader: {
     justifyContent: 'center',
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#EFEFEF',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
-  landingTitle: { color: '#242632', fontSize: 17, fontWeight: '500' },
-  landingScroll: { flex: 1, backgroundColor: '#FFFFFF' },
-  landingContent: { paddingHorizontal: 18, paddingTop: 24, paddingBottom: 96 },
+  landingTitle: { color: '#263077', fontSize: 17, fontWeight: '500' },
+  landingScroll: { flex: 1, backgroundColor: 'transparent' },
+  landingContent: { paddingHorizontal: 10, paddingTop: 12, paddingBottom: 96 },
   categorySection: { marginBottom: 28 },
   categorySectionTitle: {
-    color: '#2D303A',
+    color: '#263077',
     fontSize: 19,
     fontWeight: '500',
     marginBottom: 11,
   },
-  subcategoryPanel: { borderRadius: 12, padding: 9 },
+  subcategoryPanel: { borderRadius: 12, padding: 9, backgroundColor: 'transparent' },
   subcategoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 7 },
   subcategoryTile: {
-    width: '32.3%',
-    minHeight: 118,
+    width: '48.5%',
+    height: 175,
     borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 6,
-    paddingTop: 7,
-    paddingBottom: 4,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
-  subcategoryName: { color: '#34404A', fontSize: 12, lineHeight: 14, minHeight: 28 },
-  subcategoryDiscount: { color: '#16824D', fontSize: 10, lineHeight: 12, marginTop: 1 },
-  subcategoryImage: { width: '100%', height: 64, marginTop: 4 },
-  subcategoryImagePlaceholder: { flex: 1, minHeight: 64 },
+  subcategoryTileGradient: { flex: 1, borderRadius: 8, paddingHorizontal: 8, paddingTop: 9, paddingBottom: 0, flexDirection: 'column' },
+  subcategoryName: { color: '#693410', fontSize: 14, lineHeight: 17, minHeight: 34, fontWeight: '600', textAlign: 'center' },
+  subcategoryDiscount: { color: '#693410', fontSize: 10, lineHeight: 12, marginTop: 1 },
+  subcategoryImageSpacer: { flex: 1, minHeight: 0 },
+  subcategoryImage: { width: '100%', height: 112, flexShrink: 0, alignSelf: 'center' },
+  subcategoryImagePlaceholder: { width: '100%', height: 112, flexShrink: 0 },
   viewAllButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 10, marginBottom: 2 },
   viewAllText: { color: '#1768D2', fontSize: 13, fontWeight: '500', marginRight: 3 },
   modalOverlay: {
@@ -697,11 +726,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
-
-const sectionPalettes = [
-  { panel: '#FFF7E6' },
-  { panel: '#FCE9E9' },
-  { panel: '#E8F4EE' },
-];
 
 export default CategoriesScreen;
