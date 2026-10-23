@@ -147,13 +147,13 @@ const styles = StyleSheet.create({
     top: 8,
     left: 0,
     right: 0,
-    fontSize: 15,
-    fontWeight: '800',         // Bolder
+    fontSize: 12,
+    fontWeight: '700',
     color: '#693410',
     textAlign: 'center',
     paddingHorizontal: 8,
     paddingTop: 2,
-    lineHeight: 18,
+    lineHeight: 14,
     zIndex: 2,
   },
   cardImage: {

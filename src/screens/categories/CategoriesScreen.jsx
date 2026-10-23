@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, StatusBar, Modal, TouchableOpacity, ScrollView, Text, TextInput } from 'react-native';
+import { View, StyleSheet, StatusBar, Modal, TouchableOpacity, ScrollView, Text, TextInput, Dimensions } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CategoryHeader from '../../components/categories/CategoryHeader';
@@ -14,6 +14,9 @@ import { ChevronRight, X } from 'lucide-react-native';
 import { CategoriesLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import LinearGradient from 'react-native-linear-gradient';
 import CategoryItem from '../../components/categories/CategoryItem';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SUBCATEGORY_TILE_WIDTH = (SCREEN_WIDTH - 32 - 20) / 3;
 
 const CategoriesScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -578,20 +581,20 @@ const styles = StyleSheet.create({
     marginBottom: 11,
   },
   subcategoryPanel: { borderRadius: 12, padding: 9, backgroundColor: 'transparent' },
-  subcategoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 7 },
+  subcategoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly', rowGap: 7 },
   subcategoryTile: {
-    width: '48.5%',
-    height: 175,
+    width: SUBCATEGORY_TILE_WIDTH,
+    height: 132,
     borderRadius: 8,
     backgroundColor: 'transparent',
     overflow: 'hidden',
   },
   subcategoryTileGradient: { flex: 1, borderRadius: 8, paddingHorizontal: 8, paddingTop: 9, paddingBottom: 0, flexDirection: 'column' },
-  subcategoryName: { color: '#693410', fontSize: 14, lineHeight: 17, minHeight: 34, fontWeight: '600', textAlign: 'center' },
+  subcategoryName: { color: '#693410', fontSize: 12, lineHeight: 14, minHeight: 28, fontWeight: '600', textAlign: 'center' },
   subcategoryDiscount: { color: '#693410', fontSize: 10, lineHeight: 12, marginTop: 1 },
   subcategoryImageSpacer: { flex: 1, minHeight: 0 },
-  subcategoryImage: { width: '100%', height: 112, flexShrink: 0, alignSelf: 'center' },
-  subcategoryImagePlaceholder: { width: '100%', height: 112, flexShrink: 0 },
+  subcategoryImage: { width: '100%', height: 80, flexShrink: 0, alignSelf: 'center' },
+  subcategoryImagePlaceholder: { width: '100%', height: 80, flexShrink: 0 },
   viewAllButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 10, marginBottom: 2 },
   viewAllText: { color: '#1768D2', fontSize: 13, fontWeight: '500', marginRight: 3 },
   modalOverlay: {
