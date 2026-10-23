@@ -56,7 +56,7 @@ const ProductBottomBar = ({
       {/* ===== BUTTONS ROW ===== */}
       {outOfStock ? (
         <View style={[styles.outOfStockButton, styles.buttonRow]}>
-          <Text style={styles.outOfStockText}>ADD</Text>
+          <Text style={styles.outOfStockText}>Out of Stock</Text>
         </View>
       ) : <View style={styles.buttonRow}>
         {/* Add to Cart / Stepper */}
