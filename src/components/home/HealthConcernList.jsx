@@ -51,22 +51,24 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
           <TouchableOpacity
             key={itemId.toString()}
             activeOpacity={0.9}
-            style={[styles.cardWrapper, { transform: [{ translateY: arcOffset }, { rotate: tilt }] }]}
+            style={[styles.cardWrapper, { transform: [{ translateY: arcOffset }] }]}
             onPress={() => onCardPress?.(item)}
           >
             <CachedImage
               source={imgSource}
-              style={styles.cardImage}
+              style={[styles.cardImage, { transform: [{ rotate: tilt }] }]}
               resizeMode="contain"
             />
-            <Text
-              style={styles.cardLabel}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              minimumFontScale={0.8}
-            >
-              {item.label || item.category_name || item.name || 'Health Concern'}
-            </Text>
+            <View style={styles.cardLabelContainer}>
+              <Text
+                style={[styles.cardLabel, { transform: [{ rotate: tilt }] }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {item.label || item.category_name || item.name || 'Health Concern'}
+              </Text>
+            </View>
           </TouchableOpacity>
         );
       })}
@@ -98,20 +100,25 @@ const styles = StyleSheet.create({
     height: '108%',
     borderRadius: 24,
   },
-  cardLabel: {
+  cardLabelContainer: {
     position: 'absolute',
     bottom: '18%',
-    left: 8,
-    right: 8,
+    left: 0,
+    right: 0,
     zIndex: 2,
+    alignItems: 'center',
+    transform: [{ translateX: -6 }],
+  },
+  cardLabel: {
     fontSize: 14,
     fontWeight: '700',
     color: '#302426',
-    paddingHorizontal: 12,
+    paddingHorizontal: 2,
     paddingVertical: 4,
     borderRadius: 14,
     backgroundColor: 'transparent',
     textAlign: 'center',
+    maxWidth: '100%',
   },
 });
 
