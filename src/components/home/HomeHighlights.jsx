@@ -11,10 +11,10 @@ import { CachedImage as Image } from '../common/CachedImage';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 
-const CARD_WIDTH = 156;
 const CARD_GAP = 10;
-const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 const VIEWPORT_WIDTH = Dimensions.get('window').width;
+const CARD_WIDTH = VIEWPORT_WIDTH / 2 - CARD_GAP;
+const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 const CENTER_OFFSET = (VIEWPORT_WIDTH - CARD_WIDTH) / 2;
 const CARD_COLORS = [
   ['#E7F8FC', '#E9E3DC'],
@@ -71,38 +71,35 @@ const getCategoryHighlights = categories =>
 const HomeHighlights = ({ categories = [], onProductPress }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollX = React.useRef(new Animated.Value(0)).current;
+  const scrollRef = React.useRef(null);
+  const hasCenteredInitialCard = React.useRef(false);
   const highlights = getCategoryHighlights(categories).slice(0, 3);
   if (!highlights.length) return null;
-  const maxScrollOffset = Math.max(
-    0,
-    highlights.length * CARD_WIDTH + (highlights.length - 1) * CARD_GAP - VIEWPORT_WIDTH,
-  );
-  const snapOffsets = highlights.map((_, index) => {
-    if (index === 0) return 0;
-    if (index === highlights.length - 1) return maxScrollOffset;
-    return Math.max(0, Math.min(maxScrollOffset, index * SNAP_INTERVAL - CENTER_OFFSET));
-  });
+  const snapOffsets = highlights.map((_, index) => index * SNAP_INTERVAL);
 
   return (
     <View style={styles.container}>
       <Animated.ScrollView
+        ref={scrollRef}
         horizontal
+        scrollEnabled={false}
         showsHorizontalScrollIndicator={false}
         snapToOffsets={snapOffsets}
         decelerationRate="fast"
         scrollEventThrottle={16}
         contentContainerStyle={styles.content}
+        onContentSizeChange={() => {
+          if (highlights.length > 2 && !hasCenteredInitialCard.current) {
+            hasCenteredInitialCard.current = true;
+            scrollX.setValue(SNAP_INTERVAL);
+            scrollRef.current?.scrollTo({ x: SNAP_INTERVAL, animated: false });
+            setActiveIndex(1);
+          }
+        }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: true },
         )}
-        onMomentumScrollEnd={event => {
-          const x = event.nativeEvent.contentOffset.x;
-          const nearestIndex = snapOffsets.reduce((bestIndex, offset, index) =>
-            Math.abs(offset - x) < Math.abs(snapOffsets[bestIndex] - x) ? index : bestIndex,
-          0);
-          setActiveIndex(nearestIndex);
-        }}
       >
         {highlights.map((highlight, index) => {
           const colors = CARD_COLORS[index % CARD_COLORS.length];
@@ -175,7 +172,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   content: {
-    paddingHorizontal: 0,
+    paddingHorizontal: CENTER_OFFSET,
     gap: CARD_GAP,
     alignItems: 'center',
     paddingTop: 30,
