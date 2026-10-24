@@ -73,6 +73,8 @@ const HomeScreen = ({ navigation }) => {
   const [activeHealthCategoryId, setActiveHealthCategoryId] = useState(null);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchHeight, setSearchHeight] = useState(0);
+  const [prescriptionHeight, setPrescriptionHeight] = useState(0);
+  const [searchPinned, setSearchPinned] = useState(false);
   const [homeState, dispatch] = useReducer(homeReducer, {
     data: null,
     loader: true,
@@ -224,26 +226,43 @@ const HomeScreen = ({ navigation }) => {
         backgroundColor="transparent"
         translucent={Platform.OS === 'android'}
       />
-      <LinearGradient
-        colors={['#E3FCE4', '#FEFCFD']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{
-          height: insets.top + headerHeight + searchHeight + 12,
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-        }}
+      <Animated.View
         pointerEvents="none"
-      />
+        style={[
+          styles.headerGradientFrame,
+          {
+            height: scrollY.interpolate({
+              inputRange: [0, Math.max(headerHeight, 1)],
+              outputRange: [
+                insets.top + headerHeight + searchHeight + prescriptionHeight,
+                insets.top + searchHeight,
+              ],
+              extrapolate: 'clamp',
+            }),
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={['#E3FCE4', '#FEFCFD']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
       <Animated.ScrollView
         style={{ flex: 1, marginTop: insets.top }}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
+          {
+            useNativeDriver: false,
+            listener: event => {
+              const shouldPin = headerHeight > 0 &&
+                event.nativeEvent.contentOffset.y >= headerHeight;
+              setSearchPinned(current => current === shouldPin ? current : shouldPin);
+            },
+          },
         )}
       >
         <Header
@@ -262,7 +281,10 @@ const HomeScreen = ({ navigation }) => {
         <HomeLoadingSkeleton />
       ) : (
         <View style={styles.homeSections}>
-          <View><PrescriptionBanner
+          <View onLayout={event => {
+            const measuredHeight = event.nativeEvent.layout.height;
+            setPrescriptionHeight(current => current || measuredHeight);
+          }}><PrescriptionBanner
             onUploadPress={handlePrescriptionUpload}
             uploading={uploadingPrescription}
           /></View>
@@ -395,7 +417,7 @@ const HomeScreen = ({ navigation }) => {
         </View>
       )}
       </Animated.ScrollView>
-      {headerHeight > 0 && (
+      {headerHeight > 0 && !searchPinned && (
         <Animated.View
           style={[
             styles.floatingSearch,
@@ -421,6 +443,19 @@ const HomeScreen = ({ navigation }) => {
           />
         </Animated.View>
       )}
+      {searchPinned && (
+        <LinearGradient
+          colors={['#E3FCE4', '#FEFCFD']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={[styles.pinnedSearchArea, { paddingTop: insets.top }]}
+        >
+          <SearchBar
+            transparentBackground
+            onPress={() => navigation.navigate('Search')}
+          />
+        </LinearGradient>
+      )}
       <CartFloatingBar />
     </View>
   );
@@ -431,6 +466,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
+  headerGradientFrame: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+  },
   homeSections: {
     gap: 28,
   },
@@ -440,6 +484,17 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 20,
     elevation: 20,
+  },
+  pinnedSearchArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 30,
+    elevation: 30,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
   },
   highlightsAndTrustBackground: {
     borderBottomLeftRadius: 18,
