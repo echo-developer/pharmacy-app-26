@@ -114,9 +114,6 @@ const HomeScreen = ({ navigation }) => {
   const banners = apiBanners.length > 0
     ? apiBanners.map(item => ({ ...item, image: normalizeHomeImage(item.image) }))
     : fallbackBanners;
-  const lowerBanners = Array.isArray(homeState.data?.lower_banner)
-    ? homeState.data.lower_banner
-    : [];
   const browseCategories = Array.isArray(homeState.data?.category) ? homeState.data.category : [];
   // The backend supplies the Shop by Health Concern cards under
   // browse_health_category, with legacy health_concerns supported as fallback.
@@ -377,26 +374,6 @@ const HomeScreen = ({ navigation }) => {
             products={deals}
             onAddPress={handleAddToCart}
           /></View>}
-          {lowerBanners.length > 0 && <View><OfferCarousel
-            offers={lowerBanners.map(item => ({
-              ...item,
-              image: normalizeHomeImage(item.image),
-            }))}
-            showCaption={false}
-            onCardPress={(item) => {
-              if (item.category_id) {
-                navigation.navigate('Products', {
-                  title: item.category_name || 'Products',
-                  category_id: item.category_id,
-                });
-              } else if (item.brand_id) {
-                navigation.navigate('Products', {
-                  title: item.category_name || 'Brand products',
-                  brand_id: item.brand_id,
-                });
-              }
-            }}
-          /></View>}
           {popularBrands.length > 0 && <LinearGradient
             colors={['#E9F6D6', '#FFFFFF']}
             start={{ x: 0, y: 0 }}
@@ -476,3 +453,4 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
