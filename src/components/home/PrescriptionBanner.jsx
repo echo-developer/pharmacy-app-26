@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 12,
     paddingHorizontal: 14,
-    minHeight: 92,
+    minHeight: 80,
     paddingVertical: 18,
     // shadowColor: '#000',
     // shadowOffset: { width: 0, height: 2 },
