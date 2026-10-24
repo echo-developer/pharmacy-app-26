@@ -66,7 +66,7 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
                 adjustsFontSizeToFit
                 minimumFontScale={0.8}
               >
-                {item.label || item.category_name || item.name || 'Health Concern'}
+                {String(item.label || item.category_name || item.name || 'Health Concern').trim()}
               </Text>
             </View>
           </TouchableOpacity>
@@ -107,9 +107,10 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 2,
     alignItems: 'center',
-    transform: [{ translateX: -6 }],
+    transform: [{ translateX: -10 }],
   },
   cardLabel: {
+    width: '100%',
     fontSize: 14,
     fontWeight: '700',
     color: '#302426',
