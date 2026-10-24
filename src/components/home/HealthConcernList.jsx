@@ -42,10 +42,17 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
       {concerns.map((item, index) => {
         const itemId = item.category_id || item.id || item.product_id || index;
         const imgSource = getConcernImage(item);
+        const label = String(item.label || item.category_name || item.name || 'Health Concern')
+          .trim()
+          .split(/\s+/)
+          .slice(0, 3)
+          .join(' ');
         const distanceFromCenter = index - (concerns.length - 1) / 2;
-        const tilt = distanceFromCenter === 0
-          ? '0deg'
-          : `${distanceFromCenter < 0 ? '-' : ''}${Math.min(Math.abs(distanceFromCenter) * 6, 12)}deg`;
+        const tiltDegrees = distanceFromCenter === 0
+          ? 0
+          : Math.sign(distanceFromCenter) * Math.min(Math.abs(distanceFromCenter) * 6, 12);
+        const tilt = `${tiltDegrees}deg`;
+        const labelOffsetX = -Math.sin((tiltDegrees * Math.PI) / 180) * CARD_HEIGHT * 0.26;
         const arcOffset = Math.min(Math.abs(distanceFromCenter) * 10, 30);
         return (
           <TouchableOpacity
@@ -59,14 +66,14 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
               style={[styles.cardImage, { transform: [{ rotate: tilt }] }]}
               resizeMode="contain"
             />
-            <View style={styles.cardLabelContainer}>
+            <View style={[styles.cardLabelContainer, { transform: [{ translateX: labelOffsetX }] }]}>
               <Text
                 style={[styles.cardLabel, { transform: [{ rotate: tilt }] }]}
                 numberOfLines={1}
                 adjustsFontSizeToFit
                 minimumFontScale={0.8}
               >
-                {String(item.label || item.category_name || item.name || 'Health Concern').trim()}
+                {label}
               </Text>
             </View>
           </TouchableOpacity>
@@ -78,10 +85,10 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 44,
     gap: 6,
     paddingTop: 14,
-    paddingBottom: 32,
+    paddingBottom: 8,
   },
   cardWrapper: {
     width: CARD_WIDTH,
@@ -89,25 +96,24 @@ const styles = StyleSheet.create({
     position: 'relative',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
     borderRadius: 24,
   },
   cardImage: {
     position: 'absolute',
-    top: '-4%',
-    left: '-10%',
-    width: '120%',
-    height: '108%',
+    top: '-5%',
+    left: '-5%',
+    width: '110%',
+    height: '110%',
     borderRadius: 24,
   },
   cardLabelContainer: {
     position: 'absolute',
-    bottom: '18%',
+    bottom: '24%',
     left: 0,
     right: 0,
     zIndex: 2,
     alignItems: 'center',
-    transform: [{ translateX: -10 }],
   },
   cardLabel: {
     width: '100%',

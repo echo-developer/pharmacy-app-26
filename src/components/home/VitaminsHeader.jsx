@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginTop: 24,
+    marginTop: -16,
     marginBottom: 12,
   },
   textColumn: {

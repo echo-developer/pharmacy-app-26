@@ -137,7 +137,7 @@ const OfferCarousel = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
+    marginTop: 0,
     backgroundColor: '#FFFFFF',
   },
   scrollContent: {

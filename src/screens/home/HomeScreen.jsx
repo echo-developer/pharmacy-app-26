@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   homeSections: {
-    gap: 28,
+    gap: 20,
   },
   floatingSearch: {
     position: 'absolute',

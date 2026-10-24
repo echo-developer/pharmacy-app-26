@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    marginTop: 24,
+    marginTop: 0,
     marginBottom: 12,
   },
   textColumn: {
