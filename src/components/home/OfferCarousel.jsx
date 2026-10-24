@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
   },
   fullWidthImage: {
     width,
+    height: 220,
     borderRadius: 0,
   },
   textContainer: {
@@ -205,3 +206,4 @@ const styles = StyleSheet.create({
 });
 
 export default OfferCarousel;
+
