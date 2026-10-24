@@ -75,33 +75,54 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
   const hasCenteredInitialCard = React.useRef(false);
   const highlights = getCategoryHighlights(categories).slice(0, 3);
   if (!highlights.length) return null;
-  const snapOffsets = highlights.map((_, index) => index * SNAP_INTERVAL);
+  const repeatedHighlights = highlights.length > 1
+    ? Array.from({ length: highlights.length * 3 }, (_, index) => highlights[index % highlights.length])
+    : highlights;
+  const snapOffsets = repeatedHighlights.map((_, index) => index * SNAP_INTERVAL);
 
   return (
     <View style={styles.container}>
       <Animated.ScrollView
         ref={scrollRef}
         horizontal
-        scrollEnabled={false}
+        scrollEnabled={highlights.length > 1}
         showsHorizontalScrollIndicator={false}
         snapToOffsets={snapOffsets}
         decelerationRate="fast"
         scrollEventThrottle={16}
         contentContainerStyle={styles.content}
         onContentSizeChange={() => {
-          if (highlights.length > 2 && !hasCenteredInitialCard.current) {
+          if (highlights.length > 1 && !hasCenteredInitialCard.current) {
             hasCenteredInitialCard.current = true;
-            scrollX.setValue(SNAP_INTERVAL);
-            scrollRef.current?.scrollTo({ x: SNAP_INTERVAL, animated: false });
-            setActiveIndex(1);
+            const initialOffset = highlights.length * SNAP_INTERVAL;
+            scrollX.setValue(initialOffset);
+            scrollRef.current?.scrollTo({ x: initialOffset, animated: false });
           }
         }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: true },
         )}
+        onMomentumScrollEnd={({ nativeEvent }) => {
+          const itemIndex = Math.round(nativeEvent.contentOffset.x / SNAP_INTERVAL);
+          const uniqueIndex = itemIndex % highlights.length;
+          setActiveIndex(uniqueIndex);
+
+          // Keep the scroll position in the middle copy so swiping can continue forever.
+          let recenteredIndex = itemIndex;
+          if (itemIndex < highlights.length) {
+            recenteredIndex += highlights.length;
+          } else if (itemIndex >= highlights.length * 2) {
+            recenteredIndex -= highlights.length;
+          }
+          if (recenteredIndex !== itemIndex) {
+            const offset = recenteredIndex * SNAP_INTERVAL;
+            scrollRef.current?.scrollTo({ x: offset, animated: false });
+            scrollX.setValue(offset);
+          }
+        }}
       >
-        {highlights.map((highlight, index) => {
+        {repeatedHighlights.map((highlight, index) => {
           const colors = CARD_COLORS[index % CARD_COLORS.length];
           const currentOffset = snapOffsets[index];
           const previousOffset = index > 0 ? snapOffsets[index - 1] : currentOffset - SNAP_INTERVAL;
@@ -117,7 +138,7 @@ const HomeHighlights = ({ categories = [], onProductPress }) => {
           });
           return (
             <Animated.View
-              key={`${highlight.categoryId || highlight.product.product_id}`}
+              key={`${index}-${highlight.categoryId || highlight.product.product_id}`}
               style={[styles.cardScale, { transform: [{ scale }] }]}
             >
               <TouchableOpacity
