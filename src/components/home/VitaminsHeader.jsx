@@ -51,12 +51,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#4C6269',
     marginBottom: 2,
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: '800',
     color: '#252525',
     letterSpacing: 0.3,
