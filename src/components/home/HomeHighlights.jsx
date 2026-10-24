@@ -71,7 +71,7 @@ const getCategoryHighlights = categories =>
 const HomeHighlights = ({ categories = [], onProductPress }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollX = React.useRef(new Animated.Value(0)).current;
-  const highlights = getCategoryHighlights(categories);
+  const highlights = getCategoryHighlights(categories).slice(0, 3);
   if (!highlights.length) return null;
   const maxScrollOffset = Math.max(
     0,
@@ -251,3 +251,4 @@ const styles = StyleSheet.create({
 });
 
 export default HomeHighlights;
+
