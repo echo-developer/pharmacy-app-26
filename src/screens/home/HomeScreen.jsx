@@ -372,6 +372,7 @@ const HomeScreen = ({ navigation }) => {
               title="Most Ordered Medicines"
               subtitle="Frequently ordered pharmacy essentials"
               showHeart={false}
+              compactArrow
               onArrowPress={() => navigation.navigate('Products', { title: 'Most Ordered Medicines' })}
             />
             <DealsProducts

@@ -39,7 +39,7 @@ const HealthConcernHeader = ({
       </View>
 
       <TouchableOpacity style={styles.arrowButton} onPress={onArrowPress}>
-        <ChevronRight size={18} color="#FFFFFF" />
+        <ChevronRight size={15} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   arrowButton: {
-    width: 50,                 // Pill width
-    height: 32,
-    borderRadius: 16,          // Pill shape
+    width: 36,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#263077',
     alignItems: 'center',
     justifyContent: 'center',

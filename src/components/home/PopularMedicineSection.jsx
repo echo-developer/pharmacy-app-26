@@ -26,6 +26,7 @@ const PopularMedicineSection = ({
         title="Popular Medicine You Can Trust"
         subtitle="Popular medicines selected for you"
         showHeart={false}
+        compactArrow
         onArrowPress={onArrowPress}
       />
       <ScrollView

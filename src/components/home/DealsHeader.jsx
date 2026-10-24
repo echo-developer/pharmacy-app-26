@@ -7,6 +7,7 @@ const DealsHeader = ({
   subtitle = 'Buy now to get the best deals',
   onArrowPress,
   showHeart = true,
+  compactArrow = false,
 }) => {
   return (
     <View style={styles.container}>
@@ -19,8 +20,11 @@ const DealsHeader = ({
       </View>
 
       {/* RIGHT SIDE: Arrow Pill */}
-      <TouchableOpacity style={styles.arrowPill} onPress={onArrowPress}>
-        <ChevronRight size={18} color="#FFFFFF" />
+      <TouchableOpacity
+        style={[styles.arrowPill, compactArrow && styles.compactArrowPill]}
+        onPress={onArrowPress}
+      >
+        <ChevronRight size={compactArrow ? 15 : 18} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -58,6 +62,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F848B', // Arrow pill background
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  compactArrowPill: {
+    width: 36,
+    height: 28,
+    borderRadius: 14,
   },
 });
 
