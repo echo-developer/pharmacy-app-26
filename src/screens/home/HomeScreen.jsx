@@ -274,146 +274,146 @@ const HomeScreen = ({ navigation }) => {
         />
         <View style={{ height: searchHeight }} />
 
-      {homeState.loader ? (
-        <HomeLoadingSkeleton />
-      ) : (
-        <View style={styles.homeSections}>
-          <View onLayout={event => {
-            const measuredHeight = event.nativeEvent.layout.height;
-            setPrescriptionHeight(current => current || measuredHeight);
-          }}><PrescriptionBanner
-            onUploadPress={handlePrescriptionUpload}
-            uploading={uploadingPrescription}
-          /></View>
-          {banners.length > 0 && <View><OfferCarousel
-            offers={banners}
-            showCaption={false}
-            showPagination={false}
-            fullWidth
-            onCardPress={(item) => navigation.navigate('Products', {
-              title: item.category_name || item.category || 'Special Offers',
-              category_id: item.category_id || item.id,
-            })}
-          /></View>}
-          <LinearGradient
-            colors={['#FEFCFD', '#E9F6FA']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.highlightsAndTrustBackground}
-          >
-            <HomeHighlights
-              categories={popularCategories}
-              onProductPress={item => navigation.navigate('ProductDetails', {
-                id: item.product_id,
-                product: item,
-              })}
-            />
-            <TrustBadges />
-          </LinearGradient>
-          {healthConcerns.length > 0 && <View>
-            <HealthConcernHeader
-              onArrowPress={() => navigation.navigate('Categories')}
-            />
-            <ConcernPills
-              concerns={healthConcernCategories}
-              onPillPress={item => setActiveHealthCategoryId(item.id || item.category_id)}
-            />
-            <HealthConcernList
-              concerns={healthConcerns}
-              onCardPress={item => navigation.navigate('Products', {
-                title: item.label || item.name || 'Health Concern',
-                category_id: selectedHealthCategory?.id,
-                sub_category_id: item.sub_category_id || item.id,
-              })}
-            />
-          </View>}
-          {vitaminSubcategories.length > 0 && <View>
-            <VitaminsHeader
-              subtitle="Nourish their growth with"
-              title="Vitamins & Supplements"
-            />
-            <VitaminsProducts
-              products={vitaminSubcategories}
-              onCardPress={item => navigation.navigate('Products', {
-                title: item.name || 'Vitamins & Supplements',
-                category_id: vitaminBrowseCategory.id || vitaminBrowseCategory.category_id,
-                sub_category_id: item.sub_category_id || item.id,
-              })}
-            />
-          </View>}
-          {browseCategories.length > 0 && <View>
-            <HealthConcernHeader
-              title="Browse Categories"
-              subtitle="Browse medicines by category"
-              onArrowPress={() => navigation.navigate('Categories')}
-            />
-            <ConcernPills
-              concerns={browseCategories}
-              onPillPress={(item) => navigation.navigate('Products', {
-                title: item.category_name || item.label || item.name || 'Products',
+        {homeState.loader ? (
+          <HomeLoadingSkeleton />
+        ) : (
+          <View style={styles.homeSections}>
+            <View onLayout={event => {
+              const measuredHeight = event.nativeEvent.layout.height;
+              setPrescriptionHeight(current => current || measuredHeight);
+            }}><PrescriptionBanner
+                onUploadPress={handlePrescriptionUpload}
+                uploading={uploadingPrescription}
+              /></View>
+            {banners.length > 0 && <View><OfferCarousel
+              offers={banners}
+              showCaption={false}
+              showPagination={false}
+              fullWidth
+              onCardPress={(item) => navigation.navigate('Products', {
+                title: item.category_name || item.category || 'Special Offers',
                 category_id: item.category_id || item.id,
               })}
-            />
-          </View>}
-          {(popularMedicines.length > 0 || popularCategories.length > 0) && <View>
-            <PopularMedicineSection
-              popularMedicines={popularMedicines}
-              categories={popularCategories}
-              onAddPress={handleAddToCart}
-              onProductPress={(item) => navigation.navigate('ProductDetails', {
-                id: item.product_id,
-                product: item,
-              })}
-              onArrowPress={() => navigation.navigate('Products', { title: 'Popular Medicines' })}
-            />
-          </View>}
-          {mostOrderedMedicines.length > 0 && <View>
-            <DealsHeader
-              title="Most Ordered Medicines"
-              subtitle="Frequently ordered pharmacy essentials"
-              showHeart={false}
-              compactArrow
-              onArrowPress={() => navigation.navigate('Products', { title: 'Most Ordered Medicines' })}
-            />
-            <DealsProducts
-              products={mostOrderedMedicines}
-              onAddPress={handleAddToCart}
-              onProductPress={(item) => navigation.navigate('ProductDetails', {
-                id: item.product_id,
-                product: item,
-              })}
-            />
-          </View>}
-          {deals.length > 0 && <View>
-          <DealsHeader
-            title="Deals you'll love"
-            subtitle="Buy now to get the best deals"
-            onArrowPress={() => navigation.navigate('Offers')}
-          />
-          <DealsProducts
-            products={deals}
-            onAddPress={handleAddToCart}
-          /></View>}
-          {popularBrands.length > 0 && <LinearGradient
-            colors={['#E9F6D6', '#FFFFFF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.petCareSection}
-          >
-            <PetCareHeader
-              title="Pet Care Top Brands"
-              subtitle="Everyday care for a healthier you"
-            />
-            <PetCareBrands
-              brands={popularBrands}
-              onBrandPress={(item) => navigation.navigate('Products', {
-                title: item.name || item.brand_name || 'Brand products',
-                brand_id: item.brand_id || item.id,
-              })}
-            />
-          </LinearGradient>}
-        </View>
-      )}
+            /></View>}
+            <LinearGradient
+              colors={['#FEFCFD', '#E9F6FA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.highlightsAndTrustBackground}
+            >
+              <HomeHighlights
+                categories={popularCategories}
+                onProductPress={item => navigation.navigate('ProductDetails', {
+                  id: item.product_id,
+                  product: item,
+                })}
+              />
+              <TrustBadges />
+            </LinearGradient>
+            {healthConcerns.length > 0 && <View>
+              <HealthConcernHeader
+                onArrowPress={() => navigation.navigate('Categories')}
+              />
+              <ConcernPills
+                concerns={healthConcernCategories}
+                onPillPress={item => setActiveHealthCategoryId(item.id || item.category_id)}
+              />
+              <HealthConcernList
+                concerns={healthConcerns}
+                onCardPress={item => navigation.navigate('Products', {
+                  title: item.label || item.name || 'Health Concern',
+                  category_id: selectedHealthCategory?.id,
+                  sub_category_id: item.sub_category_id || item.id,
+                })}
+              />
+            </View>}
+            {vitaminSubcategories.length > 0 && <View style={{ marginTop: -20 }}>
+              <VitaminsHeader
+                subtitle="Nourish their growth with"
+                title="Vitamins & Supplements"
+              />
+              <VitaminsProducts
+                products={vitaminSubcategories}
+                onCardPress={item => navigation.navigate('Products', {
+                  title: item.name || 'Vitamins & Supplements',
+                  category_id: vitaminBrowseCategory.id || vitaminBrowseCategory.category_id,
+                  sub_category_id: item.sub_category_id || item.id,
+                })}
+              />
+            </View>}
+            {browseCategories.length > 0 && <View>
+              <HealthConcernHeader
+                title="Browse Categories"
+                subtitle="Browse medicines by category"
+                onArrowPress={() => navigation.navigate('Categories')}
+              />
+              <ConcernPills
+                concerns={browseCategories}
+                onPillPress={(item) => navigation.navigate('Products', {
+                  title: item.category_name || item.label || item.name || 'Products',
+                  category_id: item.category_id || item.id,
+                })}
+              />
+            </View>}
+            {(popularMedicines.length > 0 || popularCategories.length > 0) && <View>
+              <PopularMedicineSection
+                popularMedicines={popularMedicines}
+                categories={popularCategories}
+                onAddPress={handleAddToCart}
+                onProductPress={(item) => navigation.navigate('ProductDetails', {
+                  id: item.product_id,
+                  product: item,
+                })}
+                onArrowPress={() => navigation.navigate('Products', { title: 'Popular Medicines' })}
+              />
+            </View>}
+            {mostOrderedMedicines.length > 0 && <View>
+              <DealsHeader
+                title="Most Ordered Medicines"
+                subtitle="Frequently ordered pharmacy essentials"
+                showHeart={false}
+                compactArrow
+                onArrowPress={() => navigation.navigate('Products', { title: 'Most Ordered Medicines' })}
+              />
+              <DealsProducts
+                products={mostOrderedMedicines}
+                onAddPress={handleAddToCart}
+                onProductPress={(item) => navigation.navigate('ProductDetails', {
+                  id: item.product_id,
+                  product: item,
+                })}
+              />
+            </View>}
+            {deals.length > 0 && <View>
+              <DealsHeader
+                title="Deals you'll love"
+                subtitle="Buy now to get the best deals"
+                onArrowPress={() => navigation.navigate('Offers')}
+              />
+              <DealsProducts
+                products={deals}
+                onAddPress={handleAddToCart}
+              /></View>}
+            {popularBrands.length > 0 && <LinearGradient
+              colors={['#E9F6D6', '#FFFFFF']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.petCareSection}
+            >
+              <PetCareHeader
+                title="Pet Care Top Brands"
+                subtitle="Everyday care for a healthier you"
+              />
+              <PetCareBrands
+                brands={popularBrands}
+                onBrandPress={(item) => navigation.navigate('Products', {
+                  title: item.name || item.brand_name || 'Brand products',
+                  brand_id: item.brand_id || item.id,
+                })}
+              />
+            </LinearGradient>}
+          </View>
+        )}
       </Animated.ScrollView>
       <Animated.View
         pointerEvents="none"

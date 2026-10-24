@@ -52,7 +52,6 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
           ? 0
           : Math.sign(distanceFromCenter) * Math.min(Math.abs(distanceFromCenter) * 6, 12);
         const tilt = `${tiltDegrees}deg`;
-        const labelOffsetX = -Math.sin((tiltDegrees * Math.PI) / 180) * CARD_HEIGHT * 0.26;
         const arcOffset = Math.min(Math.abs(distanceFromCenter) * 10, 30);
         return (
           <TouchableOpacity
@@ -66,15 +65,17 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
               style={[styles.cardImage, { transform: [{ rotate: tilt }] }]}
               resizeMode="contain"
             />
-            <View style={[styles.cardLabelContainer, { transform: [{ translateX: labelOffsetX }] }]}>
-              <Text
-                style={[styles.cardLabel, { transform: [{ rotate: tilt }] }]}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                minimumFontScale={0.8}
-              >
-                {label}
-              </Text>
+            <View style={styles.cardLabelContainer}>
+              <View style={{ transform: [{ rotate: tilt }] }}>
+                <Text
+                  style={styles.cardLabel}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {label}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
         );
@@ -86,7 +87,7 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
 const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 44,
-    gap: 6,
+    gap: 2,
     paddingTop: 14,
     paddingBottom: 8,
   },
@@ -114,18 +115,18 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 2,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 20,
   },
   cardLabel: {
-    width: '100%',
     fontSize: 14,
     fontWeight: '700',
     color: '#302426',
-    paddingHorizontal: 2,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 14,
     backgroundColor: 'transparent',
     textAlign: 'center',
-    maxWidth: '100%',
   },
 });
 
