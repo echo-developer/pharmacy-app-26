@@ -61,6 +61,8 @@ const fallbackHealthConcerns = [
   { id: 6, label: 'Bone & Joint', name: 'Bone & Joint' },
 ];
 
+const PINNED_SEARCH_BOTTOM_GAP = 12;
+
 const normalizeHomeImage = image => {
   if (typeof image !== 'string' || !image) return image;
   const apiOrigin = StaticConst.api.endpoint.replace(/\/api\/app\/?$/i, '');
@@ -74,12 +76,16 @@ const HomeScreen = ({ navigation }) => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchHeight, setSearchHeight] = useState(0);
   const [prescriptionHeight, setPrescriptionHeight] = useState(0);
-  const [searchPinned, setSearchPinned] = useState(false);
   const [homeState, dispatch] = useReducer(homeReducer, {
     data: null,
     loader: true,
   });
   const scrollY = React.useRef(new Animated.Value(0)).current;
+  const pinnedSearchOpacity = scrollY.interpolate({
+    inputRange: [0, Math.max(headerHeight, 1)],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
 
   useEffect(() => {
     loadHomeData();
@@ -231,13 +237,11 @@ const HomeScreen = ({ navigation }) => {
         style={[
           styles.headerGradientFrame,
           {
-            height: scrollY.interpolate({
-              inputRange: [0, Math.max(headerHeight, 1)],
-              outputRange: [
-                insets.top + headerHeight + searchHeight + prescriptionHeight,
-                insets.top + searchHeight,
-              ],
-              extrapolate: 'clamp',
+            height: insets.top + headerHeight + searchHeight +
+              prescriptionHeight + PINNED_SEARCH_BOTTOM_GAP,
+            opacity: pinnedSearchOpacity.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 0],
             }),
           },
         ]}
@@ -250,19 +254,12 @@ const HomeScreen = ({ navigation }) => {
         />
       </Animated.View>
       <Animated.ScrollView
-        style={{ flex: 1, marginTop: insets.top }}
+        style={{ flex: 1, marginTop: insets.top, zIndex: 0, elevation: 0 }}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          {
-            useNativeDriver: false,
-            listener: event => {
-              const shouldPin = headerHeight > 0 &&
-                event.nativeEvent.contentOffset.y >= headerHeight;
-              setSearchPinned(current => current === shouldPin ? current : shouldPin);
-            },
-          },
+          { useNativeDriver: true },
         )}
       >
         <Header
@@ -417,7 +414,24 @@ const HomeScreen = ({ navigation }) => {
         </View>
       )}
       </Animated.ScrollView>
-      {headerHeight > 0 && !searchPinned && (
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.pinnedSearchBackground,
+          {
+            height: insets.top + searchHeight + PINNED_SEARCH_BOTTOM_GAP,
+            opacity: pinnedSearchOpacity,
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={['#E3FCE4', '#FEFCFD']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+      {headerHeight > 0 && (
         <Animated.View
           style={[
             styles.floatingSearch,
@@ -443,19 +457,6 @@ const HomeScreen = ({ navigation }) => {
           />
         </Animated.View>
       )}
-      {searchPinned && (
-        <LinearGradient
-          colors={['#E3FCE4', '#FEFCFD']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={[styles.pinnedSearchArea, { paddingTop: insets.top }]}
-        >
-          <SearchBar
-            transparentBackground
-            onPress={() => navigation.navigate('Search')}
-          />
-        </LinearGradient>
-      )}
       <CartFloatingBar />
     </View>
   );
@@ -475,6 +476,17 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
     overflow: 'hidden',
   },
+  pinnedSearchBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    elevation: 100,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+  },
   homeSections: {
     gap: 28,
   },
@@ -482,16 +494,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    zIndex: 20,
-    elevation: 20,
-  },
-  pinnedSearchArea: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 30,
-    elevation: 30,
+    zIndex: 110,
+    elevation: 110,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     overflow: 'hidden',
