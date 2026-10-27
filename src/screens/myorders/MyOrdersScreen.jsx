@@ -243,8 +243,7 @@ const MyOrdersScreen = ({ navigation }) => {
     const deliveredDate = item.delivered_date || item.delivered_at;
     const cancelledDate = item.cancelled_date || item.cancelled_at;
     const expectedDate = item.expected_delivery_date || item.delivery_date || item.estimated_delivery_date;
-    if (status === 'completed') return deliveredDate ? `Delivered on ${formatDate(deliveredDate, { shortDate: true })}` : 'Delivered';
-    if (status === 'cancelled') return cancelledDate ? `Cancelled on ${formatDate(cancelledDate, { shortDate: true })}` : 'Cancelled';
+    if (status === 'completed' || status === 'cancelled') return '';
     return expectedDate ? `Arriving by ${formatDate(expectedDate, { shortDate: true })}` : 'Order in progress';
   };
 

@@ -9,13 +9,13 @@ const STATUS_CONFIG = {
   },
   completed: {
     label: 'COMPLETED',
-    backgroundColor: '#34C759',
-    textColor: '#FFFFFF',
+    backgroundColor: '#DDF3E5',
+    textColor: '#1F7A3A',
   },
   cancelled: {
     label: 'CANCELLED',
-    backgroundColor: '#FF383C',
-    textColor: '#FFFFFF',
+    backgroundColor: '#FCE1E2',
+    textColor: '#B4232B',
   },
 };
 
