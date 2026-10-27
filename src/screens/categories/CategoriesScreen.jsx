@@ -561,8 +561,8 @@ const styles = StyleSheet.create({
   categorySection: { marginBottom: 28 },
   categorySectionTitle: {
     color: '#263077',
-    fontSize: 19,
-    fontWeight: '500',
+    fontSize: 17,
+    fontWeight: '700',
     marginBottom: 11,
   },
   subcategoryPanel: { borderRadius: 12, backgroundColor: 'transparent' },
