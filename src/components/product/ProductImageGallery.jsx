@@ -17,16 +17,36 @@ import Svg, { Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const ImageLoader = ({ visible }) => {
+const ImageLoader = ({ visible, style, fullscreen = false }) => {
   if (!visible) return null;
   return (
-    <View style={styles.imageLoader} pointerEvents="none">
-      <ShimmerPlaceholder
-        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
-        shimmerColor="#EAEAEA"
-        shimmerBackgroundColor="#F5F5F5"
-        visible={false}
-      />
+    <View style={[styles.imageLoader, style]} pointerEvents="none">
+      {fullscreen ? (
+        <View style={styles.fullscreenSkeletonLayout}>
+          <ShimmerPlaceholder
+            style={styles.fullscreenSkeletonImage}
+            shimmerColors={['#242424', '#3A3A3A', '#242424']}
+            visible={false}
+          />
+          <ShimmerPlaceholder
+            style={styles.fullscreenSkeletonTitle}
+            shimmerColors={['#242424', '#3A3A3A', '#242424']}
+            visible={false}
+          />
+          <ShimmerPlaceholder
+            style={styles.fullscreenSkeletonSubtitle}
+            shimmerColors={['#242424', '#3A3A3A', '#242424']}
+            visible={false}
+          />
+        </View>
+      ) : (
+        <ShimmerPlaceholder
+          style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+          shimmerColor="#EAEAEA"
+          shimmerBackgroundColor="#F5F5F5"
+          visible={false}
+        />
+      )}
     </View>
   );
 };
@@ -57,6 +77,9 @@ const ProductImageGallery = ({
 
   const hasMultiple = gallery.length > 1;
   const galleryKey = gallery.join('|');
+  const getGalleryUri = item => (
+    typeof item === 'string' ? item : item?.uri || item?.image || item?.image_url || item?.product_image || ''
+  );
 
   useEffect(() => {
     setActiveIndex(0);
@@ -72,8 +95,9 @@ const ProductImageGallery = ({
     if (index === 0 && prefetchedGalleryRef.current !== galleryKey) {
       prefetchedGalleryRef.current = galleryKey;
       gallery.slice(1).forEach(uri => {
-        if (typeof uri === 'string' && uri.length > 0) {
-          NativeImage.prefetch(uri).catch(() => {});
+        const imageUri = getGalleryUri(uri);
+        if (imageUri) {
+          NativeImage.prefetch(imageUri).catch(() => {});
         }
       });
     }
@@ -115,6 +139,7 @@ const ProductImageGallery = ({
             initialNumToRender={1}
             maxToRenderPerBatch={1}
             windowSize={3}
+            style={styles.fullscreenList}
             showsHorizontalScrollIndicator={false}
             initialScrollIndex={fullscreenIndex}
             getItemLayout={(_, index) => ({
@@ -125,11 +150,13 @@ const ProductImageGallery = ({
             keyExtractor={(item, idx) => `full-${item}-${idx}`}
             renderItem={({ item, index }) => (
               <View style={styles.fullscreenImageContainer}>
-                {!loadedImages[index] && <ImageLoader visible />}
+                {!loadedImages[index] && <ImageLoader visible fullscreen style={styles.fullscreenImageLoader} />}
                 <FastImage
                   source={failedImages[index]
                     ? require('../../assets/images/Subtract.png')
-                    : { uri: item, priority: FastImage.priority.high }}
+                    : getGalleryUri(item)
+                      ? { uri: getGalleryUri(item), priority: FastImage.priority.high }
+                      : require('../../assets/images/Subtract.png')}
                   style={styles.fullscreenImage}
                   resizeMode={FastImage.resizeMode.contain}
                   onLoad={() => markImageLoaded(index)}
@@ -182,7 +209,11 @@ const ProductImageGallery = ({
                     />
                   )}
                   <FastImage
-                    source={failedImages[index] ? require('../../assets/images/Subtract.png') : { uri: item, priority: FastImage.priority.high }}
+                    source={failedImages[index]
+                      ? require('../../assets/images/Subtract.png')
+                      : getGalleryUri(item)
+                        ? { uri: getGalleryUri(item), priority: FastImage.priority.high }
+                        : require('../../assets/images/Subtract.png')}
                     style={StyleSheet.absoluteFill}
                     resizeMode={FastImage.resizeMode.cover}
                     onLoad={() => markImageLoaded(index)}
@@ -293,6 +324,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  fullscreenList: {
+    flex: 1,
+    width: '100%',
+  },
   modalClose: {
     position: 'absolute',
     top: 48,
@@ -309,6 +344,34 @@ const styles = StyleSheet.create({
   fullscreenImageContainer: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
+  },
+  fullscreenImageLoader: {
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.95)',
+  },
+  fullscreenSkeletonLayout: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    paddingHorizontal: 36,
+  },
+  fullscreenSkeletonImage: {
+    width: '70%',
+    height: '42%',
+    borderRadius: 18,
+    marginBottom: 28,
+  },
+  fullscreenSkeletonTitle: {
+    width: '62%',
+    height: 14,
+    borderRadius: 7,
+    marginBottom: 10,
+  },
+  fullscreenSkeletonSubtitle: {
+    width: '42%',
+    height: 10,
+    borderRadius: 5,
   },
   modalDots: {
     position: 'absolute',
