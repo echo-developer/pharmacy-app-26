@@ -4,7 +4,7 @@ import { Check, ChevronRight } from 'lucide-react-native';
 
 const OrderTimelineCard = ({ events = [], onSeeAllUpdates, statusdetails }) => {
   // Use real order updates; do not show a sample timeline as if it belonged to this order.
-  const updates = Array.isArray(statusdetails) ? statusdetails : [];
+  const updates = Array.isArray(statusdetails) ? statusdetails.slice(0, 2) : [];
   const timelineEvents = updates.length > 0
     ? updates.map((sd, index) => ({
         id: index,
