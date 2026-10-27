@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   middleBadgeWrapper: {
+    flex: 1.45,
     transform: [{ translateX: 6 }],
   },
   iconWrapper: {
