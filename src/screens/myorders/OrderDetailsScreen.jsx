@@ -526,24 +526,6 @@ const OrderDetailsScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           )}
 
-          <OrderBillDetails
-            itemsTotal={orderData.totals?.cart_total ?? orderData.order_total ?? orderData.total_amount ?? orderData.sub_total ?? '0'}
-            itemsCutPrice={getOrderMrpTotal(orderData)}
-            deliveryCharge={(orderData.totals?.delivery_charge ?? orderData.shipping_charge ?? 0) > 0 ? `${orderData.totals?.delivery_charge ?? orderData.shipping_charge}` : 'FREE'}
-            handlingCharge={orderData.handling_charge ?? '0'}
-            taxAmount={orderData.totals?.total_gst}
-            grandTotal={orderData.totals?.final_amount ?? orderData.order_total ?? orderData.final_amount ?? orderData.net_amount ?? '0'}
-            onDownloadInvoice={handleDownloadInvoice}
-            invoiceLoading={invoiceLoading}
-          />
-
-          <OrderInfoCard
-            orderId={orderData.order_number || orderData.order_id || orderIdParam}
-            payment={orderData.payment_mode || (orderData.payment_method === 'RZR' ? 'Razorpay' : orderData.payment_method === 'COD' ? 'Cash on Delivery' : orderData.payment_method) || 'Payment information unavailable'}
-            deliverTo={formatAddress(orderData.shipping_address || orderData.address)}
-            placedDate={formatDate(orderData.order_date, true)}
-          />  
-
           <YouMayAlsoLike
             products={recommendedProducts}
             onArrowPress={() => navigation.navigate('Products', { title: 'Recommended for you' })}
@@ -565,6 +547,25 @@ const OrderDetailsScreen = ({ route, navigation }) => {
               CommonService.addToCart(productData);
             }}
           />
+
+          <OrderBillDetails
+            itemsTotal={orderData.totals?.cart_total ?? orderData.order_total ?? orderData.total_amount ?? orderData.sub_total ?? '0'}
+            itemsCutPrice={getOrderMrpTotal(orderData)}
+            deliveryCharge={(orderData.totals?.delivery_charge ?? orderData.shipping_charge ?? 0) > 0 ? `${orderData.totals?.delivery_charge ?? orderData.shipping_charge}` : 'FREE'}
+            handlingCharge={orderData.handling_charge ?? '0'}
+            taxAmount={orderData.totals?.total_gst}
+            grandTotal={orderData.totals?.final_amount ?? orderData.order_total ?? orderData.final_amount ?? orderData.net_amount ?? '0'}
+            onDownloadInvoice={handleDownloadInvoice}
+            invoiceLoading={invoiceLoading}
+          />
+
+          <OrderInfoCard
+            orderId={orderData.order_number || orderData.order_id || orderIdParam}
+            payment={orderData.payment_mode || (orderData.payment_method === 'RZR' ? 'Razorpay' : orderData.payment_method === 'COD' ? 'Cash on Delivery' : orderData.payment_method) || 'Payment information unavailable'}
+            deliverTo={formatAddress(orderData.shipping_address || orderData.address)}
+            placedDate={formatDate(orderData.order_date, true)}
+          />  
+
         </ScrollView>
       )}
 
