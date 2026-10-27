@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
@@ -24,71 +24,121 @@ const getAvailableCount = item => (
 );
 
 const PetCareBrands = ({ brands = [], onBrandPress }) => {
-  const initialActiveIndex = brands.length > 1 ? 1 : 0;
+  const canLoop = brands.length > 1;
+  const initialActiveIndex = canLoop ? 1 : 0;
+  const loopedBrands = canLoop ? [...brands, ...brands, ...brands] : brands;
   const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
   const scrollRef = useRef(null);
+  const initialScrollIndex = canLoop ? brands.length + initialActiveIndex : initialActiveIndex;
+  const scrollX = useRef(new Animated.Value(initialScrollIndex * SNAP_INTERVAL)).current;
 
   useEffect(() => {
     const index = brands.length > 1 ? 1 : 0;
+    const scrollIndex = brands.length > 1 ? brands.length + index : index;
     setActiveIndex(index);
     const frame = requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ x: index * SNAP_INTERVAL, animated: false });
+      scrollX.setValue(scrollIndex * SNAP_INTERVAL);
+      scrollRef.current?.scrollTo({ x: scrollIndex * SNAP_INTERVAL, animated: false });
     });
     return () => cancelAnimationFrame(frame);
-  }, [brands.length]);
+  }, [brands.length, scrollX]);
+
+  const updateActiveIndex = event => {
+    if (brands.length === 0) return;
+    const offset = event.nativeEvent.contentOffset.x;
+    const itemIndex = Math.round(offset / SNAP_INTERVAL);
+    const nextIndex = canLoop
+      ? ((itemIndex % brands.length) + brands.length) % brands.length
+      : Math.max(0, Math.min(brands.length - 1, itemIndex));
+    setActiveIndex(currentIndex => currentIndex === nextIndex ? currentIndex : nextIndex);
+  };
 
   const handleScrollEnd = event => {
+    updateActiveIndex(event);
+    if (!canLoop) return;
+
     const offset = event.nativeEvent.contentOffset.x;
-    setActiveIndex(Math.max(0, Math.min(brands.length - 1, Math.round(offset / SNAP_INTERVAL))));
+    const cycleWidth = brands.length * SNAP_INTERVAL;
+    const middleCopyStart = cycleWidth;
+    const middleCopyEnd = middleCopyStart + cycleWidth;
+    if (offset < middleCopyStart || offset >= middleCopyEnd) {
+      const relativeOffset = ((offset - middleCopyStart) % cycleWidth + cycleWidth) % cycleWidth;
+      const normalizedOffset = middleCopyStart + relativeOffset;
+      scrollX.setValue(normalizedOffset);
+      scrollRef.current?.scrollTo({ x: normalizedOffset, animated: false });
+    }
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView
         ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"
         snapToInterval={SNAP_INTERVAL}
         snapToAlignment="start"
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: true, listener: updateActiveIndex },
+        )}
         onMomentumScrollEnd={handleScrollEnd}
         contentContainerStyle={styles.scrollContent}
       >
-        {brands.map((item, index) => {
-          const itemId = item.id || item.brand_id || index;
+        {loopedBrands.map((item, index) => {
+          const brandIndex = index % brands.length;
+          const itemId = item.id || item.brand_id || brandIndex;
           const brandName = item.name || item.brand_name || '';
           const count = getAvailableCount(item);
-          const isActive = index === activeIndex;
-          const rotation = index < activeIndex ? '-7deg' : '7deg';
+          const isActive = brandIndex === activeIndex;
+          const rotation = scrollX.interpolate({
+            inputRange: [
+              (index - 1) * SNAP_INTERVAL,
+              index * SNAP_INTERVAL,
+              (index + 1) * SNAP_INTERVAL,
+            ],
+            outputRange: ['7deg', '0deg', '-7deg'],
+            extrapolate: 'clamp',
+          });
+          const scale = scrollX.interpolate({
+            inputRange: [
+              (index - 1) * SNAP_INTERVAL,
+              index * SNAP_INTERVAL,
+              (index + 1) * SNAP_INTERVAL,
+            ],
+            outputRange: [0.97, 1, 0.97],
+            extrapolate: 'clamp',
+          });
 
           return (
-            <TouchableOpacity
-              key={itemId.toString()}
-              activeOpacity={0.9}
-              style={[
-                styles.brandCard,
-                isActive ? styles.activeCard : styles.sideCard,
-                !isActive && { transform: [{ rotate: rotation }] },
-              ]}
-              onPress={() => onBrandPress?.(item)}
+            <Animated.View
+              key={`${Math.floor(index / brands.length)}-${itemId}`}
+              style={{ transform: [{ rotate: rotation }, { scale }] }}
             >
-              {count !== undefined && count !== null && count !== '' && (
-                <View style={styles.availablePill}>
-                  <Text style={styles.availableText}>
-                    {typeof count === 'string' && /available/i.test(count) ? count : `${count} available`}
-                  </Text>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={[styles.brandCard, isActive ? styles.activeCard : styles.sideCard]}
+                onPress={() => onBrandPress?.(item)}
+              >
+                {count !== undefined && count !== null && count !== '' && (
+                  <View style={styles.availablePill}>
+                    <Text style={styles.availableText}>
+                      {typeof count === 'string' && /available/i.test(count) ? count : `${count} available`}
+                    </Text>
+                  </View>
+                )}
+                <Text style={styles.brandName} numberOfLines={2} adjustsFontSizeToFit>
+                  {brandName}
+                </Text>
+                <View style={styles.arrowButton}>
+                  <ArrowUpRight size={20} color="#FFFFFF" strokeWidth={2.5} />
                 </View>
-              )}
-              <Text style={styles.brandName} numberOfLines={2} adjustsFontSizeToFit>
-                {brandName}
-              </Text>
-              <View style={styles.arrowButton}>
-                <ArrowUpRight size={20} color="#FFFFFF" strokeWidth={2.5} />
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </Animated.View>
           );
         })}
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 };
