@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   title: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '700',
     color: '#113A6A',              // Title color
   },
   subtitle: {
-    fontSize: 10,
+    fontSize: 13,
     color: '#4C6269',              // Subtitle color
     marginTop: 1,
   },
