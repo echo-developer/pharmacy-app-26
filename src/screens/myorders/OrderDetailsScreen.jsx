@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Alert, Linking, NativeModules, Platform, View, ScrollView, StyleSheet, StatusBar, ActivityIndicator, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OrderDetailsHeader from '../../components/orderdetails/OrderDetailsHeader';
 import OrderArrivingBanner from '../../components/orderdetails/OrderArrivingBanner';
 import OrderItemsStrip from '../../components/orderdetails/OrderItemsStrip';
@@ -9,6 +10,7 @@ import { DetailLoadingSkeleton } from '../../components/common/ScreenLoadingSkel
 import OrderInfoCard from '../../components/orderdetails/OrderInfoCard';
 import YouMayAlsoLike from '../../components/orderdetails/YouMayAlsoLike';
 import RepeatOrderButton from '../../components/orderdetails/RepeatOrderButton';
+import OrderTrackingTimeline from '../../components/orderdetails/OrderTrackingTimeline';
 import CommonService from '../../utils/CommonService';
 import RazorpayCheckout from 'react-native-razorpay';
 import StaticConst from '../../utils/StaticConst';
@@ -60,6 +62,8 @@ const OrderDetailsScreen = ({ route, navigation }) => {
   const [returningSubOrderId, setReturningSubOrderId] = useState(null);
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [invoiceLoading, setInvoiceLoading] = useState(false);
+  const [trackingModalVisible, setTrackingModalVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (orderIdParam) {
@@ -80,23 +84,23 @@ const OrderDetailsScreen = ({ route, navigation }) => {
         const res = resp.data;
         if (res.status === 1 && res.response && res.response.data) {
           const orderData = res.response.data;
-          
+
           // Format statusdetails for timeline
           if (Array.isArray(orderData.statusdetails)) {
             orderData.statusdetails = orderData.statusdetails.map(sd => ({
               ...sd,
               bind_date: formatDate(sd.reg_date),
-              bind_time: sd.reg_date ? new Date(sd.reg_date).toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
+              bind_time: sd.reg_date ? new Date(sd.reg_date).toLocaleTimeString('en-US', {
+                hour: '2-digit',
                 minute: '2-digit',
-                hour12: true 
+                hour12: true
               }) : '',
             }));
           }
-          
+
           setLoader(false);
           setOrderData(orderData);
-          
+
           // Load recommended products
           loadRecommendedProducts();
         } else {
@@ -131,10 +135,10 @@ const OrderDetailsScreen = ({ route, navigation }) => {
       .then(resp => {
         const res = resp.data;
         if (res.status === 1 && res.response) {
-          const products = Array.isArray(res.response.data) 
-            ? res.response.data 
-            : Array.isArray(res.response) 
-              ? res.response 
+          const products = Array.isArray(res.response.data)
+            ? res.response.data
+            : Array.isArray(res.response)
+              ? res.response
               : [];
           setRecommendedProducts(products.slice(0, 10));
         }
@@ -179,7 +183,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
   const formatAddress = (address) => {
     if (!address) return 'Address details';
     if (typeof address === 'string') return address;
-    
+
     const { place_address, place_landmark, city, place_pincode } = address;
     const parts = [place_address, place_landmark, city, place_pincode].filter(Boolean);
     return parts.length > 0 ? parts.join(', ') : 'Address details';
@@ -187,31 +191,31 @@ const OrderDetailsScreen = ({ route, navigation }) => {
 
   const canShowPayNow = (order) => {
     if (!order) return false;
-    
+
     const isPaid = parseInt(order.is_paid, 10) === 1;
     const statusText = String(order.order_status || '').toLowerCase();
     const status = parseInt(statusText, 10);
-    
+
     // Hide if delivered (4) or cancelled (7)
     if (status === 4 || status === 7 || statusText.includes('delivered') || statusText.includes('cancel')) {
       return false;
     }
-    
+
     // Hide if already paid
     if (isPaid) {
       return false;
     }
-    
+
     // Only show for COD orders
     return order.payment_method === 'COD' || order.payment_mode === 'Cash on Delivery';
   };
 
   const handleRepeatOrder = () => {
     if (!orderData || (!orderData.items && !orderData.products)) return;
-    
+
     const items = orderData.items || orderData.products || [];
     let addedCount = 0;
-    
+
     items.forEach(item => {
       const productData = {
         product_id: item.product_id,
@@ -224,11 +228,11 @@ const OrderDetailsScreen = ({ route, navigation }) => {
         unit: item.unit || item.product_unit || '',
         image: item.image,
       };
-      
+
       const success = CommonService.addToCart(productData);
       if (success) addedCount++;
     });
-    
+
     if (addedCount > 0) {
       console.log(`Added ${addedCount} items to cart`);
       navigation.navigate('Cart');
@@ -459,7 +463,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
             itemCount={`${orderData.items?.length || orderData.products?.length || orderData.total_item || 0} items ordered`}
             images={orderData.items || orderData.products || []}
             totalAmount={orderData.totals?.final_amount ?? orderData.order_total ?? orderData.final_amount ?? orderData.net_amount ?? '0'}
-            onPressItems={() => {}}
+            onPressItems={() => { }}
             onPayNow={canShowPayNow(orderData) ? handlePayNow : null}
             showPayNow={canShowPayNow(orderData)}
           />
@@ -510,10 +514,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
 
           <OrderTimelineCard
             statusdetails={orderData.statusdetails}
-            onSeeAllUpdates={() => navigation.navigate('OrderTracking', {
-              orderId: orderData.order_id || orderIdParam,
-              statusdetails: orderData.statusdetails || [],
-            })}
+            onSeeAllUpdates={() => setTrackingModalVisible(true)}
           />
 
           {(orderData.is_cancel === 1 || orderData.is_cancel === '1' || orderData.is_cancel === true) && (
@@ -564,7 +565,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
             payment={orderData.payment_mode || (orderData.payment_method === 'RZR' ? 'Razorpay' : orderData.payment_method === 'COD' ? 'Cash on Delivery' : orderData.payment_method) || 'Payment information unavailable'}
             deliverTo={formatAddress(orderData.shipping_address || orderData.address)}
             placedDate={formatDate(orderData.order_date, true)}
-          />  
+          />
 
         </ScrollView>
       )}
@@ -575,6 +576,51 @@ const OrderDetailsScreen = ({ route, navigation }) => {
           onPress={handleRepeatOrder}
         />
       )}
+      {/* ===== Order Tracking Bottom Sheet Modal ===== */}
+      <Modal
+        visible={trackingModalVisible}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setTrackingModalVisible(false)}
+      >
+        {/* This single flex:1 View fills the entire screen */}
+        <View style={styles.trackingModalRoot}>
+
+          {/* Dark overlay fills everything above the sheet */}
+          <TouchableOpacity
+            style={styles.trackingOverlay}
+            onPress={() => setTrackingModalVisible(false)}
+            activeOpacity={1}
+          />
+
+          {/* Close button */}
+          <TouchableOpacity
+            style={styles.trackingCloseBtn}
+            onPress={() => setTrackingModalVisible(false)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.trackingCloseBtnText}>✕</Text>
+          </TouchableOpacity>
+
+          {/* White sheet — NO maxHeight so it just wraps content, bottom safe area handled manually */}
+          <View style={[styles.trackingSheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              <OrderTrackingTimeline
+                statusdetails={orderData?.statusdetails || []}
+                orderId={orderData?.order_id || orderIdParam}
+              />
+            </ScrollView>
+          </View>
+
+        </View>
+      </Modal>
+
+      {/* ===== Cancel Order Modal ===== */}
       <Modal
         visible={cancelModalVisible}
         transparent
@@ -622,7 +668,7 @@ const OrderDetailsScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F6F6',        
+    backgroundColor: '#F6F6F6',
   },
   centerContainer: {
     flex: 1,
@@ -717,7 +763,39 @@ const styles = StyleSheet.create({
   confirmCancelAction: { backgroundColor: '#C9302C' },
   confirmCancelText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   scrollContent: {
-    paddingBottom: 100,                 
+    paddingBottom: 100,
+  },
+  // Tracking bottom sheet modal
+  trackingModalRoot: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.75)',
+  },
+  trackingOverlay: {
+    flex: 1,                         // takes all space above the sheet
+  },
+  trackingCloseBtn: {
+    alignSelf: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 40,
+  },
+  trackingCloseBtnText: {
+    fontSize: 16,
+    color: '#333333',
+    fontWeight: '700',
+  },
+  trackingSheet: {
+    width: '100%',
+    maxHeight: '80%',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
   },
 });
 
