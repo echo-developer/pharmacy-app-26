@@ -143,11 +143,12 @@ const SearchScreen = ({ navigation, route }) => {
 
     return (
       <TouchableOpacity
-        style={[styles.productCard, outOfStock && { opacity: 0.62 }]}
+        style={styles.productCard}
         activeOpacity={0.8}
         onPress={() => navigation.navigate('ProductDetails', { id: productId, product: item })}
       >
         <View style={styles.productImageArea}>
+          <View style={[StyleSheet.absoluteFill, styles.imageContent, outOfStock && styles.fadedContent]}>
           {!isLoaded && (
             <ShimmerPlaceholder
               style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
@@ -166,9 +167,10 @@ const SearchScreen = ({ navigation, route }) => {
             resizeMode={FastImage.resizeMode.contain}
             onLoad={() => setLoadedImages(prev => ({ ...prev, [productId]: true }))}
           />
+          </View>
           {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} fontSize={10} />}
         </View>
-        <View style={styles.productInfo}>
+        <View style={[styles.productInfo, outOfStock && styles.fadedContent]}>
           <Text style={styles.productName} numberOfLines={2}>
             {productName}
           </Text>
@@ -187,6 +189,7 @@ const SearchScreen = ({ navigation, route }) => {
             </LinearGradient>
           </View>
         </View>
+        <View style={outOfStock && styles.fadedContent}>
         {outOfStock ? (
           <View style={[styles.addBtn, styles.unavailableBtn]}>
             <Text style={styles.unavailableText}>ADD</Text>
@@ -199,6 +202,7 @@ const SearchScreen = ({ navigation, route }) => {
             <Text style={styles.addBtnText}>ADD</Text>
           </TouchableOpacity>
         )}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -270,6 +274,8 @@ const SearchScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  fadedContent: { opacity: 0.62 },
+  imageContent: { alignItems: 'center', justifyContent: 'center' },
   container: {
     flex: 1,
     backgroundColor: '#F8F9FB',

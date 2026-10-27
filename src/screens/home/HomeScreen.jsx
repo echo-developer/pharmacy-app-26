@@ -64,10 +64,22 @@ const fallbackHealthConcerns = [
 const PINNED_SEARCH_BOTTOM_GAP = 12;
 
 const normalizeHomeImage = image => {
+  if (image && typeof image === 'object' && typeof image.uri === 'string') {
+    return { ...image, uri: normalizeHomeImage(image.uri) };
+  }
   if (typeof image !== 'string' || !image) return image;
   const apiOrigin = StaticConst.api.endpoint.replace(/\/api\/app\/?$/i, '');
-  return image.replace(/^http:\/\/localhost:8081(?=\/)/i, apiOrigin);
+  if (/^http:\/\/localhost:8081\//i.test(image)) return image.replace(/^http:\/\/localhost:8081/i, apiOrigin);
+  if (/^(https?:|data:|file:)/i.test(image)) return image;
+  return `${apiOrigin}/${image.replace(/^\/+/, '')}`;
 };
+
+const normalizeHomeProduct = product => ({
+  ...product,
+  image: normalizeHomeImage(
+    product.image || product.product_image || product.img || product.product_image_url || product.image_url || product.product_img,
+  ),
+});
 
 const HomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -168,16 +180,21 @@ const HomeScreen = ({ navigation }) => {
     }))
     : [];
   const popularMedicines = Array.isArray(homeState.data?.popular_medicines)
-    ? homeState.data.popular_medicines
+    ? homeState.data.popular_medicines.map(normalizeHomeProduct)
     : [];
   const mostOrderedMedicines = Array.isArray(homeState.data?.most_ordered)
-    ? homeState.data.most_ordered
+    ? homeState.data.most_ordered.map(normalizeHomeProduct)
     : [];
   // popular_category is the data source for the Popular Medicine category tabs.
   const popularCategories = Array.isArray(homeState.data?.popular_category)
-    ? homeState.data.popular_category
+    ? homeState.data.popular_category.map(category => ({
+      ...category,
+      items: Array.isArray(category.items) ? category.items.map(normalizeHomeProduct) : [],
+    }))
     : [];
-  const deals = Array.isArray(homeState.data?.deals_of_the_day) ? homeState.data.deals_of_the_day : [];
+  const deals = Array.isArray(homeState.data?.deals_of_the_day)
+    ? homeState.data.deals_of_the_day.map(normalizeHomeProduct)
+    : [];
   // popular_brand: { brand_id, brand_name, image }
   const popularBrands = Array.isArray(homeState.data?.popular_brand)
     ? homeState.data.popular_brand.map(b => ({ ...b, id: b.brand_id || b.id, name: b.brand_name || b.name }))

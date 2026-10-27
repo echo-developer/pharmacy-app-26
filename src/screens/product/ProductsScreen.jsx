@@ -154,24 +154,28 @@ const ProductsScreen = ({ navigation }) => {
 
     return (
       <TouchableOpacity
-        style={[styles.card, outOfStock && { opacity: 0.62 }]}
+        style={styles.card}
         activeOpacity={0.85}
         onPress={() => navigation.navigate('ProductDetails', { id: item.product_id, product: item })}
       >
         <View style={styles.cardImageArea}>
-          <Image
-            source={{ uri: item.image || 'https://via.placeholder.com/120' }}
-            style={styles.cardImage}
-            resizeMode="contain"
-          />
+          <View style={outOfStock && styles.fadedContent}>
+            <Image
+              source={{ uri: item.image || 'https://via.placeholder.com/120' }}
+              style={styles.cardImage}
+              resizeMode="contain"
+            />
+          </View>
           {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} fontSize={10} />}
         </View>
-        <Text style={styles.productName} numberOfLines={2}>
-          {item.product_name}
-        </Text>
-        <Text style={styles.unitText}>{item.unit || '1 Unit'}</Text>
+        <View style={outOfStock && styles.fadedContent}>
+          <Text style={styles.productName} numberOfLines={2}>
+            {item.product_name}
+          </Text>
+          <Text style={styles.unitText}>{item.unit || '1 Unit'}</Text>
+        </View>
 
-        <View style={styles.cardFooter}>
+        <View style={[styles.cardFooter, outOfStock && styles.fadedContent]}>
           <View style={styles.priceInfo}>
             {Number(item.product_mrp || item.mrp) > Number(item.product_sell_price || item.price) && (
               <StrikethroughPrice amount={`₹${item.product_mrp || item.mrp}`} fontSize={10} color="#949494" />
@@ -418,6 +422,7 @@ const ProductsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  fadedContent: { opacity: 0.62 },
   container: {
     flex: 1,
     backgroundColor: '#F8F9FB',

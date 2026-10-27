@@ -23,6 +23,7 @@ const CARD_COLORS = [
 ];
 const NO_IMAGE = /no-image|placeholder/i;
 const getSingleWordName = name => String(name || '').trim().split(/\s+/)[0];
+const getProductImage = item => item.image || item.product_image || item.img || item.product_image_url || item.image_url || item.product_img;
 const OfferGradientText = ({ children }) => (
   <MaskedView
     maskElement={<Text style={styles.offerText}>{children}</Text>}
@@ -41,9 +42,11 @@ const getCategoryHighlights = categories =>
   categories
     .map(category => {
       const products = Array.isArray(category.items) ? category.items : [];
-      const productsWithImages = products.filter(
-        item => item && typeof item.image === 'string' && item.image && !NO_IMAGE.test(item.image),
-      );
+      const productsWithImages = products.filter(item => {
+        const image = getProductImage(item);
+        const imageUri = typeof image === 'string' ? image : image?.uri;
+        return item && typeof imageUri === 'string' && imageUri && !NO_IMAGE.test(imageUri);
+      });
       if (!productsWithImages.length) return null;
 
       const getDiscountPercent = item => {
@@ -59,10 +62,14 @@ const getCategoryHighlights = categories =>
       );
       const discountPercent = getDiscountPercent(product);
 
+      const productImage = getProductImage(product);
       return {
         categoryId: category.category_id,
         categoryName: category.category_name,
-        product,
+        product: {
+          ...product,
+          image: typeof productImage === 'string' ? productImage : productImage?.uri,
+        },
         discountPercent,
       };
     })

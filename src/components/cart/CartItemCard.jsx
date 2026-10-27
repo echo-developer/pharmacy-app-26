@@ -24,10 +24,10 @@ const CartItemCard = ({
     : item.image || require('../../assets/images/Subtract.png');
 
   return (
-    <View style={[styles.card, showDashedBorder && styles.cardDashed, outOfStock && { opacity: 0.62 }]}>
+    <View style={[styles.card, showDashedBorder && styles.cardDashed]}>
       <View style={styles.row}>
         {/* ===== LEFT: Image (Full Bleed) ===== */}
-        <View style={styles.imageBox}>
+        <View style={[styles.imageBox, outOfStock && styles.fadedContent]}>
           {!imageLoaded && (
             <ShimmerPlaceholder
               style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
@@ -46,15 +46,17 @@ const CartItemCard = ({
 
         {/* ===== CENTER: Details ===== */}
         <View style={styles.centerCol}>
-          <Text style={styles.title} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.pack}>{item.pack}</Text>
+          <View style={outOfStock && styles.fadedContent}>
+            <Text style={styles.title} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.pack}>{item.pack}</Text>
+          </View>
           {outOfStock && <Text style={styles.outOfStockText}>OUT OF STOCK</Text>}
         </View>
 
         {/* ===== RIGHT: Qty + Price ===== */}
-        <View style={styles.rightCol}>
+        <View style={[styles.rightCol, outOfStock && styles.fadedContent]}>
           <View style={styles.qtyRow}>
             <TouchableOpacity
               style={styles.qtyBtn}
@@ -94,6 +96,7 @@ const CartItemCard = ({
 };
 
 const styles = StyleSheet.create({
+  fadedContent: { opacity: 0.62 },
   card: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 12,

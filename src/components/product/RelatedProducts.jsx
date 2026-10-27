@@ -68,10 +68,11 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
             <TouchableOpacity
               key={item.product_id ?? index}
               activeOpacity={0.85}
-              style={[styles.card, outOfStock && { opacity: 0.62 }]}
+              style={styles.card}
               onPress={() => onProductPress?.(item)}>
               {/* Image Area with Rating Pill */}
               <View style={styles.imageArea}>
+                <View style={[StyleSheet.absoluteFill, styles.imageContent, outOfStock && styles.fadedContent]}>
                 {!isLoaded && (
                   <ShimmerPlaceholder
                     style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
@@ -98,10 +99,12 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
                     </Text>
                   </View>
                 )}
+                </View>
                 {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} />}
               </View>
 
               {/* Details */}
+              <View style={outOfStock && styles.fadedContent}>
               <Text style={styles.cardTitle} numberOfLines={2}>
                 {item.product_name}
               </Text>
@@ -132,6 +135,7 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
                   <Text style={styles.addText}>ADD</Text>
                 </TouchableOpacity>
               )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -141,6 +145,8 @@ const RelatedProducts = ({ products = [], onArrowPress, onProductPress, onAddPre
 };
 
 const styles = StyleSheet.create({
+  fadedContent: { opacity: 0.62 },
+  imageContent: { alignItems: 'center', justifyContent: 'center' },
   container: {
     backgroundColor: '#FFFFFF',
     paddingVertical: 16,

@@ -45,62 +45,66 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
         const ratingCount = item.product_total_rating || item.ratingCount || 0;
         const discount = getDiscountLabel(item);
         const delivery = item.delivery || 'Get in 30 mins';
-        const imageUri = typeof item.image === 'string' ? item.image : '';
+        const productImage = item.image || item.product_image || item.img || item.product_image_url || item.image_url || item.product_img;
+        const imageUri = typeof productImage === 'string' ? productImage : productImage?.uri || '';
         const isLoaded = loadedImages[itemId];
         return (
-          <View key={itemId.toString()} style={[styles.card, outOfStock && { opacity: 0.62 }]}>
+          <View key={itemId.toString()} style={styles.card}>
             {/* ===== IMAGE AREA ===== */}
-            <TouchableOpacity
-              style={styles.imageArea}
-              activeOpacity={onProductPress ? 0.85 : 1}
-              onPress={() => onProductPress?.(item)}
-              disabled={!onProductPress}
-              accessibilityRole={onProductPress ? 'button' : undefined}
-              accessibilityLabel={onProductPress ? `View ${title}` : undefined}
-            >
-              {!isLoaded && (
-                <ShimmerPlaceholder
-                  style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
-                  shimmerColor="#EAEAEA"
-                  shimmerBackgroundColor="#F5F5F5"
-                  visible={false}
+            <View style={styles.imageArea}>
+              <TouchableOpacity
+                style={[styles.imageSurface, outOfStock && styles.fadedContent]}
+                activeOpacity={onProductPress ? 0.85 : 1}
+                onPress={() => onProductPress?.(item)}
+                disabled={!onProductPress}
+                accessibilityRole={onProductPress ? 'button' : undefined}
+                accessibilityLabel={onProductPress ? `View ${title}` : undefined}
+              >
+                {!isLoaded && (
+                  <ShimmerPlaceholder
+                    style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+                    shimmerColor="#EAEAEA"
+                    shimmerBackgroundColor="#F5F5F5"
+                    visible={false}
+                  />
+                )}
+                <FastImage
+                  source={
+                    imageUri && !imageUri.includes('via.placeholder')
+                      ? { uri: imageUri, priority: FastImage.priority.normal }
+                      : require('../../assets/images/deals.png')
+                  }
+                  style={styles.productImage}
+                  resizeMode={FastImage.resizeMode.contain}
+                  onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
                 />
-              )}
-              <FastImage
-                source={
-                  imageUri && !imageUri.includes('via.placeholder')
-                    ? { uri: imageUri, priority: FastImage.priority.normal }
-                    : require('../../assets/images/deals.png')
-                }
-                style={styles.productImage}
-                resizeMode={FastImage.resizeMode.contain}
-                onLoad={() => setLoadedImages(prev => ({ ...prev, [itemId]: true }))}
-              />
-              {/* Rating Pill */}
-              {(rating > 0 || ratingCount > 0) && (
-                <View style={styles.ratingPill}>
-                  <Star size={12} color="#FF8D28" fill="#FF8D28" />
-                  <Text style={styles.ratingText}>
-                    {rating} ({ratingCount})
-                  </Text>
-                </View>
-              )}
+                {/* Rating Pill */}
+                {(rating > 0 || ratingCount > 0) && (
+                  <View style={styles.ratingPill}>
+                    <Star size={12} color="#FF8D28" fill="#FF8D28" />
+                    <Text style={styles.ratingText}>
+                      {rating} ({ratingCount})
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
               {outOfStock && (
                 <OutOfStockBanner style={styles.outOfStockBanner} fontSize={13} />
               )}
-            </TouchableOpacity>
+            </View>
 
             {/* ===== DETAILS ===== */}
-            <TouchableOpacity
-              onPress={() => onProductPress?.(item)}
-              disabled={!onProductPress}
-              activeOpacity={onProductPress ? 0.85 : 1}
-              accessibilityRole={onProductPress ? 'button' : undefined}
-            >
-              <Text style={styles.title} numberOfLines={2}>
-                {title}
-              </Text>
-            </TouchableOpacity>
+            <View style={outOfStock && styles.fadedContent}>
+              <TouchableOpacity
+                onPress={() => onProductPress?.(item)}
+                disabled={!onProductPress}
+                activeOpacity={onProductPress ? 0.85 : 1}
+                accessibilityRole={onProductPress ? 'button' : undefined}
+              >
+                <Text style={styles.title} numberOfLines={2}>
+                  {title}
+                </Text>
+              </TouchableOpacity>
 
             {unit ? <Text style={styles.tablets}>{unit}</Text> : null}
 
@@ -167,6 +171,7 @@ const DealsProducts = ({ products = [], onAddPress, onProductPress }) => {
                 </View>
               )}
             </View>
+            </View>
           </View>
         );
       })}
@@ -194,6 +199,7 @@ const styles = StyleSheet.create({
     // shadowRadius: 6,
     // elevation: 3,
   },
+  fadedContent: { opacity: 0.62 },
   /* ===== IMAGE AREA ===== */
   imageArea: {
     backgroundColor: '#F7F7F7',
@@ -203,6 +209,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
     position: 'relative',
+  },
+  imageSurface: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   productImage: {
     width: '80%',

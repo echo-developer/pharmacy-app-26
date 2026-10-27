@@ -97,17 +97,17 @@ const YouMayAlsoLike = ({
             <TouchableOpacity
               key={item.id || item.product_id}
               activeOpacity={0.85}
-              style={[styles.card, outOfStock && { opacity: 0.62 }]}
+              style={styles.card}
               onPress={() => onProductPress?.(item)}
             >
               {/* Image Area with Rating Pill */}
               <View style={styles.imageArea}>
+                <View style={[StyleSheet.absoluteFill, styles.imageContent, outOfStock && styles.fadedContent]}>
                 <Image
                   source={imageSource}
                   style={styles.image}
                   resizeMode="contain"
                 />
-                {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} />}
                 {item.rating && (
                   <View style={styles.ratingPill}>
                     <Star size={10} color="#FF8D28" fill="#FF8D28" />
@@ -116,9 +116,12 @@ const YouMayAlsoLike = ({
                     </Text>
                   </View>
                 )}
+                </View>
+                {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} />}
               </View>
 
               {/* Details */}
+              <View style={outOfStock && styles.fadedContent}>
               <Text style={styles.cardTitle} numberOfLines={2}>
                 {item.title || item.product_name || 'Product Name'}
               </Text>
@@ -151,6 +154,7 @@ const YouMayAlsoLike = ({
                   <Text style={styles.addText}>ADD</Text>
                 </TouchableOpacity>
               )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -160,6 +164,8 @@ const YouMayAlsoLike = ({
 };
 
 const styles = StyleSheet.create({
+  fadedContent: { opacity: 0.62 },
+  imageContent: { alignItems: 'center', justifyContent: 'center' },
   container: {
     // backgroundColor: '#FFFFFF',
     paddingVertical: 16,

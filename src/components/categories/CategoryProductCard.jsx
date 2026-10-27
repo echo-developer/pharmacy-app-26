@@ -38,29 +38,31 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
   };
 
   return (
-    <View style={[styles.card, outOfStock && { opacity: 0.62 }]}>
+    <View style={styles.card}>
       {/* ===== TOP: Image + Details ===== */}
       <TouchableOpacity style={styles.topRow} activeOpacity={0.85} onPress={onProductPress}>
         {/* Image Area */}
         <View style={styles.imageArea}>
-          {product.discount && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{product.discount}</Text>
-            </View>
-          )}
-          {!imageLoaded && <View pointerEvents="none" style={styles.imageSkeleton} />}
-          <FastImage
-            source={imageUri ? { uri: imageUri, priority: FastImage.priority.normal } : require('../../assets/images/products.png')}
-            style={[styles.image, !imageLoaded && styles.imagePending]}
-            resizeMode={FastImage.resizeMode.contain}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageLoaded(true)}
-          />
+          <View style={[StyleSheet.absoluteFill, styles.imageContent, outOfStock && styles.fadedContent]}>
+            {product.discount && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{product.discount}</Text>
+              </View>
+            )}
+            {!imageLoaded && <View pointerEvents="none" style={styles.imageSkeleton} />}
+            <FastImage
+              source={imageUri ? { uri: imageUri, priority: FastImage.priority.normal } : require('../../assets/images/products.png')}
+              style={[styles.image, !imageLoaded && styles.imagePending]}
+              resizeMode={FastImage.resizeMode.contain}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageLoaded(true)}
+            />
+          </View>
           {outOfStock && <OutOfStockBanner style={styles.outOfStockBanner} />}
         </View>
 
         {/* Details */}
-        <View style={styles.details}>
+        <View style={[styles.details, outOfStock && styles.fadedContent]}>
           <Text style={styles.title} numberOfLines={2}>
             {product.title}
           </Text>
@@ -87,7 +89,7 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
       </TouchableOpacity>
 
       {/* ===== BOTTOM: Heart + ADD / Stepper ===== */}
-      <View style={styles.bottomRow}>
+      <View style={[styles.bottomRow, outOfStock && styles.fadedContent]}>
         {/* Heart button */}
         <TouchableOpacity style={styles.iconBox} onPress={onFavPress}>
           <Heart
@@ -123,6 +125,8 @@ const CategoryProductCard = ({ product, onProductPress, onAddPress, onFavPress, 
 };
 
 const styles = StyleSheet.create({
+  fadedContent: { opacity: 0.62 },
+  imageContent: { alignItems: 'center', justifyContent: 'center' },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
