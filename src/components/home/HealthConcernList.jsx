@@ -10,7 +10,7 @@ import {
 import { CachedImage } from '../common/CachedImage';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.44;
+const CARD_WIDTH = width * 0.6;
 const CARD_HEIGHT = CARD_WIDTH * 1.4;
 
 const concernAssets = [
@@ -57,25 +57,23 @@ const HealthConcernList = ({ concerns = [], onCardPress }) => {
           <TouchableOpacity
             key={itemId.toString()}
             activeOpacity={0.9}
-            style={[styles.cardWrapper, { transform: [{ translateY: arcOffset }] }]}
+            style={[styles.cardWrapper, { transform: [{ translateY: arcOffset }, { rotate: tilt }] }]}
             onPress={() => onCardPress?.(item)}
           >
             <CachedImage
               source={imgSource}
-              style={[styles.cardImage, { transform: [{ rotate: tilt }] }]}
+              style={styles.cardImage}
               resizeMode="contain"
             />
             <View style={styles.cardLabelContainer}>
-              <View style={{ transform: [{ rotate: tilt }] }}>
-                <Text
-                  style={styles.cardLabel}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.8}
-                >
-                  {label}
-                </Text>
-              </View>
+              <Text
+                style={styles.cardLabel}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
+              >
+                {label}
+              </Text>
             </View>
           </TouchableOpacity>
         );
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 44,
     gap: 2,
-    paddingTop: 14,
+    paddingTop: 0,
     paddingBottom: 8,
   },
   cardWrapper: {
@@ -102,23 +100,23 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     position: 'absolute',
-    top: '-5%',
-    left: '-5%',
-    width: '110%',
-    height: '110%',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     borderRadius: 24,
   },
   cardLabelContainer: {
     position: 'absolute',
-    bottom: '24%',
+    bottom: '17%',
     left: 0,
     right: 0,
     zIndex: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 20,
   },
   cardLabel: {
+    width: '100%',
     fontSize: 14,
     fontWeight: '700',
     color: '#302426',
