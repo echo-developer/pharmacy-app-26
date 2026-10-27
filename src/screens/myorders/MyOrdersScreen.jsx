@@ -239,11 +239,10 @@ const MyOrdersScreen = ({ navigation }) => {
   };
 
   const getHeaderText = (item) => {
-    const status = getCardStatus(item.order_status_name || item.status_label || item.order_status || item.status);
-    const deliveredDate = item.delivered_date || item.delivered_at;
-    const cancelledDate = item.cancelled_date || item.cancelled_at;
+    const rawStatus = String(item.order_status_name || item.status_label || item.order_status || item.status || '').toLowerCase();
+    const status = getCardStatus(rawStatus);
     const expectedDate = item.expected_delivery_date || item.delivery_date || item.estimated_delivery_date;
-    if (status === 'completed' || status === 'cancelled') return '';
+    if (status === 'completed' || status === 'cancelled' || rawStatus === '3' || rawStatus.includes('out for delivery')) return '';
     return expectedDate ? `Arriving by ${formatDate(expectedDate, { shortDate: true })}` : 'Order in progress';
   };
 
