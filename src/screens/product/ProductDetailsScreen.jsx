@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, Alert } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import ProductDetailsHeader from '../../components/product/ProductDetailsHeader';
-import ProductSummaryBar from '../../components/product/ProductSummaryBar';
 import ProductImageGallery from '../../components/product/ProductImageGallery';
 import { DetailLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import ProductInfoCard from '../../components/product/ProductInfoCard';
@@ -216,7 +215,6 @@ const ProductDetailsScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          <ProductSummaryBar onPress={() => console.log('Summary pressed')} />
           <ProductImageGallery
             images={galleryReady ? detailGallery.images : []}
             loading={!galleryReady}
