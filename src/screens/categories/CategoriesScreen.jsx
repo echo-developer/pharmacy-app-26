@@ -10,7 +10,7 @@ import { isProductOutOfStock } from '../../utils/productAvailability';
 import store from '../../store/store';
 import CartFloatingBar from '../../components/cart/CartFloatingBar';
 import { CachedImage as Image } from '../../components/common/CachedImage';
-import { ChevronRight, X } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 import { CategoriesLoadingSkeleton } from '../../components/common/ScreenLoadingSkeletons';
 import LinearGradient from 'react-native-linear-gradient';
 import CategoryItem from '../../components/categories/CategoryItem';
@@ -123,13 +123,6 @@ const CategoriesScreen = ({ navigation }) => {
       .finally(() => {
         if (requestId === productRequestId.current) setProductsLoading(false);
       });
-  };
-
-  const handleCategoryPress = (categoryId) => {
-    setActiveCategory(categoryId);
-    setActiveSubcategory(null);
-    getProductsApi(categoryId, selectedSort, selectedDiscount, priceRange, null);
-    setShowCategoryProducts(true);
   };
 
   const selectLandingCategory = categoryId => {
@@ -411,14 +404,6 @@ const CategoriesScreen = ({ navigation }) => {
                             );
                           })}
                         </View>
-                        <TouchableOpacity
-                          style={styles.viewAllButton}
-                          activeOpacity={0.8}
-                          onPress={() => handleCategoryPress(category._id)}
-                        >
-                          <Text style={styles.viewAllText}>View all {category._name} products</Text>
-                          <ChevronRight size={15} color="#1768D2" />
-                        </TouchableOpacity>
                       </View>
                     </View>
                     );
@@ -580,8 +565,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 11,
   },
-  subcategoryPanel: { borderRadius: 12, padding: 9, backgroundColor: 'transparent' },
-  subcategoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly', rowGap: 7 },
+  subcategoryPanel: { borderRadius: 12, backgroundColor: 'transparent' },
+  subcategoryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', columnGap: 12, rowGap: 7 },
   subcategoryTile: {
     width: SUBCATEGORY_TILE_WIDTH,
     height: 132,
@@ -595,8 +580,6 @@ const styles = StyleSheet.create({
   subcategoryImageSpacer: { flex: 1, minHeight: 0 },
   subcategoryImage: { width: '100%', height: 80, flexShrink: 0, alignSelf: 'center' },
   subcategoryImagePlaceholder: { width: '100%', height: 80, flexShrink: 0 },
-  viewAllButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 10, marginBottom: 2 },
-  viewAllText: { color: '#1768D2', fontSize: 13, fontWeight: '500', marginRight: 3 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
