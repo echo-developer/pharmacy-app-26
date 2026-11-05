@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.pharmacyapp",
+  "applicationId": "com.osplpharmacy",
   "variantName": "release",
   "elements": [
     {

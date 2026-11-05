@@ -1,4 +1,4 @@
-package com.pharmacyapp
+package com.osplpharmacy
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

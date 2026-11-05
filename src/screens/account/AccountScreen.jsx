@@ -77,7 +77,7 @@ const AccountScreen = ({ navigation }) => {
     try {
       await Share.share({
         message: 'Check out this amazing Pharmacy App! Download it now.',
-        url: 'https://play.google.com/store/apps/details?id=com.pharmacyapp',
+        url: 'https://play.google.com/store/apps/details?id=com.osplpharmacy',
       });
     } catch (error) {
       console.log('Error sharing app:', error);

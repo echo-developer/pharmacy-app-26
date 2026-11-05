@@ -1,4 +1,4 @@
-package com.pharmacyapp
+package com.osplpharmacy
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

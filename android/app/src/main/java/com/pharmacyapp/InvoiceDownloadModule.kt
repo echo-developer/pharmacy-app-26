@@ -1,4 +1,4 @@
-package com.pharmacyapp
+package com.osplpharmacy
 
 import android.app.DownloadManager
 import android.net.Uri
